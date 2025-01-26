@@ -2,7 +2,7 @@ package com.plcoding.oraclewms
 
 import android.app.Application
 
-class FunFocusApp : Application() {
+class WareHouseApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
