@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Focus</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_login_view">LoginActivityView</string>
+    <string name="title_activity_start_fragment">StartFragment</string>
+    <string name="title_activity_landing_view">LandingActivityView</string>
+    <string name="title_activity_landing">LandingActivity</string>
+    <string name="title_activity_profile">ProfileActivity</string>
+    <string name="title_activity_splash_view">SplashActivityView</string>
+    <string name="title_activity_timer_view">TimerActivityView</string>
+</resources>
