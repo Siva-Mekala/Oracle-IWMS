@@ -1,6 +1,7 @@
 package com.plcoding.oraclewms.splash
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
 import android.view.animation.OvershootInterpolator
@@ -11,7 +12,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -36,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import com.plcoding.oraclewms.R
+import com.plcoding.oraclewms.login.LoginActivity
 import com.plcoding.oraclewms.ui.theme.ComposeTimerTheme
 import kotlinx.coroutines.delay
 
@@ -46,12 +46,15 @@ class SplashActivityView : ComponentActivity() {
         setContent {
             ComposeTimerTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    SplashScreen {
-
-                    }
+                    SplashScreen(onNavigate = this::startActivity)
                 }
             }
         }
+    }
+
+    private fun startActivity() {
+        startActivity(Intent(this, LoginActivity::class.java))
+        finish()
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -59,7 +62,11 @@ class SplashActivityView : ComponentActivity() {
     ) { isGranted: Boolean ->
         if (isGranted) {
         } else {
-            Toast.makeText(this, "Please provide notification permission to get started", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                this,
+                "Please provide notification permission to get started",
+                Toast.LENGTH_LONG
+            ).show()
             finish()
         }
     }
@@ -104,15 +111,10 @@ class SplashActivityView : ComponentActivity() {
                     )
                 )
         ) {
-//            Image(
-//                painter = painterResource(id = R.drawable.app_logo),
-//                contentDescription = "Logo",
-//                modifier = Modifier.scale(scale.value)
-//            )
-
             Text(
                 modifier = Modifier
-                    .scale(scale.value).padding(top = 15.dp, bottom = 10.dp), text = "OracleWMS",
+                    .scale(scale.value)
+                    .padding(top = 15.dp, bottom = 10.dp), text = "iWMS",
                 style = TextStyle(
                     fontFamily = FontFamily(Font(R.font.jersey_normal)),
                     fontSize = 50.sp,
