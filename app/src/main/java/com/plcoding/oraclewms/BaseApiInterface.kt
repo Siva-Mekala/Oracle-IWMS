@@ -17,7 +17,13 @@ import java.util.concurrent.TimeUnit
 interface BaseApiInterface {
 
     @POST
-    fun sendOtp(
+    fun startShell(
+        @Url url: String,
+        @Body request: JsonObject
+    ): Call<String>
+
+    @POST
+    fun sendCommand(
         @Url url: String,
         @Body request: JsonObject
     ): Call<String>
@@ -38,7 +44,7 @@ interface BaseApiInterface {
         }
 
         fun create(): BaseApiInterface {
-            val retrofit = getRetrofitObj("https://prod.focused.fun/")
+            val retrofit = getRetrofitObj(BuildConfig.BASE_URL)
             return retrofit.create(BaseApiInterface::class.java)
         }
 

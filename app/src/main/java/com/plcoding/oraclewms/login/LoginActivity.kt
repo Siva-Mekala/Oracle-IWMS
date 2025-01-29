@@ -33,7 +33,6 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -55,7 +54,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.plcoding.oraclewms.R
+import com.plcoding.oraclewms.home.LandingActivity
 import com.plcoding.oraclewms.ui.theme.ComposeTimerTheme
 
 class LoginActivity : ComponentActivity() {
@@ -64,18 +65,20 @@ class LoginActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ComposeTimerTheme {
+                val viewModel = viewModel<LoginViewModel>()
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    Greeting()
+                    Greeting(viewModel)
                 }
             }
         }
     }
 
     @Composable
-    fun Greeting() {
+    fun Greeting(viewModel: LoginViewModel) {
         var checkState = rememberSaveable { mutableStateOf(false) }
         var email = rememberSaveable { mutableStateOf("") }
         var password = rememberSaveable { mutableStateOf("") }
+        var environment by rememberSaveable { mutableStateOf("") }
         Box(contentAlignment = Alignment.Center) {
             Column {
                 Text(
@@ -85,7 +88,6 @@ class LoginActivity : ComponentActivity() {
                         .padding(30.dp)
                         .align(Alignment.CenterHorizontally)
                 )
-
 
                 Card(
                     elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
@@ -102,7 +104,11 @@ class LoginActivity : ComponentActivity() {
                         )
                         OutlinedTextField(
                             label = {
-                                Text("UserName/Email", color = Color.Black, fontFamily = FontFamily(Font(R.font.spacegrotesk_light)))
+                                Text(
+                                    "UserName/Email",
+                                    color = Color.Black,
+                                    fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
+                                )
                             },
                             value = email.value,
                             leadingIcon = {
@@ -124,7 +130,11 @@ class LoginActivity : ComponentActivity() {
                         )
                         OutlinedTextField(
                             label = {
-                                Text("Password", color = Color.Black, fontFamily = FontFamily(Font(R.font.spacegrotesk_light)))
+                                Text(
+                                    "Password",
+                                    color = Color.Black,
+                                    fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
+                                )
                             },
                             value = password.value,
                             leadingIcon = {
@@ -156,9 +166,16 @@ class LoginActivity : ComponentActivity() {
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        SpinnerSample(listOf("dev", "stag", "prod"), "dev", onSelectionChanged = {})
+                        SpinnerSample(listOf("dev", "stag", "prod"), "dev",
+                            onSelectionChanged = {
+                                environment = it
+                        })
                         Button(
-                            onClick = {},
+                            onClick = {
+                                ///viewModel.startShell("mySessionID123456", environment)
+                                val intent = Intent(this@LoginActivity, LandingActivity::class.java)
+                                startActivity(intent)
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 15.dp, bottom = 15.dp, end = 15.dp)
@@ -242,15 +259,15 @@ class LoginActivity : ComponentActivity() {
             ClickableText(text = annotatedString, onClick = { offset ->
                 annotatedString.getStringAnnotations(tag = "Privacy", start = offset, end = offset)
                     .firstOrNull()?.let {
-                    val telegram = Intent(Intent.ACTION_VIEW, Uri.parse(it.item))
-                    startActivity(telegram)
-                }
+                        val telegram = Intent(Intent.ACTION_VIEW, Uri.parse(it.item))
+                        startActivity(telegram)
+                    }
 
                 annotatedString.getStringAnnotations(tag = "Terms", start = offset, end = offset)
                     .firstOrNull()?.let {
-                    val telegram = Intent(Intent.ACTION_VIEW, Uri.parse(it.item))
-                    startActivity(telegram)
-                }
+                        val telegram = Intent(Intent.ACTION_VIEW, Uri.parse(it.item))
+                        startActivity(telegram)
+                    }
             })
 
         }
@@ -319,8 +336,9 @@ class LoginActivity : ComponentActivity() {
     @Composable
     fun GreetingPreview() {
         ComposeTimerTheme {
+            val viewModel = viewModel<LoginViewModel>()
             Surface(modifier = Modifier.fillMaxSize()) {
-                Greeting()
+                Greeting(viewModel)
             }
         }
     }

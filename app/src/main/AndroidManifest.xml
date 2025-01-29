@@ -23,6 +23,11 @@
             android:label="@string/title_activity_login"
             android:theme="@style/Theme.ComposeTimer" />
         <activity
+            android:name=".home.LandingActivity"
+            android:exported="false"
+            android:label="@string/title_activity_landing"
+            android:theme="@style/Theme.ComposeTimer" />
+        <activity
             android:name=".splash.SplashActivityView"
             android:exported="true"
             android:theme="@style/Theme.ComposeTimer">

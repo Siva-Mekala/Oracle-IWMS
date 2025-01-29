@@ -10,7 +10,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.plcoding.focusfun"
+        applicationId "com.plcoding.oraclewms"
         minSdk 26
         targetSdk 34
         versionCode 107
@@ -51,13 +51,17 @@ android {
     buildTypes {
 
         release {
-            def baseUrl = "https://prod.focused.fun/"
-            buildConfigField("String", "SEND_OTP", "\"${baseUrl}api/focus/send-otp\"")
+            def baseUrl = "http://170.64.223.178:3000/"
+            buildConfigField("String", "BASE_URL", "\"${baseUrl}\"")
+            buildConfigField("String", "START_SHELL", "\"${baseUrl}start-shell\"")
+            buildConfigField("String", "SEND_COMMAND", "\"${baseUrl}send-command\"")
         }
 
         debug {
-            def baseUrl = "https://prod.focused.fun/"
-            buildConfigField("String", "SEND_OTP", "\"${baseUrl}api/focus/send-otp\"")
+            def baseUrl = "http://170.64.223.178:3000/"
+            buildConfigField("String", "BASE_URL", "\"${baseUrl}\"")
+            buildConfigField("String", "START_SHELL", "\"${baseUrl}start-shell\"")
+            buildConfigField("String", "SEND_COMMAND", "\"${baseUrl}send-command\"")
         }
     }
 }
