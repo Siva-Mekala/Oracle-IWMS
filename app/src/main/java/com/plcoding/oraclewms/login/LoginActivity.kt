@@ -18,11 +18,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Lock
@@ -191,8 +193,23 @@ class LoginActivity : ComponentActivity() {
         }
         if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading) LoaderScreen()
         else if(cmdState is CommandUiState.Success) {
-            val intent = Intent(this, LandingActivity::class.java)
-            startActivity(intent)
+            cmdState.response.let {
+                if (it == null) return@let
+                val controls = it.controls?.get(0)
+                it.popups.let { ups->
+                    if (ups == null || ups.isEmpty()){
+                        val intent = Intent(this, LandingActivity::class.java)
+                        startActivity(intent)
+                    } else {
+                        AlertDialogExample({
+                            viewModel.sendCommand("mySessionID123456", "\u0001")
+                        }, {
+                            finish()
+                        }, "Alert", ups[0].content, "Yes", "No")
+                    }
+                }
+            }
+
         }
     }
 
@@ -361,4 +378,44 @@ fun LoaderScreen() {
                 )
             )) {
     }
+}
+
+@Composable
+fun AlertDialogExample(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+    dialogTitle: String,
+    dialogText: String,
+    yes: String,
+    no: String
+) {
+    AlertDialog(
+        title = {
+            androidx.compose.material.Text(text = dialogTitle)
+        },
+        text = {
+            androidx.compose.material.Text(text = dialogText)
+        },
+        onDismissRequest = {
+            onDismissRequest()
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirmation()
+                }
+            ) {
+                androidx.compose.material.Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton (
+                onClick = {
+                    onDismissRequest()
+                }
+            ) {
+                androidx.compose.material.Text("Dismiss")
+            }
+        }
+    )
 }

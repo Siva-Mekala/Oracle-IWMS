@@ -1,11 +1,15 @@
 package com.plcoding.oraclewms.login
 
 import android.util.Log
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import com.google.gson.JsonObject
 import com.plcoding.oraclewms.BaseApiInterface
 import com.plcoding.oraclewms.BuildConfig
+import com.plcoding.oraclewms.api.ApiResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -29,19 +33,19 @@ class LoginViewModel : ViewModel() {
             .sendCommand(
                 BuildConfig.SEND_COMMAND,
                 obj
-            ).enqueue(object : Callback<JsonObject> {
+            ).enqueue(object : Callback<ApiResponse> {
                 override fun onResponse(
-                    call: Call<JsonObject>,
-                    response: Response<JsonObject>
+                    call: Call<ApiResponse>,
+                    response: Response<ApiResponse>
                 ) {
                     if (response.isSuccessful) {
-                        cmdState = CommandUiState.Success(true)
+                        cmdState = CommandUiState.Success(response.body())
                     } else {
                         cmdState = CommandUiState.Error
                     }
                 }
 
-                override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
                     cmdState = CommandUiState.Error
                 }
             })
@@ -63,23 +67,22 @@ class LoginViewModel : ViewModel() {
             .startShell(
                 BuildConfig.START_SHELL,
                 obj
-            ).enqueue(object : Callback<JsonObject> {
+            ).enqueue(object : Callback<ApiResponse> {
                 override fun onResponse(
-                    call: Call<JsonObject>,
-                    response: Response<JsonObject>
+                    call: Call<ApiResponse>,
+                    response: Response<ApiResponse>
                 ) {
                     if (response.isSuccessful) {
-                        shellState = ShellUiState.Success(true)
+                        shellState = ShellUiState.Success(response.body())
                         sendCommand(id, "${email.value}\t${password.value}\n")
                     } else {
                         shellState = ShellUiState.Error
                     }
                 }
 
-                override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
                     shellState = ShellUiState.Error
                 }
             })
     }
-
 }

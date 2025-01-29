@@ -3,6 +3,7 @@ package com.plcoding.oraclewms
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
+import com.plcoding.oraclewms.api.ApiResponse
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
@@ -20,13 +21,13 @@ interface BaseApiInterface {
     fun startShell(
         @Url url: String,
         @Body request: JsonObject
-    ): Call<JsonObject>
+    ): Call<ApiResponse>
 
     @POST
     fun sendCommand(
         @Url url: String,
         @Body request: JsonObject
-    ): Call<JsonObject>
+    ): Call<ApiResponse>
 
     companion object {
 
