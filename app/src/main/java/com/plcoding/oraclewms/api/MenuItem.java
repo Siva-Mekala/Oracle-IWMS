@@ -1,9 +1,14 @@
 package com.plcoding.oraclewms.api;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class MenuItem {
+import java.io.Serializable;
+
+public class MenuItem implements Serializable {
 
     @SerializedName("type")
     @Expose
@@ -51,4 +56,35 @@ public class MenuItem {
         this.lineNumber = lineNumber;
     }
 
+//    @Override
+//    public int describeContents() {
+//        return 0;
+//    }
+//
+//    @Override
+//    public void writeToParcel(Parcel dest, int arg1) {
+//        dest.writeInt(optionNumber);
+//        dest.writeString(optionName);
+//        dest.writeInt(lineNumber);
+//        dest.writeString(value);
+//        dest.writeString(type);
+//    }
+//
+//    public MenuItem(Parcel in) {
+//        optionNumber = in.readInt();
+//        optionName = in.readString();
+//        lineNumber = in.readInt();
+//        value = in.readString();
+//        type = in.readString();
+//    }
+//
+//    public static final Parcelable.Creator<MenuItem> CREATOR = new Parcelable.Creator<MenuItem>() {
+//        public MenuItem createFromParcel(Parcel in) {
+//            return new MenuItem(in);
+//        }
+//
+//        public MenuItem[] newArray(int size) {
+//            return new MenuItem[size];
+//        }
+//    };
 }

@@ -3,7 +3,9 @@ package com.plcoding.oraclewms.api;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class CursorPosition {
+import java.io.Serializable;
+
+public class CursorPosition implements Serializable {
     @SerializedName("row")
     @Expose
     private Integer row;

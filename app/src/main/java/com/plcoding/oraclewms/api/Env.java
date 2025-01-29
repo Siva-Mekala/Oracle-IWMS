@@ -3,7 +3,9 @@ package com.plcoding.oraclewms.api;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Env {
+import java.io.Serializable;
+
+public class Env implements Serializable {
     @SerializedName("line_number")
     @Expose
     private Integer lineNumber;

@@ -1,7 +1,7 @@
 package com.plcoding.oraclewms.home
 
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -9,13 +9,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.IconButton
 import androidx.compose.material.TopAppBar
@@ -27,6 +30,8 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FloatingActionButton
@@ -45,8 +50,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -56,6 +64,8 @@ import androidx.navigation.compose.rememberNavController
 import com.plcoding.focusfun.landing.DashBoardScreen
 import com.plcoding.focusfun.landing.HomeScreen
 import com.plcoding.focusfun.landing.LandingViewModel
+import com.plcoding.oraclewms.R
+import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.ui.theme.ComposeTimerTheme
 import kotlinx.coroutines.launch
 
@@ -63,10 +73,14 @@ class LandingActivity : ComponentActivity() {
     private val TAG = LandingActivity::class.java.simpleName
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var items = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            intent.getSerializableExtra("response", ApiResponse::class.java)
+        else intent.getSerializableExtra("response") as ApiResponse
         setContent {
             ComposeTimerTheme {
                 val modifier = Modifier.fillMaxSize()
                 val viewModel = viewModel<LandingViewModel>()
+                viewModel.setResponse(items)
                 DashboardActivityScreen(
                     modifier,
                     viewModel
@@ -98,7 +112,8 @@ class LandingActivity : ComponentActivity() {
                                     if (isClosed) open() else close()
                                 }
                             }
-                        }
+                        },
+                        viewModel
                     )
                 }
             }
@@ -120,7 +135,8 @@ class LandingActivity : ComponentActivity() {
                             HomeScreen(
                                 modifier,
                                 navController,
-                                viewModel
+                                viewModel,
+                                viewModel.getResponse()
                             )
                         }
                         composable(DashBoardScreen.Wallet.route) {
@@ -134,19 +150,30 @@ class LandingActivity : ComponentActivity() {
 
     @Composable
     fun DrawerContentComponent(
-        closeDrawer: () -> Unit
+        closeDrawer: () -> Unit,
+        viewModel: LandingViewModel
     ) {
-        var info = arrayListOf<HomeInfo>()
-        info.add(HomeInfo("Env", "dev"))
-        info.add(HomeInfo("Company", "Oracle"))
-        info.add(HomeInfo("Facility", "WH1"))
-        LazyColumn (verticalArrangement = Arrangement.spacedBy(15.dp), modifier = Modifier.padding(top = 15.dp)){
-            items(info.size){
-                Row {
-                    Text(text = "${info.get(it).header}: ", modifier = Modifier.padding(start = 15.dp))
-                    Text(text = info.get(it).subHeader)
+        Column {
+            var item = viewModel.getResponse()
+            var info = arrayListOf<HomeInfo>()
+            info.add(HomeInfo("Env", item?.env?.value ?: ""))
+            info.add(HomeInfo("Company", item?.appName?.value ?: ""))
+            info.add(HomeInfo("Facility", item?.facilityName?.value ?: ""))
+            LazyColumn (verticalArrangement = Arrangement.spacedBy(20.dp), modifier = Modifier.padding(15.dp)){
+                items(info.size){
+                    Row {
+                        Text(text = "${info.get(it).header}: ", fontFamily = FontFamily(Font(
+                            R.font.spacegrotesk_medium)),
+                            fontSize = 15.sp, color = Color.Black)
+                        Text(text = info.get(it).subHeader, fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                            fontSize = 15.sp, color = Color.Black)
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.padding(20.dp))
+            Text(text = "Logout", modifier = Modifier.padding(start = 15.dp), fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                fontSize = 15.sp, color = Color.Black)
         }
     }
 

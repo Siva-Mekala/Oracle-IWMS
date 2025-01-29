@@ -192,18 +192,22 @@ class LoginActivity : ComponentActivity() {
         }
         if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading) LoaderScreen()
         else if(cmdState is CommandUiState.Success) {
-            cmdState.response.let {
+            cmdState.response?.let {
                 if (it == null) return@let
                 val controls = it.controls?.get(0)
                 it.popups.let { ups->
                     if (ups == null || ups.isEmpty()){
                         val intent = Intent(this, LandingActivity::class.java)
+                        var bundle = Bundle()
+                        bundle.putSerializable("response", it)
+                        intent.putExtras(bundle)
                         startActivity(intent)
+                        finish()
                     } else {
                         AlertDialogExample({
-                            viewModel.sendCommand("mySessionID123456", "\u0001")
-                        }, {
                             finish()
+                        }, {
+                            viewModel.sendCommand("mySessionID123456", "\u0001")
                         }, "Alert", ups[0].content, "Yes", "No")
                     }
                 }
@@ -397,7 +401,7 @@ fun AlertDialogExample(
             androidx.compose.material.Text(text = dialogText)
         },
         onDismissRequest = {
-            onDismissRequest()
+            //onDismissRequest()
         },
         confirmButton = {
             TextButton(

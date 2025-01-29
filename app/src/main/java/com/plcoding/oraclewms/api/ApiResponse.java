@@ -3,9 +3,11 @@ package com.plcoding.oraclewms.api;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
-public class ApiResponse {
+public class ApiResponse implements Serializable {
     @SerializedName("app_name")
     @Expose
     private AppName appName;
@@ -17,19 +19,19 @@ public class ApiResponse {
     private Env env;
     @SerializedName("controls")
     @Expose
-    private List<Control> controls;
+    private ArrayList<Control> controls;
     @SerializedName("text")
     @Expose
-    private List<Text> text;
+    private ArrayList<Text> text;
     @SerializedName("form_fields")
     @Expose
-    private List<FormField> formFields;
+    private ArrayList<FormField> formFields;
     @SerializedName("menu_items")
     @Expose
-    private List<MenuItem> menuItems;
+    private ArrayList<MenuItem> menuItems;
     @SerializedName("popups")
     @Expose
-    private List<Popup> popups;
+    private ArrayList<Popup> popups;
     @SerializedName("cursor_position")
     @Expose
     private CursorPosition cursorPosition;
@@ -51,34 +53,34 @@ public class ApiResponse {
     public void setEnv(Env env) {
         this.env = env;
     }
-    public List<Control> getControls() {
+    public ArrayList<Control> getControls() {
         return controls;
     }
-    public void setControls(List<Control> controls) {
+    public void setControls(ArrayList<Control> controls) {
         this.controls = controls;
     }
-    public List<Text> getText() {
+    public ArrayList<Text> getText() {
         return text;
     }
-    public void setText(List<Text> text) {
+    public void setText(ArrayList<Text> text) {
         this.text = text;
     }
-    public List<FormField> getFormFields() {
+    public ArrayList<FormField> getFormFields() {
         return formFields;
     }
-    public void setFormFields(List<FormField> formFields) {
+    public void setFormFields(ArrayList<FormField> formFields) {
         this.formFields = formFields;
     }
-    public List<MenuItem> getMenuItems() {
+    public ArrayList<MenuItem> getMenuItems() {
         return menuItems;
     }
-    public void setMenuItems(List<MenuItem> menuItems) {
+    public void setMenuItems(ArrayList<MenuItem> menuItems) {
         this.menuItems = menuItems;
     }
     public List<Popup> getPopups() {
         return popups;
     }
-    public void setPopups(List<Popup> popups) {
+    public void setPopups(ArrayList<Popup> popups) {
         this.popups = popups;
     }
     public CursorPosition getCursorPosition() {

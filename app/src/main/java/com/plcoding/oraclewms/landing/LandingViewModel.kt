@@ -4,10 +4,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.plcoding.oraclewms.api.ApiResponse
 
 class LandingViewModel : ViewModel() {
 
     private val TAG = LandingViewModel::class.java.simpleName
+    private var response : ApiResponse? = null
+    fun setResponse(res : ApiResponse?){
+        response = res
+    }
+
+    fun getResponse() : ApiResponse?{
+        return response
+    }
 
 //    var marketUiState: MarketUiState by mutableStateOf(MarketUiState.Empty)
 //        private set

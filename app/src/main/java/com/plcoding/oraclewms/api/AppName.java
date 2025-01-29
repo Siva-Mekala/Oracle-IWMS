@@ -3,7 +3,9 @@ package com.plcoding.oraclewms.api;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class AppName {
+import java.io.Serializable;
+
+public class AppName implements Serializable {
 
     @SerializedName("line_number")
     @Expose
