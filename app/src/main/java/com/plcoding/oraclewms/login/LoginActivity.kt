@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +44,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -67,18 +69,18 @@ class LoginActivity : ComponentActivity() {
             ComposeTimerTheme {
                 val viewModel = viewModel<LoginViewModel>()
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    Greeting(viewModel)
+                    Greeting(viewModel, viewModel.shellState, viewModel.cmdState)
                 }
             }
         }
     }
 
     @Composable
-    fun Greeting(viewModel: LoginViewModel) {
+    fun Greeting(viewModel: LoginViewModel, shellState: ShellUiState, cmdState: CommandUiState) {
         var checkState = rememberSaveable { mutableStateOf(false) }
         var email = rememberSaveable { mutableStateOf("") }
         var password = rememberSaveable { mutableStateOf("") }
-        var environment by rememberSaveable { mutableStateOf("") }
+        var environment by rememberSaveable { mutableStateOf("dev") }
         Box(contentAlignment = Alignment.Center) {
             Column {
                 Text(
@@ -172,9 +174,7 @@ class LoginActivity : ComponentActivity() {
                         })
                         Button(
                             onClick = {
-                                ///viewModel.startShell("mySessionID123456", environment)
-                                val intent = Intent(this@LoginActivity, LandingActivity::class.java)
-                                startActivity(intent)
+                                viewModel.startShell("mySessionID123456", environment, email, password)
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -188,6 +188,11 @@ class LoginActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+        if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading) LoaderScreen()
+        else if(cmdState is CommandUiState.Success) {
+            val intent = Intent(this, LandingActivity::class.java)
+            startActivity(intent)
         }
     }
 
@@ -338,8 +343,22 @@ class LoginActivity : ComponentActivity() {
         ComposeTimerTheme {
             val viewModel = viewModel<LoginViewModel>()
             Surface(modifier = Modifier.fillMaxSize()) {
-                Greeting(viewModel)
+                Greeting(viewModel, viewModel.shellState, viewModel.cmdState)
             }
         }
+    }
+}
+
+@Composable
+fun LoaderScreen() {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .clickable { }
+            .background(
+                Brush.linearGradient(
+                    listOf(Color.Gray.copy(0.5f), Color.Gray.copy(0.5f))
+                )
+            )) {
     }
 }

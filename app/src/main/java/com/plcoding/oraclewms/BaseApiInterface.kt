@@ -20,13 +20,13 @@ interface BaseApiInterface {
     fun startShell(
         @Url url: String,
         @Body request: JsonObject
-    ): Call<String>
+    ): Call<JsonObject>
 
     @POST
     fun sendCommand(
         @Url url: String,
         @Body request: JsonObject
-    ): Call<String>
+    ): Call<JsonObject>
 
     companion object {
 
