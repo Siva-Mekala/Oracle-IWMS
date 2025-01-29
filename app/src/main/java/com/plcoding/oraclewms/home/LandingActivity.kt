@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.DropdownMenu
 import androidx.compose.material.IconButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -34,6 +35,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -44,8 +46,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -192,6 +198,7 @@ class LandingActivity : ComponentActivity() {
 
     @Composable
     fun bottomAppBar(){
+        var showMenu by remember { mutableStateOf(false) }
         BottomAppBar (
             actions = {
                 IconButton (onClick = { /* do something */ }) {
@@ -211,17 +218,58 @@ class LandingActivity : ComponentActivity() {
                 }
             },
             floatingActionButton = {
-                FloatingActionButton (
-                    onClick = { /* do something */ },
-                    containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
-                    elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+                var expanded by remember { mutableStateOf(false) }
+                // Placeholder list of 100 strings for demonstration
+                val menuItemData = List(10) { "Option ${it + 1}" }
+
+                Box(
+                    modifier = Modifier
+                        .padding(16.dp)
                 ) {
-                    Icon(Icons.Filled.MoreVert, "Localized description")
+                    IconButton(onClick = { expanded = !expanded }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        menuItemData.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = { /* Do something... */ }
+                            )
+                        }
+                    }
                 }
             }
         )
     }
+    @Composable
+    fun LongBasicDropdownMenu() {
+        var expanded by remember { mutableStateOf(false) }
+        // Placeholder list of 100 strings for demonstration
+        val menuItemData = List(10) { "Option ${it + 1}" }
 
+        Box(
+            modifier = Modifier
+                .padding(16.dp)
+        ) {
+            IconButton(onClick = { expanded = !expanded }) {
+                Icon(Icons.Default.MoreVert, contentDescription = "More options")
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                menuItemData.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = { /* Do something... */ }
+                    )
+                }
+            }
+        }
+    }
     @Composable
     fun DashBoardToolBar(drawerState: DrawerState) {
         val scope = rememberCoroutineScope()
