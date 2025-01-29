@@ -89,7 +89,6 @@ class LoginActivity : ComponentActivity() {
                     "iMWS", fontFamily = FontFamily(Font(R.font.jersey_normal)),
                     style = TextStyle(color = Color.Black, fontSize = 50.sp),
                     modifier = Modifier
-                        .padding(30.dp)
                         .align(Alignment.CenterHorizontally)
                 )
 
@@ -103,13 +102,13 @@ class LoginActivity : ComponentActivity() {
                             "Login", fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
                             style = TextStyle(color = Color.Black, fontSize = 30.sp),
                             modifier = Modifier
-                                .padding(20.dp)
+                                .padding(10.dp)
                                 .align(Alignment.CenterHorizontally)
                         )
                         OutlinedTextField(
                             label = {
                                 Text(
-                                    "UserName/Email",
+                                    "UserName",
                                     color = Color.Black,
                                     fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                                 )
@@ -126,7 +125,7 @@ class LoginActivity : ComponentActivity() {
                             onValueChange = { email.value = it },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(15.dp),
+                                .padding(15.dp ,15.dp, 15.dp, 5.dp ),
                             colors = TextFieldDefaults.colors(
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
@@ -152,7 +151,7 @@ class LoginActivity : ComponentActivity() {
                             onValueChange = { password.value = it },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(15.dp),
+                                .padding(15.dp ,15.dp, 15.dp, 5.dp ),
                             colors = TextFieldDefaults.colors(
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
@@ -219,7 +218,7 @@ class LoginActivity : ComponentActivity() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    25.dp
+                    15.dp
                 ), verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
@@ -227,6 +226,7 @@ class LoginActivity : ComponentActivity() {
                 onCheckedChange = { checkState.value = it },
                 modifier = Modifier.padding(),
                 enabled = true,
+
                 colors = CheckboxDefaults.colors(
                     checkedColor = Color.Green,
                     uncheckedColor = Color.Black,
@@ -238,7 +238,7 @@ class LoginActivity : ComponentActivity() {
                 withStyle(
                     style = SpanStyle(
                         color = Color.Black,
-                        fontSize = 20.sp,
+                        fontSize = 15.sp,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                     )
                 ) {
@@ -248,7 +248,7 @@ class LoginActivity : ComponentActivity() {
                 withStyle(
                     style = SpanStyle(
                         color = Color.Blue,
-                        fontSize = 20.sp,
+                        fontSize = 15.sp,
                         textDecoration = TextDecoration.Underline,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                     )
@@ -259,7 +259,7 @@ class LoginActivity : ComponentActivity() {
                 withStyle(
                     style = SpanStyle(
                         color = Color.Blue,
-                        fontSize = 20.sp,
+                        fontSize = 15.sp,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                     )
                 ) {
@@ -270,7 +270,7 @@ class LoginActivity : ComponentActivity() {
                 withStyle(
                     style = SpanStyle(
                         color = Color.Blue,
-                        fontSize = 20.sp,
+                        fontSize = 15.sp,
                         textDecoration = TextDecoration.Underline,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                     )
