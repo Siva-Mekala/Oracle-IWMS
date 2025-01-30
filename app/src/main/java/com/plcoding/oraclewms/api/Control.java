@@ -1,5 +1,7 @@
 package com.plcoding.oraclewms.api;
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -35,4 +37,9 @@ public class Control implements Serializable {
         this.lineNumber = lineNumber;
     }
 
+    @NonNull
+    @Override
+    public String toString() {
+        return ""+lineNumber;
+    }
 }

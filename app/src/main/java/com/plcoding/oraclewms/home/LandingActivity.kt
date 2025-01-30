@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.IconButton
@@ -30,14 +29,9 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.BottomAppBarDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -72,6 +66,8 @@ import com.plcoding.focusfun.landing.HomeScreen
 import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.api.ApiResponse
+import com.plcoding.oraclewms.landing.DetailsScreen
+import com.plcoding.oraclewms.login.CommandUiState
 import com.plcoding.oraclewms.ui.theme.ComposeTimerTheme
 import kotlinx.coroutines.launch
 
@@ -86,7 +82,7 @@ class LandingActivity : ComponentActivity() {
             ComposeTimerTheme {
                 val modifier = Modifier.fillMaxSize()
                 val viewModel = viewModel<LandingViewModel>()
-                viewModel.setResponse(items)
+                viewModel.setState(CommandUiState.Success(items))
                 DashboardActivityScreen(
                     modifier,
                     viewModel
@@ -130,7 +126,7 @@ class LandingActivity : ComponentActivity() {
                 DashBoardToolBar(drawerState)
             },
                 bottomBar = {
-                    bottomAppBar()
+                    bottomAppBar(viewModel, when(viewModel.cmdState) { is CommandUiState.Success -> (viewModel.cmdState as CommandUiState.Success).response else -> null })
                 }) { innerPadding ->
                 Box(modifier = modifier.padding(innerPadding)) {
                     NavHost(
@@ -142,10 +138,16 @@ class LandingActivity : ComponentActivity() {
                                 modifier,
                                 navController,
                                 viewModel,
-                                viewModel.getResponse()
+                                viewModel.cmdState
                             )
                         }
                         composable(DashBoardScreen.Wallet.route) {
+                            DetailsScreen(
+                                modifier,
+                                navController,
+                                viewModel,
+                                viewModel.cmdState
+                            )
                         }
                     }
                 }
@@ -160,19 +162,33 @@ class LandingActivity : ComponentActivity() {
         viewModel: LandingViewModel
     ) {
         Column {
-            var item = viewModel.getResponse()
-            var info = arrayListOf<HomeInfo>()
-            info.add(HomeInfo("Env", item?.env?.value ?: ""))
-            info.add(HomeInfo("Company", item?.appName?.value ?: ""))
-            info.add(HomeInfo("Facility", item?.facilityName?.value ?: ""))
-            LazyColumn (verticalArrangement = Arrangement.spacedBy(20.dp), modifier = Modifier.padding(15.dp)){
-                items(info.size){
-                    Row {
-                        Text(text = "${info.get(it).header}: ", fontFamily = FontFamily(Font(
-                            R.font.spacegrotesk_medium)),
-                            fontSize = 15.sp, color = Color.Black)
-                        Text(text = info.get(it).subHeader, fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                            fontSize = 15.sp, color = Color.Black)
+            var item = viewModel.cmdState
+            if(item is CommandUiState.Success) {
+                var info = arrayListOf<HomeInfo>()
+                info.add(HomeInfo("Env", item.response?.env?.value ?: ""))
+                info.add(HomeInfo("Company", item.response?.appName?.value ?: ""))
+                info.add(HomeInfo("Facility", item.response?.facilityName?.value ?: ""))
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                    modifier = Modifier.padding(15.dp)
+                ) {
+                    items(info.size) {
+                        Row {
+                            Text(
+                                text = "${info.get(it).header}: ", fontFamily = FontFamily(
+                                    Font(
+                                        R.font.spacegrotesk_medium
+                                    )
+                                ),
+                                fontSize = 15.sp, color = Color.Black
+                            )
+                            Text(
+                                text = info.get(it).subHeader,
+                                fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                                fontSize = 15.sp,
+                                color = Color.Black
+                            )
+                        }
                     }
                 }
             }
@@ -197,31 +213,38 @@ class LandingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun bottomAppBar(){
-        var showMenu by remember { mutableStateOf(false) }
+    fun bottomAppBar(viewModel: LandingViewModel, response: ApiResponse?) {
         BottomAppBar (
             actions = {
-                IconButton (onClick = { /* do something */ }) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Localized description")
-                }
-                IconButton(onClick = { /* do something */ }) {
-                    Icon(
-                        Icons.Filled.KeyboardArrowUp,
-                        contentDescription = "Localized description",
-                    )
-                }
-                IconButton(onClick = { /* do something */ }) {
-                    Icon(
-                        Icons.Filled.KeyboardArrowDown,
-                        contentDescription = "Localized description",
-                    )
+                response?.controls?.let {
+                    if (it.toString().contains("22"))
+                        IconButton (onClick = {
+                            viewModel.sendCommand("mySessionID123456", "\u0017")
+                        }) {
+                            Icon(Icons.Filled.ArrowBack, contentDescription = "Localized description")
+                        }
+                    if (it.toString().contains("19"))
+                        IconButton(onClick = {
+                            viewModel.sendCommand("mySessionID123456", "\u0015")
+                        }) {
+                            Icon(
+                                Icons.Filled.KeyboardArrowUp,
+                                contentDescription = "Localized description",
+                            )
+                        }
+                    if (it.toString().contains("20"))
+                        IconButton(onClick = {
+                            viewModel.sendCommand("mySessionID123456","\u0004")
+                        }) {
+                        Icon(
+                            Icons.Filled.KeyboardArrowDown,
+                            contentDescription = "Localized description",
+                        )
+                    }
                 }
             },
             floatingActionButton = {
                 var expanded by remember { mutableStateOf(false) }
-                // Placeholder list of 100 strings for demonstration
-                val menuItemData = List(10) { "Option ${it + 1}" }
-
                 Box(
                     modifier = Modifier
                         .padding(16.dp)
@@ -233,9 +256,10 @@ class LandingActivity : ComponentActivity() {
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
                     ) {
-                        menuItemData.forEach { option ->
+                        response?.controls?.forEach {
+                            if (it.lineNumber == 20 || it.lineNumber == 19 || it.lineNumber == 22) return@forEach
                             DropdownMenuItem(
-                                text = { Text(option) },
+                                text = { Text(it.value) },
                                 onClick = { /* Do something... */ }
                             )
                         }
@@ -244,32 +268,7 @@ class LandingActivity : ComponentActivity() {
             }
         )
     }
-    @Composable
-    fun LongBasicDropdownMenu() {
-        var expanded by remember { mutableStateOf(false) }
-        // Placeholder list of 100 strings for demonstration
-        val menuItemData = List(10) { "Option ${it + 1}" }
 
-        Box(
-            modifier = Modifier
-                .padding(16.dp)
-        ) {
-            IconButton(onClick = { expanded = !expanded }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More options")
-            }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                menuItemData.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option) },
-                        onClick = { /* Do something... */ }
-                    )
-                }
-            }
-        }
-    }
     @Composable
     fun DashBoardToolBar(drawerState: DrawerState) {
         val scope = rememberCoroutineScope()

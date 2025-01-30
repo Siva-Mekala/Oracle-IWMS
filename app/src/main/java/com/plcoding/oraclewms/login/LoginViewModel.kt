@@ -1,9 +1,6 @@
 package com.plcoding.oraclewms.login
 
 import android.util.Log
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import com.google.gson.JsonObject
@@ -14,11 +11,14 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class LoginViewModel : ViewModel() {
+open class LoginViewModel : ViewModel() {
 
-    val TAG = LoginActivity::class.java.simpleName
+    open var TAG = LoginActivity::class.java.simpleName
     var cmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
         private set
+    fun setState(res : CommandUiState){
+        cmdState = res
+    }
 
     var shellState: ShellUiState by mutableStateOf(ShellUiState.Empty)
         private set
