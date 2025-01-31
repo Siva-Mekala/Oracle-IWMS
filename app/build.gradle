@@ -112,6 +112,7 @@ dependencies {
 
     implementation "androidx.work:work-runtime-ktx:$work_version"
     implementation "androidx.graphics:graphics-shapes:1.0.1"
+    implementation 'com.google.android.gms:play-services-code-scanner:16.1.0'
 
     // Import the Firebase BoM
     //implementation platform('com.google.firebase:firebase-bom:30.0.1')
