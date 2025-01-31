@@ -47,6 +47,7 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+    namespace 'com.plcoding.oraclewms'
 
     buildTypes {
 
@@ -55,6 +56,7 @@ android {
             buildConfigField("String", "BASE_URL", "\"${baseUrl}\"")
             buildConfigField("String", "START_SHELL", "\"${baseUrl}start-shell\"")
             buildConfigField("String", "SEND_COMMAND", "\"${baseUrl}send-command\"")
+            buildConfigField("String", "ENVIRONMENTS", "\"${baseUrl}environments\"")
         }
 
         debug {
@@ -62,6 +64,7 @@ android {
             buildConfigField("String", "BASE_URL", "\"${baseUrl}\"")
             buildConfigField("String", "START_SHELL", "\"${baseUrl}start-shell\"")
             buildConfigField("String", "SEND_COMMAND", "\"${baseUrl}send-command\"")
+            buildConfigField("String", "ENVIRONMENTS", "\"${baseUrl}environments\"")
         }
     }
 }
