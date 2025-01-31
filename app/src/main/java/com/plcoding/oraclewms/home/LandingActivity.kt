@@ -63,6 +63,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.compose.AppTheme
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.plcoding.focusfun.landing.DashBoardScreen
 import com.plcoding.focusfun.landing.HomeScreen
 import com.plcoding.focusfun.landing.LandingViewModel
@@ -195,7 +196,9 @@ class LandingActivity : ComponentActivity() {
             }
 
             Spacer(modifier = Modifier.padding(20.dp))
-            Text(text = "Logout", modifier = Modifier.padding(start = 15.dp), fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+            Text(text = "Logout", modifier = Modifier.clickable {
+
+            }.padding(start = 15.dp), fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
                 fontSize = 15.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer)
         }
     }
