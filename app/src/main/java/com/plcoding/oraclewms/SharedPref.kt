@@ -8,6 +8,7 @@ object SharedPref {
     private const val SHARED_FILE_NAME = "fun_focus_shared_pref"
     private const val KEY_AUTH_TOKEN = "AUTH_TOKEN"
     private const val KEY_IS_USER_LOGGED_IN = "IS_USER_LOGGED_IN"
+    private const val KEY_ENV = "ENV"
 
     private lateinit var sharedPref: SharedPreferences
     private lateinit var context: Context
@@ -25,6 +26,16 @@ object SharedPref {
 
     fun getToken(): String? {
         return sharedPref.getString(KEY_AUTH_TOKEN, null)
+    }
+
+    fun setEnv(env: String) {
+        val editor: SharedPreferences.Editor = sharedPref.edit()
+        editor.putString(KEY_ENV, env)
+        editor.commit()
+    }
+
+    fun getEnv(): String? {
+        return sharedPref.getString(KEY_ENV, null)
     }
 
     fun setUserLoggedIn(state: Boolean) {
