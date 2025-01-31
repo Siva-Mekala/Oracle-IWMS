@@ -24,32 +24,41 @@ fun HomeScreen(
     modifier: Modifier,
     navController: NavController,
     viewModel: LandingViewModel,
-    response: CommandUiState
+    response: CommandUiState,
+    onItemClick: (Int) -> (Unit)
 ) {
     LaunchedEffect(Unit) {
         ///viewModel.fetchDashboardData()
     }
 
     if (response is CommandUiState.Success)
-        response.response?.let { res->
-        if (res.menuItems.isEmpty()) return@let
-        LazyColumn {
-            items(res.menuItems.size) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 15.dp, end = 15.dp, top = 15.dp).clickable {
-                            navController.navigate("Rewards")
-                        },
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary)
-                ) {
-                    Text(text = "${res.menuItems.get(it).value}", color = MaterialTheme.colorScheme.onSecondary, modifier = modifier.padding(15.dp), fontFamily = FontFamily(
-                        Font(
-                        R.font.spacegrotesk_medium)
-                    ),
-                        fontSize = 15.sp)
+        response.response?.let { res ->
+            if (res.menuItems.isEmpty()) return@let
+            LazyColumn {
+                items(res.menuItems.size) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 15.dp, end = 15.dp, top = 15.dp)
+                            .clickable {
+                                onItemClick(it)
+                                navController.navigate("Rewards")
+                            },
+                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary)
+                    ) {
+                        Text(
+                            text = "${res.menuItems.get(it).value}",
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            modifier = modifier.padding(15.dp),
+                            fontFamily = FontFamily(
+                                Font(
+                                    R.font.spacegrotesk_medium
+                                )
+                            ),
+                            fontSize = 15.sp
+                        )
+                    }
                 }
             }
         }
-    }
 }

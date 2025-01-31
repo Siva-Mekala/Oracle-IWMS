@@ -4,19 +4,18 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
-import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,11 +33,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
-import com.example.compose.AppTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.compose.AppTheme
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.login.LoginActivity
-import kotlinx.coroutines.delay
 
 class SplashActivityView : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +44,7 @@ class SplashActivityView : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val viewModel = viewModel<SplashViewModel>()
-            AppTheme  {
+            AppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     SplashScreen(viewModel, viewModel.getEnvState, onNavigate = this::startActivity)
                 }
@@ -83,29 +81,31 @@ class SplashActivityView : ComponentActivity() {
     }
 
     @Composable
-    fun SplashScreen(viewModel: SplashViewModel, envState:EnvironmentsUiState, onNavigate: () -> Unit = {}) {
+    fun SplashScreen(
+        viewModel: SplashViewModel,
+        envState: EnvironmentsUiState,
+        onNavigate: () -> Unit = {}
+    ) {
         val scale = remember {
-            Animatable(0f)
+            Animatable(1f)
         }
         // AnimationEffect
         LaunchedEffect(key1 = true) {
             viewModel.getEnvironments();
-            scale.animateTo(
-                targetValue = 0.7f,
-                animationSpec = tween(
-                    durationMillis = 2000,
-                    easing = {
-                        OvershootInterpolator(4f).getInterpolation(it)
-                    })
-            )
-            delay(2000L)
-            if(envState is EnvironmentsUiState.Success){
-                onNavigate()
-            }else{
-
-            }
-
+//            scale.animateTo(
+//                targetValue = 0.7f,
+//                animationSpec = tween(
+//                    durationMillis = 2000,
+//                    easing = {
+//                        OvershootInterpolator(4f).getInterpolation(it)
+//                    })
+            //   )
         }
+        if (envState is EnvironmentsUiState.Success) {
+            onNavigate()
+        } else {
+        }
+
 
         // Image
         Column(
@@ -115,7 +115,7 @@ class SplashActivityView : ComponentActivity() {
                 .fillMaxSize()
                 .background(
                     Brush.linearGradient(
-                        listOf(Color(0xFF531CB3), Color(0xFF8200C7))
+                        listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary)
                     )
                 )
         ) {
@@ -127,7 +127,7 @@ class SplashActivityView : ComponentActivity() {
                     fontFamily = FontFamily(Font(R.font.jersey_normal)),
                     fontSize = 50.sp,
                     lineHeight = 50.sp
-                ), color = Color.White
+                ), color = MaterialTheme.colorScheme.onPrimary
             )
         }
     }
@@ -136,7 +136,6 @@ class SplashActivityView : ComponentActivity() {
     @Composable
     fun SplashPreview() {
         val viewModel = viewModel<SplashViewModel>()
-
         AppTheme {
             Surface(modifier = Modifier.fillMaxSize()) {
                 SplashScreen(viewModel, viewModel.getEnvState)

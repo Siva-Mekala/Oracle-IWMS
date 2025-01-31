@@ -70,9 +70,12 @@ class LoginActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AppTheme  {
+            AppTheme {
                 val viewModel = viewModel<LoginViewModel>()
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.surface
+                ) {
                     Greeting(viewModel, viewModel.shellState, viewModel.cmdState)
                 }
             }
@@ -102,7 +105,10 @@ class LoginActivity : ComponentActivity() {
                     Column {
                         Text(
                             "Login", fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                            style = TextStyle(color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 30.sp),
+                            style = TextStyle(
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontSize = 30.sp
+                            ),
                             modifier = Modifier
                                 .padding(10.dp)
                                 .align(Alignment.CenterHorizontally)
@@ -127,7 +133,7 @@ class LoginActivity : ComponentActivity() {
                             onValueChange = { email.value = it },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(15.dp ,15.dp, 15.dp, 5.dp ),
+                                .padding(15.dp, 15.dp, 15.dp, 5.dp),
                             colors = TextFieldDefaults.colors(
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
@@ -153,7 +159,7 @@ class LoginActivity : ComponentActivity() {
                             onValueChange = { password.value = it },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(15.dp ,15.dp, 15.dp, 5.dp ),
+                                .padding(15.dp, 15.dp, 15.dp, 5.dp),
                             colors = TextFieldDefaults.colors(
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
@@ -174,10 +180,15 @@ class LoginActivity : ComponentActivity() {
                         SpinnerSample(listOf("dev", "stag", "prod"), "dev",
                             onSelectionChanged = {
                                 environment = it
-                        })
+                            })
                         Button(
                             onClick = {
-                                viewModel.startShell("mySessionID123456", environment, email, password)
+                                viewModel.startShell(
+                                    "mySessionID123456",
+                                    environment,
+                                    email,
+                                    password
+                                )
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -193,11 +204,11 @@ class LoginActivity : ComponentActivity() {
             }
         }
         if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading) LoaderScreen()
-        else if(cmdState is CommandUiState.Success) {
+        else if (cmdState is CommandUiState.Success) {
             cmdState.response?.let {
                 if (it == null) return@let
-                it.popups.let { ups->
-                    if (ups == null || ups.isEmpty()){
+                it.popups.let { ups ->
+                    if (ups == null || ups.isEmpty()) {
                         SharedPref.setUserLoggedIn(true)
                         val intent = Intent(this, LandingActivity::class.java)
                         var bundle = Bundle()
@@ -417,7 +428,7 @@ fun AlertDialogExample(
             }
         },
         dismissButton = {
-            TextButton (
+            TextButton(
                 onClick = {
                     onDismissRequest()
                 }

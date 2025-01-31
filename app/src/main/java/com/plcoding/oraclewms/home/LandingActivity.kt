@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -48,7 +47,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.Font
@@ -63,7 +61,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.compose.AppTheme
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.plcoding.focusfun.landing.DashBoardScreen
 import com.plcoding.focusfun.landing.HomeScreen
 import com.plcoding.focusfun.landing.LandingViewModel
@@ -77,7 +74,7 @@ class LandingActivity : ComponentActivity() {
     private val TAG = LandingActivity::class.java.simpleName
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var items = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        var items = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             intent.getSerializableExtra("response", ApiResponse::class.java)
         else intent.getSerializableExtra("response") as ApiResponse
         setContent {
@@ -105,10 +102,11 @@ class LandingActivity : ComponentActivity() {
         }
         val coroutineScope = rememberCoroutineScope()
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        var clickPosition by remember { mutableStateOf(0) }
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
-                ModalDrawerSheet (drawerContainerColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer){
+                ModalDrawerSheet(drawerContainerColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer) {
                     DrawerContentComponent(
                         closeDrawer = {
                             coroutineScope.launch {
@@ -124,11 +122,18 @@ class LandingActivity : ComponentActivity() {
         ) {
             Scaffold(modifier = modifier
                 .statusBarsPadding()
-                .navigationBarsPadding(), containerColor = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer, topBar = {
-                DashBoardToolBar(drawerState)
-            },
+                .navigationBarsPadding(),
+                containerColor = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer,
+                topBar = {
+                    DashBoardToolBar(drawerState)
+                },
                 bottomBar = {
-                    bottomAppBar(viewModel, when(viewModel.cmdState) { is CommandUiState.Success -> (viewModel.cmdState as CommandUiState.Success).response else -> null })
+                    bottomAppBar(
+                        viewModel, when (viewModel.cmdState) {
+                            is CommandUiState.Success -> (viewModel.cmdState as CommandUiState.Success).response
+                            else -> null
+                        }
+                    )
                 }) { innerPadding ->
                 Box(modifier = modifier.padding(innerPadding)) {
                     NavHost(
@@ -141,14 +146,17 @@ class LandingActivity : ComponentActivity() {
                                 navController,
                                 viewModel,
                                 viewModel.cmdState
-                            )
+                            ) {
+                                clickPosition = it
+                            }
                         }
                         composable(DashBoardScreen.Wallet.route) {
                             DetailsScreen(
                                 modifier,
                                 navController,
                                 viewModel,
-                                viewModel.cmdState
+                                viewModel.cmdState,
+                                clickPosition
                             )
                         }
                     }
@@ -165,7 +173,7 @@ class LandingActivity : ComponentActivity() {
     ) {
         Column {
             var item = viewModel.cmdState
-            if(item is CommandUiState.Success) {
+            if (item is CommandUiState.Success) {
                 var info = arrayListOf<HomeInfo>()
                 info.add(HomeInfo("Env", item.response?.env?.value ?: ""))
                 info.add(HomeInfo("Company", item.response?.appName?.value ?: ""))
@@ -177,12 +185,14 @@ class LandingActivity : ComponentActivity() {
                     items(info.size) {
                         Row {
                             Text(
-                                text = "${info.get(it).header}: ", fontFamily = FontFamily(
+                                text = "${info.get(it).header}: ",
+                                fontFamily = FontFamily(
                                     Font(
                                         R.font.spacegrotesk_medium
                                     )
                                 ),
-                                fontSize = 15.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
+                                fontSize = 15.sp,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
                             )
                             Text(
                                 text = info.get(it).subHeader,
@@ -196,17 +206,24 @@ class LandingActivity : ComponentActivity() {
             }
 
             Spacer(modifier = Modifier.padding(20.dp))
-            Text(text = "Logout", modifier = Modifier.clickable {
+            Text(
+                text = "Logout",
+                modifier = Modifier
+                    .clickable {
 
-            }.padding(start = 15.dp), fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                fontSize = 15.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer)
+                    }
+                    .padding(start = 15.dp),
+                fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                fontSize = 15.sp,
+                color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
+            )
         }
     }
 
     @Preview(showBackground = true)
     @Composable
     fun GreetingPreview2() {
-        AppTheme  {
+        AppTheme {
             val modifier = Modifier.fillMaxSize()
             val viewModel = viewModel<LandingViewModel>()
             DashboardActivityScreen(
@@ -218,14 +235,17 @@ class LandingActivity : ComponentActivity() {
 
     @Composable
     fun bottomAppBar(viewModel: LandingViewModel, response: ApiResponse?) {
-        BottomAppBar (
+        BottomAppBar(
             actions = {
                 response?.controls?.let {
                     if (it.toString().contains("22"))
-                        IconButton (onClick = {
+                        IconButton(onClick = {
                             viewModel.sendCommand("mySessionID123456", "\u0017")
                         }) {
-                            Icon(Icons.Filled.ArrowBack, contentDescription = "Localized description")
+                            Icon(
+                                Icons.Filled.ArrowBack,
+                                contentDescription = "Localized description"
+                            )
                         }
                     if (it.toString().contains("19"))
                         IconButton(onClick = {
@@ -238,13 +258,13 @@ class LandingActivity : ComponentActivity() {
                         }
                     if (it.toString().contains("20"))
                         IconButton(onClick = {
-                            viewModel.sendCommand("mySessionID123456","\u0004")
+                            viewModel.sendCommand("mySessionID123456", "\u0004")
                         }) {
-                        Icon(
-                            Icons.Filled.KeyboardArrowDown,
-                            contentDescription = "Localized description",
-                        )
-                    }
+                            Icon(
+                                Icons.Filled.KeyboardArrowDown,
+                                contentDescription = "Localized description",
+                            )
+                        }
                 }
             },
             floatingActionButton = {

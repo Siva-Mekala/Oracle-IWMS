@@ -1,12 +1,10 @@
 package com.plcoding.oraclewms.splash
 
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.google.gson.JsonObject
 import com.plcoding.oraclewms.BaseApiInterface
 import com.plcoding.oraclewms.BuildConfig
 import com.plcoding.oraclewms.api.EnvApiResponse
@@ -14,7 +12,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-open class SplashViewModel : ViewModel(){
+open class SplashViewModel : ViewModel() {
     open var TAG = SplashActivityView::class.java.simpleName
 
     var getEnvState: EnvironmentsUiState by mutableStateOf(EnvironmentsUiState.Empty)
