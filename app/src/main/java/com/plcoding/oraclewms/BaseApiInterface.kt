@@ -1,15 +1,18 @@
 package com.plcoding.oraclewms
 
+import android.os.Environment
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.plcoding.oraclewms.api.ApiResponse
+import com.plcoding.oraclewms.api.EnvApiResponse
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Url
 import java.util.concurrent.Executors
@@ -28,6 +31,12 @@ interface BaseApiInterface {
         @Url url: String,
         @Body request: JsonObject
     ): Call<ApiResponse>
+
+
+    @GET
+    fun environments(
+        @Url url: String
+    ): Call<EnvApiResponse>
 
     companion object {
 

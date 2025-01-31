@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import com.example.compose.AppTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.login.LoginActivity
 import kotlinx.coroutines.delay
@@ -44,9 +45,10 @@ class SplashActivityView : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val viewModel = viewModel<SplashViewModel>()
             AppTheme  {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    SplashScreen(onNavigate = this::startActivity)
+                    SplashScreen(viewModel, viewModel.getEnvState, onNavigate = this::startActivity)
                 }
             }
         }
@@ -81,12 +83,13 @@ class SplashActivityView : ComponentActivity() {
     }
 
     @Composable
-    fun SplashScreen(onNavigate: () -> Unit = {}) {
+    fun SplashScreen(viewModel: SplashViewModel, envState:EnvironmentsUiState, onNavigate: () -> Unit = {}) {
         val scale = remember {
             Animatable(0f)
         }
         // AnimationEffect
         LaunchedEffect(key1 = true) {
+            viewModel.getEnvironments();
             scale.animateTo(
                 targetValue = 0.7f,
                 animationSpec = tween(
@@ -96,7 +99,12 @@ class SplashActivityView : ComponentActivity() {
                     })
             )
             delay(2000L)
-            onNavigate()
+            if(envState is EnvironmentsUiState.Success){
+                onNavigate()
+            }else{
+
+            }
+
         }
 
         // Image
@@ -114,7 +122,7 @@ class SplashActivityView : ComponentActivity() {
             Text(
                 modifier = Modifier
                     .scale(scale.value)
-                    .padding(top = 15.dp, bottom = 10.dp), text = "iWMS",
+                    .padding(top = 15.dp, bottom = 10.dp), text = "iMWS",
                 style = TextStyle(
                     fontFamily = FontFamily(Font(R.font.jersey_normal)),
                     fontSize = 50.sp,
@@ -127,9 +135,11 @@ class SplashActivityView : ComponentActivity() {
     @Preview(showBackground = true)
     @Composable
     fun SplashPreview() {
+        val viewModel = viewModel<SplashViewModel>()
+
         AppTheme {
             Surface(modifier = Modifier.fillMaxSize()) {
-                SplashScreen()
+                SplashScreen(viewModel, viewModel.getEnvState)
             }
         }
     }
