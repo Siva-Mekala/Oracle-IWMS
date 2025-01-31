@@ -34,9 +34,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
+import com.example.compose.AppTheme
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.login.LoginActivity
-import com.plcoding.oraclewms.ui.theme.ComposeTimerTheme
 import kotlinx.coroutines.delay
 
 class SplashActivityView : ComponentActivity() {
@@ -44,7 +44,7 @@ class SplashActivityView : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ComposeTimerTheme {
+            AppTheme  {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     SplashScreen(onNavigate = this::startActivity)
                 }
@@ -127,7 +127,7 @@ class SplashActivityView : ComponentActivity() {
     @Preview(showBackground = true)
     @Composable
     fun SplashPreview() {
-        ComposeTimerTheme {
+        AppTheme {
             Surface(modifier = Modifier.fillMaxSize()) {
                 SplashScreen()
             }

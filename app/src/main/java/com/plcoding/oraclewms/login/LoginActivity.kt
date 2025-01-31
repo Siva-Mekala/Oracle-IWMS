@@ -32,6 +32,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -59,18 +60,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.compose.AppTheme
 import com.plcoding.oraclewms.R
+import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.home.LandingActivity
-import com.plcoding.oraclewms.ui.theme.ComposeTimerTheme
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ComposeTimerTheme {
+            AppTheme  {
                 val viewModel = viewModel<LoginViewModel>()
-                Surface(modifier = Modifier.fillMaxSize()) {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
                     Greeting(viewModel, viewModel.shellState, viewModel.cmdState)
                 }
             }
@@ -87,7 +89,7 @@ class LoginActivity : ComponentActivity() {
             Column {
                 Text(
                     "iMWS", fontFamily = FontFamily(Font(R.font.jersey_normal)),
-                    style = TextStyle(color = Color.Black, fontSize = 50.sp),
+                    style = TextStyle(color = MaterialTheme.colorScheme.primary, fontSize = 50.sp),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                 )
@@ -95,12 +97,12 @@ class LoginActivity : ComponentActivity() {
                 Card(
                     elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
                     modifier = Modifier.padding(15.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary)
                 ) {
                     Column {
                         Text(
                             "Login", fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                            style = TextStyle(color = Color.Black, fontSize = 30.sp),
+                            style = TextStyle(color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 30.sp),
                             modifier = Modifier
                                 .padding(10.dp)
                                 .align(Alignment.CenterHorizontally)
@@ -109,7 +111,7 @@ class LoginActivity : ComponentActivity() {
                             label = {
                                 Text(
                                     "UserName",
-                                    color = Color.Black,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                                 )
                             },
@@ -135,7 +137,7 @@ class LoginActivity : ComponentActivity() {
                             label = {
                                 Text(
                                     "Password",
-                                    color = Color.Black,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                                 )
                             },
@@ -194,9 +196,9 @@ class LoginActivity : ComponentActivity() {
         else if(cmdState is CommandUiState.Success) {
             cmdState.response?.let {
                 if (it == null) return@let
-                val controls = it.controls?.get(0)
                 it.popups.let { ups->
                     if (ups == null || ups.isEmpty()){
+                        SharedPref.setUserLoggedIn(true)
                         val intent = Intent(this, LandingActivity::class.java)
                         var bundle = Bundle()
                         bundle.putSerializable("response", it)
@@ -207,7 +209,8 @@ class LoginActivity : ComponentActivity() {
                         AlertDialogExample({
                             finish()
                         }, {
-                            viewModel.sendCommand("mySessionID123456", "\u0001")
+                            if (ups[0].content.equals("Invalid Login")) return@AlertDialogExample
+                            else viewModel.sendCommand("mySessionID123456", "\u0001")
                         }, "Alert", ups[0].content, "Yes", "No")
                     }
                 }
@@ -232,16 +235,16 @@ class LoginActivity : ComponentActivity() {
                 enabled = true,
 
                 colors = CheckboxDefaults.colors(
-                    checkedColor = Color.Green,
-                    uncheckedColor = Color.Black,
-                    checkmarkColor = Color.Black
+                    checkedColor = MaterialTheme.colorScheme.secondary,
+                    uncheckedColor = MaterialTheme.colorScheme.onSurface,
+                    checkmarkColor = MaterialTheme.colorScheme.surface
                 ),
                 interactionSource = remember { MutableInteractionSource() }
             )
             val annotatedString = buildAnnotatedString {
                 withStyle(
                     style = SpanStyle(
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.secondary,
                         fontSize = 15.sp,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                     )
@@ -324,6 +327,7 @@ class LoginActivity : ComponentActivity() {
                     text = selected,
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_light)),
                     fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 )
@@ -361,7 +365,7 @@ class LoginActivity : ComponentActivity() {
     @Preview(showBackground = true)
     @Composable
     fun GreetingPreview() {
-        ComposeTimerTheme {
+        AppTheme {
             val viewModel = viewModel<LoginViewModel>()
             Surface(modifier = Modifier.fillMaxSize()) {
                 Greeting(viewModel, viewModel.shellState, viewModel.cmdState)

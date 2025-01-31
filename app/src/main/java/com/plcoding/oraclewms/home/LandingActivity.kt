@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -61,6 +62,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.compose.AppTheme
 import com.plcoding.focusfun.landing.DashBoardScreen
 import com.plcoding.focusfun.landing.HomeScreen
 import com.plcoding.focusfun.landing.LandingViewModel
@@ -68,7 +70,6 @@ import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.landing.DetailsScreen
 import com.plcoding.oraclewms.login.CommandUiState
-import com.plcoding.oraclewms.ui.theme.ComposeTimerTheme
 import kotlinx.coroutines.launch
 
 class LandingActivity : ComponentActivity() {
@@ -79,7 +80,7 @@ class LandingActivity : ComponentActivity() {
             intent.getSerializableExtra("response", ApiResponse::class.java)
         else intent.getSerializableExtra("response") as ApiResponse
         setContent {
-            ComposeTimerTheme {
+            AppTheme {
                 val modifier = Modifier.fillMaxSize()
                 val viewModel = viewModel<LandingViewModel>()
                 viewModel.setState(CommandUiState.Success(items))
@@ -106,7 +107,7 @@ class LandingActivity : ComponentActivity() {
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
-                ModalDrawerSheet {
+                ModalDrawerSheet (drawerContainerColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer){
                     DrawerContentComponent(
                         closeDrawer = {
                             coroutineScope.launch {
@@ -122,7 +123,7 @@ class LandingActivity : ComponentActivity() {
         ) {
             Scaffold(modifier = modifier
                 .statusBarsPadding()
-                .navigationBarsPadding(), topBar = {
+                .navigationBarsPadding(), containerColor = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer, topBar = {
                 DashBoardToolBar(drawerState)
             },
                 bottomBar = {
@@ -180,13 +181,13 @@ class LandingActivity : ComponentActivity() {
                                         R.font.spacegrotesk_medium
                                     )
                                 ),
-                                fontSize = 15.sp, color = Color.Black
+                                fontSize = 15.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
                             )
                             Text(
                                 text = info.get(it).subHeader,
                                 fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
                                 fontSize = 15.sp,
-                                color = Color.Black
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
                     }
@@ -195,14 +196,14 @@ class LandingActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.padding(20.dp))
             Text(text = "Logout", modifier = Modifier.padding(start = 15.dp), fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                fontSize = 15.sp, color = Color.Black)
+                fontSize = 15.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer)
         }
     }
 
     @Preview(showBackground = true)
     @Composable
     fun GreetingPreview2() {
-        ComposeTimerTheme {
+        AppTheme  {
             val modifier = Modifier.fillMaxSize()
             val viewModel = viewModel<LandingViewModel>()
             DashboardActivityScreen(
@@ -273,7 +274,7 @@ class LandingActivity : ComponentActivity() {
     fun DashBoardToolBar(drawerState: DrawerState) {
         val scope = rememberCoroutineScope()
         TopAppBar(
-            backgroundColor = Color.White,
+            backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer,
             elevation = 0.dp,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -290,7 +291,7 @@ class LandingActivity : ComponentActivity() {
                     }
                     .padding(start = 10.dp)
                     .size(width = 48.dp, height = 30.dp),
-                colorFilter = ColorFilter.tint(Color.Black)
+                colorFilter = ColorFilter.tint(androidx.compose.material3.MaterialTheme.colorScheme.onPrimaryContainer)
             )
         }
     }

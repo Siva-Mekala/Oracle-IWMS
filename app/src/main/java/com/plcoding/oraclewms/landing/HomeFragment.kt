@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,9 +40,10 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .padding(start = 15.dp, end = 15.dp, top = 15.dp).clickable {
                             navController.navigate("Rewards")
-                        }
+                        },
+                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary)
                 ) {
-                    Text(text = "${res.menuItems.get(it).value}", modifier = modifier.padding(15.dp), fontFamily = FontFamily(
+                    Text(text = "${res.menuItems.get(it).value}", color = MaterialTheme.colorScheme.onSecondary, modifier = modifier.padding(15.dp), fontFamily = FontFamily(
                         Font(
                         R.font.spacegrotesk_medium)
                     ),
