@@ -10,9 +10,20 @@ object SharedPref {
     private const val KEY_IS_USER_LOGGED_IN = "IS_USER_LOGGED_IN"
     private const val KEY_ENV = "ENV"
     private const val KEY_RESPONSE = "RESPONSE"
+    private const val ENV_RESPONSE = "ENV_RESPONSE"
 
     private lateinit var sharedPref: SharedPreferences
     private lateinit var context: Context
+
+    fun setEnvResponse(env: String) {
+        val editor: SharedPreferences.Editor = sharedPref.edit()
+        editor.putString(ENV_RESPONSE, env)
+        editor.commit()
+
+    }
+    fun getEnvResponse(): String? {
+        return sharedPref.getString(ENV_RESPONSE, null)
+    }
 
     fun initSharedPref(lcontext: Context) {
         context = lcontext
@@ -63,6 +74,9 @@ object SharedPref {
         sharedPref.edit {
             remove(KEY_AUTH_TOKEN)
             remove(KEY_IS_USER_LOGGED_IN)
+            remove(KEY_ENV)
+            remove(KEY_RESPONSE)
+            remove(ENV_RESPONSE)
             apply()
         }
 

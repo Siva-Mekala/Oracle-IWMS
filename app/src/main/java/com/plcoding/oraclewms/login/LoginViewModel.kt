@@ -1,5 +1,7 @@
 package com.plcoding.oraclewms.login
 
+import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -12,6 +14,8 @@ import com.plcoding.oraclewms.BaseApiInterface
 import com.plcoding.oraclewms.BuildConfig
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.api.ApiResponse
+import com.plcoding.oraclewms.home.LandingActivity
+import com.plcoding.oraclewms.termsAndConditions.TermsAndConditionsView
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -100,5 +104,41 @@ open class LoginViewModel : ViewModel() {
                     shellState = ShellUiState.Error
                 }
             })
+    }
+    fun endShell(
+        id: String,
+        context: Context
+    ) {
+        Log.d(TAG, "Inside endShell")
+        val obj = JsonObject()
+        obj.addProperty("sessionId", id)
+
+        BaseApiInterface.create()
+            .endShell(
+                BuildConfig.END_SHELL,
+                obj
+            ).enqueue(object : Callback<JsonObject> {
+                override fun onResponse(
+                    call: Call<JsonObject>,
+                    response: Response<JsonObject>
+                ) {
+
+                        SharedPref.deleteAllPref()
+                        startActivity(context)
+
+                }
+
+                override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                    SharedPref.deleteAllPref()
+                    startActivity(context)
+                }
+            })
+    }
+
+    private fun startActivity(context: Context) {
+        val intent = Intent(context, LoginActivity::class.java)
+        context.startActivity(intent)
+        (context as LandingActivity).finish()
+
     }
 }
