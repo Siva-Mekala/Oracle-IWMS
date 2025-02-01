@@ -245,20 +245,21 @@ class LandingActivity : ComponentActivity() {
         BottomAppBar(
             actions = {
                 response?.controls?.let {
-                    if (it.toString().contains("22"))
+                    for (it in it) {
+                    if (it.value.contains("Ctrl-W"))
                         IconButton(onClick = {
-                            viewModel.sendCommand(Utils.deviceUUID(), "\u0017")
+                            viewModel.sendCommand(Utils.deviceUUID(),  Utils.getControlCharacterValueOptimized("Ctrl-W"))
                         }) {
                             Icon(
                                 Icons.Filled.ArrowBack,
                                 contentDescription = "Localized description"
                             )
                         }
-                    if (it.toString().contains("19"))
+                    if (it.value.contains("Ctrl-U"))
                         IconButton(onClick = {
                             viewModel.sendCommand(
                                 Utils.deviceUUID(),
-                                "\u0015"
+                                Utils.getControlCharacterValueOptimized("Ctrl-U")
                             )
                         }) {
                             Icon(
@@ -266,11 +267,10 @@ class LandingActivity : ComponentActivity() {
                                 contentDescription = "Localized description",
                             )
                         }
-                    if (it.toString().contains("20"))
+                    if (it.value.contains("Ctrl-D"))
                         IconButton(onClick = {
                             viewModel.sendCommand(
-                                Utils.deviceUUID(),
-                                "\u0004"
+                                Utils.deviceUUID(), Utils.getControlCharacterValueOptimized("Ctrl-D")
                             )
                         }) {
                             Icon(
@@ -278,7 +278,9 @@ class LandingActivity : ComponentActivity() {
                                 contentDescription = "Localized description",
                             )
                         }
+                        }
                 }
+
             },
             floatingActionButton = {
                 var expanded by remember { mutableStateOf(false) }
@@ -294,10 +296,16 @@ class LandingActivity : ComponentActivity() {
                         onDismissRequest = { expanded = false }
                     ) {
                         response?.controls?.forEach {
-                            if (it.lineNumber == 20 || it.lineNumber == 19 || it.lineNumber == 22) return@forEach
+                            if (it.value.contains("Ctrl-W") || it.value.contains("Ctrl-D") || it.value.contains("Ctrl-U")) return@forEach
                             DropdownMenuItem(
                                 text = { Text(it.value) },
-                                onClick = { /* Do something... */ }
+                                onClick = {
+
+                                    viewModel.sendCommand(
+                                        Utils.deviceUUID(),
+                                        Utils.getControlCharacterValueOptimized(it.value.split(":")[0])
+                                    )
+                                }
                             )
                         }
                     }
