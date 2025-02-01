@@ -59,7 +59,7 @@ fun DetailsScreen(
         navController.popBackStack()
         viewModel.sendCommand(
             Utils.deviceUUID(),
-            Utils.CTRL_W
+            Utils.getControlCharacterValueOptimized("Ctrl-W")
         )
     }
 
