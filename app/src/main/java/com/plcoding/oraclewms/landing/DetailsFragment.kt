@@ -1,5 +1,7 @@
 package com.plcoding.oraclewms.landing
 
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,7 +23,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -36,6 +37,7 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
+import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.login.CommandUiState
 
@@ -47,6 +49,13 @@ fun DetailsScreen(
     response: CommandUiState,
     clickPosition: Int
 ) {
+    Log.d("DetailsScreen", ""+response)
+
+    BackHandler {
+        navController.popBackStack()
+        viewModel.sendCommand("mySessionID123456", Utils.CTRL_W)
+    }
+
     val scanner = GmsBarcodeScanning.getClient(LocalContext.current)
     LaunchedEffect(true) {
         viewModel.sendCommand(
@@ -55,23 +64,29 @@ fun DetailsScreen(
     }
 
     if (response is CommandUiState.Success) {
-        response.response?.formFields?.let {
-            ListScreen(it, scanner)
+        response.response?.formFields.let {
+            if (it == null) {
+            } else ListScreen(it, scanner, modifier, viewModel)
         }
     }
 }
 
 @Composable
-fun ListScreen(item: List<FormField>, scanner: GmsBarcodeScanner) {
-    LazyColumn (verticalArrangement = Arrangement.spacedBy(15.dp), contentPadding = PaddingValues(start = 15.dp, end = 15.dp)){
+fun ListScreen(
+    item: List<FormField>,
+    scanner: GmsBarcodeScanner,
+    modifier: Modifier,
+    viewModel: LandingViewModel
+) {
+    LazyColumn (modifier, verticalArrangement = Arrangement.spacedBy(15.dp), contentPadding = PaddingValues(start = 15.dp, end = 15.dp)){
         items(item.size) { x ->
-            ListItem(item = item.get(x), scanner)
+            ListItem(item = item.get(x), scanner, viewModel)
         }
     }
 }
 
 @Composable
-fun ListItem(item: FormField, scanner: GmsBarcodeScanner) {
+fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingViewModel) {
     val textObj = rememberSaveable {
         mutableStateOf(
             item.form_value?.trim().let {
@@ -84,7 +99,7 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner) {
         )
     }
     val focusRequester = remember { FocusRequester() }
-    val cursor = remember { item.cursorState }
+    val cursor = rememberSaveable { item.cursor }
     val focusManager = LocalFocusManager.current
     OutlinedTextField(
         label = {
@@ -96,7 +111,8 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner) {
         },
         value = textObj?.value?:"",
         trailingIcon = {
-            Icon(
+            if (item.bar_code)
+                Icon(
                 Icons.Outlined.Star,
                 null,
                 modifier = Modifier
@@ -117,7 +133,7 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner) {
                     .padding(8.dp)
             )
         },
-        //enabled = cursor,
+        readOnly = !cursor,
         singleLine = true,
         onValueChange = { textObj.value = it },
         modifier = Modifier
@@ -126,7 +142,10 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner) {
             .focusRequester(focusRequester),
         keyboardActions = KeyboardActions(
             onNext = {
-                focusManager.moveFocus(FocusDirection.Down)
+                ///focusManager.moveFocus(FocusDirection.Down)
+                textObj.value?.let {
+                    viewModel.sendCommand("mySessionID123456", it)
+                }
             }
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),

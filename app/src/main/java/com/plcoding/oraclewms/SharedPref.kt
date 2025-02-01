@@ -9,6 +9,7 @@ object SharedPref {
     private const val KEY_AUTH_TOKEN = "AUTH_TOKEN"
     private const val KEY_IS_USER_LOGGED_IN = "IS_USER_LOGGED_IN"
     private const val KEY_ENV = "ENV"
+    private const val KEY_RESPONSE = "RESPONSE"
 
     private lateinit var sharedPref: SharedPreferences
     private lateinit var context: Context
@@ -36,6 +37,16 @@ object SharedPref {
 
     fun getEnv(): String? {
         return sharedPref.getString(KEY_ENV, null)
+    }
+
+    fun setResponse(response: String) {
+        val editor: SharedPreferences.Editor = sharedPref.edit()
+        editor.putString(KEY_RESPONSE, response)
+        editor.commit()
+    }
+
+    fun getResponse(): String? {
+        return sharedPref.getString(KEY_RESPONSE, null)
     }
 
     fun setUserLoggedIn(state: Boolean) {

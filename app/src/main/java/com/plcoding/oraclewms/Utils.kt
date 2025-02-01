@@ -45,4 +45,31 @@ object Utils {
         //Log.d("Utils", String.format("Now device is %s.", if (isLocked) "locked" else "unlocked"))
         return isLocked
     }
+
+    val CTRL_A = "\u0001"//	Start of Heading (SOH)
+    val CTRL_B	= "\u0002"//	Start of Text (STX)
+    val CTRL_C =	"\u0003"//	End of Text (ETX)
+    val CTRL_D	= "\u0004"//	End of Transmission (EOT)
+    val CTRL_E	="\u0005"//	Enquiry (ENQ)
+    val CTRL_F	="\u0006"//	Acknowledge (ACK)
+    val CTRL_G	="\u0007"//	Bell (BEL)
+    val CTRL_H	="\u0008"//	Backspace (BS)
+    val CTRL_I=	"\u0009"//	Horizontal Tab (HT)
+    val CTRL_J	="\u000A"//	Line Feed (LF)
+    val CTRL_K=	"\u000B"//	Vertical Tab (VT)
+    val CTRL_L=	"\u000C"//	Form Feed (FF)
+    val CTRL_M=	"\u000D"//	Carriage Return (CR)
+    val CTRL_N=	"\u000E"//	Shift Out (SO)
+    val CTRL_O=	"\u000F"//	Shift In (SI)
+    val CTRL_P=	"\u0010"//	Data Link Escape (DLE)
+    val CTRL_Q=	"\u0011"//	Device Control 1 (DC1)
+    val CTRL_R=	"\u0012"//	Device Control 2 (DC2)
+    val CTRL_S=	"\u0013"//	Device Control 3 (DC3)
+    val CTRL_T=	"\u0014"//	Device Control 4 (DC4)
+    val CTRL_U=	"\u0015"//	Negative Acknowledge (NAK)
+    val CTRL_V=	"\u0016"//	Synchronous Idle (SYN)
+    val CTRL_W=	"\u0017"//	End of Transmission Block
+    val CTRL_X	="\u0018"//	Cancel (CAN)
+    val CTRL_Y=	"\u0019"//	End of Medium (EM)
+    val CTRL_Z=	"\u001A"//	Substitute (SUB)
 }

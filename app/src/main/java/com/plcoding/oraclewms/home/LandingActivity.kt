@@ -3,6 +3,7 @@ package com.plcoding.oraclewms.home
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
@@ -60,11 +61,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navOptions
 import com.example.compose.AppTheme
+import com.google.gson.Gson
 import com.plcoding.focusfun.landing.DashBoardScreen
 import com.plcoding.focusfun.landing.HomeScreen
 import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
+import com.plcoding.oraclewms.SharedPref
+import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.landing.DetailsScreen
 import com.plcoding.oraclewms.login.CommandUiState
@@ -74,14 +79,14 @@ class LandingActivity : ComponentActivity() {
     private val TAG = LandingActivity::class.java.simpleName
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var items = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            intent.getSerializableExtra("response", ApiResponse::class.java)
-        else intent.getSerializableExtra("response") as ApiResponse
+//        var items = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+//            intent.getSerializableExtra("response", ApiResponse::class.java)
+//        else intent.getSerializableExtra("response") as ApiResponse
         setContent {
             AppTheme {
                 val modifier = Modifier.fillMaxSize()
                 val viewModel = viewModel<LandingViewModel>()
-                viewModel.setState(CommandUiState.Success(items))
+                viewModel.setState(CommandUiState.Success(Gson().fromJson(SharedPref.getResponse(), ApiResponse::class.java)))
                 DashboardActivityScreen(
                     modifier,
                     viewModel
@@ -97,7 +102,6 @@ class LandingActivity : ComponentActivity() {
         viewModel: LandingViewModel
     ) {
         val navController = rememberNavController()
-
         navController.addOnDestinationChangedListener { controller, destination, args ->
         }
         val coroutineScope = rememberCoroutineScope()
@@ -138,9 +142,9 @@ class LandingActivity : ComponentActivity() {
                 Box(modifier = modifier.padding(innerPadding)) {
                     NavHost(
                         navController,
-                        startDestination = DashBoardScreen.Home.route
+                        startDestination = "Home"
                     ) {
-                        composable(DashBoardScreen.Home.route) {
+                        composable("Home") {
                             HomeScreen(
                                 modifier,
                                 navController,
@@ -148,9 +152,10 @@ class LandingActivity : ComponentActivity() {
                                 viewModel.cmdState
                             ) {
                                 clickPosition = it
+                                navController.navigate("Rewards")
                             }
                         }
-                        composable(DashBoardScreen.Wallet.route) {
+                        composable("Rewards") {
                             DetailsScreen(
                                 modifier,
                                 navController,

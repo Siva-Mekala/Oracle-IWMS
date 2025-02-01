@@ -6,9 +6,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.plcoding.oraclewms.BaseApiInterface
 import com.plcoding.oraclewms.BuildConfig
+import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.api.ApiResponse
 import retrofit2.Call
 import retrofit2.Callback
@@ -17,6 +19,12 @@ import retrofit2.Response
 open class LoginViewModel : ViewModel() {
 
     open var TAG = LoginActivity::class.java.simpleName
+    var preCmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
+        private set
+    fun setPreState(state: CommandUiState) {
+        preCmdState = state
+    }
+
     var cmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
         private set
 
@@ -43,6 +51,8 @@ open class LoginViewModel : ViewModel() {
                     response: Response<ApiResponse>
                 ) {
                     if (response.isSuccessful) {
+                        val gson = Gson()
+                        SharedPref.setResponse(gson.toJson(response.body()))
                         cmdState = CommandUiState.Success(response.body())
                     } else {
                         cmdState = CommandUiState.Error
