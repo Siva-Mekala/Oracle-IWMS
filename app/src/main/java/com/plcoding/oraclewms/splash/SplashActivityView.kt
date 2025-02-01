@@ -36,6 +36,8 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.AppTheme
 import com.plcoding.oraclewms.R
+import com.plcoding.oraclewms.SharedPref
+import com.plcoding.oraclewms.home.LandingActivity
 import com.plcoding.oraclewms.login.LoginActivity
 
 class SplashActivityView : ComponentActivity() {
@@ -53,7 +55,7 @@ class SplashActivityView : ComponentActivity() {
     }
 
     private fun startActivity() {
-        startActivity(Intent(this, LoginActivity::class.java))
+        startActivity(Intent(this, if (SharedPref.isUserLoggedIn()) LandingActivity::class.java else LoginActivity::class.java))
         finish()
     }
 

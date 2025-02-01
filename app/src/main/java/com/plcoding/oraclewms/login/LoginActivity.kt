@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.AlertDialog
@@ -32,6 +33,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
@@ -388,7 +390,8 @@ class LoginActivity : ComponentActivity() {
 @Composable
 fun LoaderScreen() {
     Box(
-        Modifier
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
             .fillMaxSize()
             .clickable { }
             .background(
@@ -396,6 +399,11 @@ fun LoaderScreen() {
                     listOf(Color.Gray.copy(0.5f), Color.Gray.copy(0.5f))
                 )
             )) {
+        CircularProgressIndicator(
+            modifier = Modifier.width(64.dp),
+            color = MaterialTheme.colorScheme.secondary,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+        )
     }
 }
 
