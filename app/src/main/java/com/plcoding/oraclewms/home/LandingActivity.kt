@@ -103,8 +103,7 @@ class LandingActivity : ComponentActivity() {
             modifier,
             viewModel,
             item?.menuItems?.isEmpty(),
-            navController,
-            viewModel.loader
+            navController
         )
     }
 
@@ -124,8 +123,7 @@ class LandingActivity : ComponentActivity() {
         modifier: Modifier = Modifier,
         viewModel: LandingViewModel,
         menuEmpty: Boolean?,
-        navController: NavHostController,
-        loader: CommandUiState,
+        navController: NavHostController
     ) {
         val coroutineScope = rememberCoroutineScope()
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -159,7 +157,7 @@ class LandingActivity : ComponentActivity() {
                         viewModel, when (viewModel.cmdState) {
                             is CommandUiState.Success -> (viewModel.cmdState as CommandUiState.Success).response
                             else -> null
-                        }
+                        },navController
                     )
                 }) { innerPadding ->
                 Box(modifier = modifier.padding(innerPadding)) {
@@ -189,7 +187,7 @@ class LandingActivity : ComponentActivity() {
                             )
                         }
                     }
-                    if (loader is CommandUiState.Loading) LoaderScreen()
+//                    if (loader is CommandUiState.Loading) LoaderScreen()
                 }
             }
         }
@@ -251,7 +249,7 @@ class LandingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun bottomAppBar(viewModel: LandingViewModel, response: JSONResponse?) {
+    fun bottomAppBar(viewModel: LandingViewModel, response: JSONResponse?, navController: NavHostController) {
         BottomAppBar(
             actions = {
                 response?.controls?.let {
@@ -311,10 +309,27 @@ class LandingActivity : ComponentActivity() {
                                 text = { Text(it.value) },
                                 onClick = {
 
-                                    viewModel.sendCommand(
-                                        Utils.deviceUUID(),
-                                        Utils.getControlCharacterValueOptimized(it.value.split(":")[0])
-                                    )
+                                    if(it.value.contains("Ctrl-X")){
+                                        if(navController.currentDestination?.route == "Home"){
+                                            viewModel.endShell(Utils.deviceUUID(),this@LandingActivity)
+                                        }else{
+
+                                            viewModel.sendCommand(
+                                                Utils.deviceUUID(),
+                                                Utils.getControlCharacterValueOptimized(it.value.split(":")[0])
+                                            )
+                                            navController.popBackStack()
+                                        }
+                                    }else{
+                                        viewModel.sendCommand(
+                                            Utils.deviceUUID(),
+                                            Utils.getControlCharacterValueOptimized(it.value.split(":")[0])
+                                        )
+                                    }
+
+
+
+
                                 }
                             )
                         }
