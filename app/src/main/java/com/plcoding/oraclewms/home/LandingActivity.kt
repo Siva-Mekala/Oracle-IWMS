@@ -1,10 +1,7 @@
 package com.plcoding.oraclewms.home
 
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
@@ -48,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -62,16 +60,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navOptions
 import com.example.compose.AppTheme
 import com.google.gson.Gson
-import com.plcoding.focusfun.landing.DashBoardScreen
 import com.plcoding.focusfun.landing.HomeScreen
 import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
-import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.JSONResponse
 import com.plcoding.oraclewms.landing.DetailsScreen
 import com.plcoding.oraclewms.login.CommandUiState
@@ -88,10 +83,12 @@ class LandingActivity : ComponentActivity() {
             AppTheme {
                 val modifier = Modifier.fillMaxSize()
                 val viewModel = viewModel<LandingViewModel>()
-                viewModel.setState(CommandUiState.Success(Gson().fromJson(SharedPref.getResponse(), JSONResponse::class.java)))
+                val item = Gson().fromJson(SharedPref.getResponse(), JSONResponse::class.java)
+                viewModel.setState(CommandUiState.Success(item))
                 DashboardActivityScreen(
                     modifier,
-                    viewModel
+                    viewModel,
+                    item?.menuItems?.isEmpty()
                 )
             }
         }
@@ -101,7 +98,8 @@ class LandingActivity : ComponentActivity() {
     @Composable
     fun DashboardActivityScreen(
         modifier: Modifier = Modifier,
-        viewModel: LandingViewModel
+        viewModel: LandingViewModel,
+        menuEmpty : Boolean?
     ) {
         val navController = rememberNavController()
         navController.addOnDestinationChangedListener { controller, destination, args ->
@@ -131,7 +129,7 @@ class LandingActivity : ComponentActivity() {
                 .navigationBarsPadding(),
                 containerColor = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer,
                 topBar = {
-                    DashBoardToolBar(drawerState)
+                    DashBoardToolBar(drawerState, viewModel.cmdState)
                 },
                 bottomBar = {
                     bottomAppBar(
@@ -144,7 +142,7 @@ class LandingActivity : ComponentActivity() {
                 Box(modifier = modifier.padding(innerPadding)) {
                     NavHost(
                         navController,
-                        startDestination = "Home"
+                        startDestination = if (menuEmpty == true) "Rewards" else "Home"
                     ) {
                         composable("Home") {
                             HomeScreen(
@@ -163,7 +161,8 @@ class LandingActivity : ComponentActivity() {
                                 navController,
                                 viewModel,
                                 viewModel.cmdState,
-                                clickPosition
+                                clickPosition,
+                                menuEmpty
                             )
                         }
                     }
@@ -235,7 +234,8 @@ class LandingActivity : ComponentActivity() {
             val viewModel = viewModel<LandingViewModel>()
             DashboardActivityScreen(
                 modifier,
-                viewModel
+                viewModel,
+                true
             )
         }
     }
@@ -304,28 +304,38 @@ class LandingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun DashBoardToolBar(drawerState: DrawerState) {
+    fun DashBoardToolBar(drawerState: DrawerState, cmdState: CommandUiState) {
         val scope = rememberCoroutineScope()
         TopAppBar(
             backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer,
             elevation = 0.dp,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Image(
-                imageVector = Icons.Outlined.Menu,
-                contentDescription = "",
-                modifier = Modifier
-                    .clickable {
-                        scope.launch {
-                            drawerState.apply {
-                                if (isClosed) open() else close()
+            Row (verticalAlignment = Alignment.CenterVertically){
+                Image(
+                    imageVector = Icons.Outlined.Menu,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .clickable {
+                            scope.launch {
+                                drawerState.apply {
+                                    if (isClosed) open() else close()
+                                }
                             }
                         }
-                    }
-                    .padding(start = 10.dp)
-                    .size(width = 48.dp, height = 30.dp),
-                colorFilter = ColorFilter.tint(androidx.compose.material3.MaterialTheme.colorScheme.onPrimaryContainer)
-            )
+                        .padding(start = 10.dp)
+                        .size(width = 48.dp, height = 30.dp),
+                    colorFilter = ColorFilter.tint(androidx.compose.material3.MaterialTheme.colorScheme.onPrimaryContainer)
+                )
+                Text(
+                    text = if (cmdState is CommandUiState.Success) { cmdState.response.let { if(it == null) "iMWS" else it.screenName.let { if (it == null) "iMWS" else it.value}} } else "iMWS",
+                    modifier = Modifier
+                        .padding(start = 15.dp),
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                    fontSize = 20.sp,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
         }
     }
 

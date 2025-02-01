@@ -1,6 +1,5 @@
 package com.plcoding.oraclewms.landing
 
-import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
@@ -48,7 +47,8 @@ fun DetailsScreen(
     navController: NavController,
     viewModel: LandingViewModel,
     response: CommandUiState,
-    clickPosition: Int
+    clickPosition: Int,
+    startHome: Boolean? = false
 ) {
     Log.d("DetailsScreen", ""+response)
 
@@ -60,7 +60,8 @@ fun DetailsScreen(
     }
 
     val scanner = GmsBarcodeScanning.getClient(LocalContext.current)
-    LaunchedEffect(true) {
+    if (startHome == false)
+        LaunchedEffect(true) {
         viewModel.sendCommand(
             Utils.deviceUUID(),
              "${clickPosition}\n"

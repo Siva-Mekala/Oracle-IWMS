@@ -11,6 +11,9 @@ public class JSONResponse implements Serializable {
     @SerializedName("app_name")
     @Expose
     private AppName appName;
+    @SerializedName("screen_name")
+    @Expose
+    private ScreenName screenName;
     @SerializedName("facility_name")
     @Expose
     private FacilityName facilityName;
@@ -106,5 +109,13 @@ public class JSONResponse implements Serializable {
 
     public void setCursorPosition(CursorPosition cursorPosition) {
         this.cursorPosition = cursorPosition;
+    }
+
+    public ScreenName getScreenName() {
+        return screenName;
+    }
+
+    public void setScreenName(ScreenName screenName) {
+        this.screenName = screenName;
     }
 }
