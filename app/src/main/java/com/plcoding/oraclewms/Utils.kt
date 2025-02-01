@@ -4,10 +4,13 @@ import android.app.KeyguardManager
 import android.content.Context
 import android.os.Build
 import android.os.PowerManager
+import android.provider.Settings
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 
 object Utils {
+    private lateinit var context: Context;
+
     fun isWorkScheduled(context: Context, tag: String): Boolean {
         val instance = WorkManager.getInstance(context)
         val statuses = instance.getWorkInfosByTag(tag)
@@ -45,7 +48,13 @@ object Utils {
         //Log.d("Utils", String.format("Now device is %s.", if (isLocked) "locked" else "unlocked"))
         return isLocked
     }
+ fun deviceUUID(): String {
 
+    return Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+ }
+    fun initSharedPref(lcontext: Context) {
+        context = lcontext
+    }
     val CTRL_A = "\u0001"//	Start of Heading (SOH)
     val CTRL_B	= "\u0002"//	Start of Text (STX)
     val CTRL_C =	"\u0003"//	End of Text (ETX)

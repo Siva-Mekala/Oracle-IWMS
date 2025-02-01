@@ -1,8 +1,10 @@
 package com.plcoding.oraclewms.login
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -65,6 +67,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.AppTheme
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
+import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.home.LandingActivity
 
 class LoginActivity : ComponentActivity() {
@@ -84,6 +87,7 @@ class LoginActivity : ComponentActivity() {
         }
     }
 
+    @SuppressLint("HardwareIds")
     @Composable
     fun Greeting(viewModel: LoginViewModel, shellState: ShellUiState, cmdState: CommandUiState) {
         var checkState = rememberSaveable { mutableStateOf(false) }
@@ -161,13 +165,13 @@ class LoginActivity : ComponentActivity() {
                             onValueChange = { password.value = it },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(15.dp, 15.dp, 15.dp, 5.dp),
+                                .padding(15.dp),
                             colors = TextFieldDefaults.colors(
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
                             )
                         )
-                        TermsAndPolicy(checkState)
+//                        TermsAndPolicy(checkState)
                     }
                 }
 
@@ -186,7 +190,7 @@ class LoginActivity : ComponentActivity() {
                         Button(
                             onClick = {
                                 viewModel.startShell(
-                                    "mySessionID123456",
+                                    Utils.deviceUUID(),
                                     environment,
                                     email,
                                     password
@@ -223,7 +227,7 @@ class LoginActivity : ComponentActivity() {
                             finish()
                         }, {
                             if (ups[0].content.equals("Invalid Login")) return@AlertDialogExample
-                            else viewModel.sendCommand("mySessionID123456", "\u0001")
+                            else viewModel.sendCommand(   Utils.deviceUUID(), "\u0001")
                         }, "Alert", ups[0].content, "Yes", "No")
                     }
                 }

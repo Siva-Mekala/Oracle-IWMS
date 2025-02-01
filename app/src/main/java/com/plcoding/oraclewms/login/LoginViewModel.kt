@@ -51,9 +51,10 @@ open class LoginViewModel : ViewModel() {
                     response: Response<ApiResponse>
                 ) {
                     if (response.isSuccessful) {
+                        val jsonRes=response.body()
                         val gson = Gson()
-                        SharedPref.setResponse(gson.toJson(response.body()))
-                        cmdState = CommandUiState.Success(response.body())
+                        SharedPref.setResponse(gson.toJson(jsonRes?.jsonResponse))
+                        cmdState = CommandUiState.Success(jsonRes?.jsonResponse)
                     } else {
                         cmdState = CommandUiState.Error
                     }
@@ -87,7 +88,8 @@ open class LoginViewModel : ViewModel() {
                     response: Response<ApiResponse>
                 ) {
                     if (response.isSuccessful) {
-                        shellState = ShellUiState.Success(response.body())
+                        val jsonRes=response.body()
+                        shellState = ShellUiState.Success(jsonRes?.jsonResponse)
                         sendCommand(id, "${email.value}\t${password.value}\n")
                     } else {
                         shellState = ShellUiState.Error
