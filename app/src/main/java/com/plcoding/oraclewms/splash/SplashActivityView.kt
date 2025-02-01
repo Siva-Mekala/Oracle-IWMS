@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -35,10 +34,12 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.AppTheme
+import com.google.gson.Gson
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
+import com.plcoding.oraclewms.api.EnvApiResponse
 import com.plcoding.oraclewms.home.LandingActivity
-import com.plcoding.oraclewms.login.LoginActivity
+import com.plcoding.oraclewms.termsAndConditions.TermsAndConditionsView
 
 class SplashActivityView : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,14 +49,20 @@ class SplashActivityView : ComponentActivity() {
             val viewModel = viewModel<SplashViewModel>()
             AppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    SplashScreen(viewModel, viewModel.getEnvState, onNavigate = this::startActivity)
+                    SplashScreen(viewModel, viewModel.getEnvState){
+                        startActivity(it)
+                    }
                 }
             }
         }
     }
 
-    private fun startActivity() {
-        startActivity(Intent(this, if (SharedPref.isUserLoggedIn()) LandingActivity::class.java else LoginActivity::class.java))
+    private fun startActivity(envApiResponse: List<String>?) {
+        if (envApiResponse != null) {
+            val gson = Gson()
+            SharedPref.setEnvResponse(gson.toJson(envApiResponse))
+        }
+        startActivity(Intent(this, if (SharedPref.isUserLoggedIn()) LandingActivity::class.java else TermsAndConditionsView::class.java))
         finish()
     }
 
@@ -86,7 +93,7 @@ class SplashActivityView : ComponentActivity() {
     fun SplashScreen(
         viewModel: SplashViewModel,
         envState: EnvironmentsUiState,
-        onNavigate: () -> Unit = {}
+        onNavigate: (response: List<String>? ) -> Unit = {}
     ) {
         val scale = remember {
             Animatable(1f)
@@ -104,7 +111,7 @@ class SplashActivityView : ComponentActivity() {
             //   )
         }
         if (envState is EnvironmentsUiState.Success) {
-            onNavigate()
+            onNavigate(envState.response)
         } else {
         }
 

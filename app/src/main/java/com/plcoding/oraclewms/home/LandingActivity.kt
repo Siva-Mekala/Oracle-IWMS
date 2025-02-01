@@ -216,7 +216,7 @@ class LandingActivity : ComponentActivity() {
                 text = "Logout",
                 modifier = Modifier
                     .clickable {
-
+                    viewModel.endShell(Utils.deviceUUID(),this@LandingActivity)
                     }
                     .padding(start = 15.dp),
                 fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
