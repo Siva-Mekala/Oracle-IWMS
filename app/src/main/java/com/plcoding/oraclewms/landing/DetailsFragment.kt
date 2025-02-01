@@ -1,6 +1,5 @@
 package com.plcoding.oraclewms.landing
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,12 +28,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
@@ -54,7 +56,6 @@ fun DetailsScreen(
     clickPosition: Int,
     startHome: Boolean? = false
 ) {
-    Log.d("DetailScreen","Inside composable")
     BackHandler {
         navController.popBackStack()
         viewModel.sendCommand(
@@ -81,11 +82,33 @@ fun DetailsScreen(
             it.let { ups ->
                 if (ups.isNullOrEmpty()) {
                 } else {
-                    popDialog({
-                        viewModel.sendCommand(
-                            Utils.deviceUUID(), it + "\t"
+
+                    val showDialog = remember { mutableStateOf(true) }
+                    if (showDialog.value) {
+                        popDialog(
+                            onConfirmation = {
+                                if (ups.isNotEmpty()) {
+                                    val firstUp = ups.first()
+                                    if (firstUp.type != "message") {
+                                        viewModel.sendCommand(
+                                            Utils.deviceUUID(), it + "\t"
+                                        )
+                                    } else {
+                                        viewModel.sendCommand(
+                                            Utils.deviceUUID(), Utils.getControlCharacterValueOptimized("Ctrl-A")
+                                        )
+                                    }
+                                } else {
+                                    showDialog.value = false
+                                }
+                            },
+                            dialogTitle = "Alert",
+                            yes = "Ok",
+                            viewModel = viewModel,
+                            ups = ups,
+                            showDialog = showDialog
                         )
-                    }, "Alert", "Yes", viewModel, ups)
+                    }
                 }
             }
         }
@@ -99,38 +122,48 @@ fun popDialog(
     yes: String?,
     viewModel: LandingViewModel,
     ups: List<Popup>,
+    showDialog: MutableState<Boolean>
 ) {
     val text = rememberSaveable {
         mutableStateOf(
             ""
         )
     }
-    AlertDialog(
-        title = {
-            Text(text = dialogTitle)
-        },
-        text = {
-            //repeat(ups.size) {
-            WareHouseTextField(viewModel, ups.get(0)) {
-                text.value = it
-            }
-            //}
-        },
-        onDismissRequest = {
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onConfirmation(text.value)
+    if (showDialog.value) {
+        AlertDialog(
+            title = {
+                Text(text = dialogTitle)
+            },
+            text = {
+                //repeat(ups.size) {
+                if (ups.get(0).type.equals("message")) {
+                    Text(text = ups.get(0).content)
+                } else {
+                    WareHouseTextField(viewModel, ups.get(0)) {
+                        text.value = it
+                    }
                 }
-            ) {
-                yes?.let {
-                    Text(yes)
+
+                //}
+            },
+            onDismissRequest = {
+                showDialog.value = false
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onConfirmation(text.value)
+                        showDialog.value = false
+                    }
+                ) {
+                    yes?.let {
+                        Text(it)
+                    }
                 }
             }
-        },
-        properties = DialogProperties(false, false)
-    )
+//        properties = DialogProperties(false, false)
+        )
+    }
 }
 
 @Composable
