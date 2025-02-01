@@ -1,5 +1,6 @@
 package com.plcoding.oraclewms.landing
 
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
@@ -53,13 +54,16 @@ fun DetailsScreen(
 
     BackHandler {
         navController.popBackStack()
-        viewModel.sendCommand("mySessionID123456", Utils.CTRL_W)
+        viewModel.sendCommand(
+            Utils.deviceUUID(),
+             Utils.CTRL_W)
     }
 
     val scanner = GmsBarcodeScanning.getClient(LocalContext.current)
     LaunchedEffect(true) {
         viewModel.sendCommand(
-            "mySessionID123456", "${clickPosition}\n"
+            Utils.deviceUUID(),
+             "${clickPosition}\n"
         )
     }
 
@@ -78,7 +82,7 @@ fun ListScreen(
     modifier: Modifier,
     viewModel: LandingViewModel
 ) {
-    LazyColumn (modifier, verticalArrangement = Arrangement.spacedBy(15.dp), contentPadding = PaddingValues(start = 15.dp, end = 15.dp)){
+    LazyColumn (modifier, verticalArrangement = Arrangement.spacedBy(5.dp), contentPadding = PaddingValues(start = 5.dp, end = 5.dp)){
         items(item.size) { x ->
             ListItem(item = item.get(x), scanner, viewModel)
         }
@@ -133,7 +137,8 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
                     .padding(8.dp)
             )
         },
-        readOnly = !cursor,
+//        readOnly = !cursor,
+        enabled = cursor,
         singleLine = true,
         onValueChange = { textObj.value = it },
         modifier = Modifier
@@ -144,7 +149,8 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
             onNext = {
                 ///focusManager.moveFocus(FocusDirection.Down)
                 textObj.value?.let {
-                    viewModel.sendCommand("mySessionID123456", it)
+                    viewModel.sendCommand( Utils.deviceUUID()
+                        , it+"\t")
                 }
             }
         ),

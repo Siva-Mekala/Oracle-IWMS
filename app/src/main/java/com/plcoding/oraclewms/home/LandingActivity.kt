@@ -2,6 +2,7 @@ package com.plcoding.oraclewms.home
 
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -71,6 +72,7 @@ import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.api.ApiResponse
+import com.plcoding.oraclewms.api.JSONResponse
 import com.plcoding.oraclewms.landing.DetailsScreen
 import com.plcoding.oraclewms.login.CommandUiState
 import kotlinx.coroutines.launch
@@ -86,7 +88,7 @@ class LandingActivity : ComponentActivity() {
             AppTheme {
                 val modifier = Modifier.fillMaxSize()
                 val viewModel = viewModel<LandingViewModel>()
-                viewModel.setState(CommandUiState.Success(Gson().fromJson(SharedPref.getResponse(), ApiResponse::class.java)))
+                viewModel.setState(CommandUiState.Success(Gson().fromJson(SharedPref.getResponse(), JSONResponse::class.java)))
                 DashboardActivityScreen(
                     modifier,
                     viewModel
@@ -239,13 +241,13 @@ class LandingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun bottomAppBar(viewModel: LandingViewModel, response: ApiResponse?) {
+    fun bottomAppBar(viewModel: LandingViewModel, response: JSONResponse?) {
         BottomAppBar(
             actions = {
                 response?.controls?.let {
                     if (it.toString().contains("22"))
                         IconButton(onClick = {
-                            viewModel.sendCommand("mySessionID123456", "\u0017")
+                            viewModel.sendCommand(  Utils.deviceUUID(), "\u0017")
                         }) {
                             Icon(
                                 Icons.Filled.ArrowBack,
@@ -254,7 +256,8 @@ class LandingActivity : ComponentActivity() {
                         }
                     if (it.toString().contains("19"))
                         IconButton(onClick = {
-                            viewModel.sendCommand("mySessionID123456", "\u0015")
+                            viewModel.sendCommand(    Utils.deviceUUID(),
+                                "\u0015")
                         }) {
                             Icon(
                                 Icons.Filled.KeyboardArrowUp,
@@ -263,7 +266,9 @@ class LandingActivity : ComponentActivity() {
                         }
                     if (it.toString().contains("20"))
                         IconButton(onClick = {
-                            viewModel.sendCommand("mySessionID123456", "\u0004")
+                            viewModel.sendCommand(
+                                Utils.deviceUUID(),
+                                "\u0004")
                         }) {
                             Icon(
                                 Icons.Filled.KeyboardArrowDown,
