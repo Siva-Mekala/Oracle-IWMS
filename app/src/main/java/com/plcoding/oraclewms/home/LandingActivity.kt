@@ -35,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -57,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -70,6 +72,7 @@ import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.api.JSONResponse
 import com.plcoding.oraclewms.landing.DetailsScreen
 import com.plcoding.oraclewms.login.CommandUiState
+import com.plcoding.oraclewms.login.LoaderScreen
 import kotlinx.coroutines.launch
 
 class LandingActivity : ComponentActivity() {
@@ -83,27 +86,47 @@ class LandingActivity : ComponentActivity() {
             AppTheme {
                 val modifier = Modifier.fillMaxSize()
                 val viewModel = viewModel<LandingViewModel>()
-                val item = Gson().fromJson(SharedPref.getResponse(), JSONResponse::class.java)
-                viewModel.setState(CommandUiState.Success(item))
-                DashboardActivityScreen(
-                    modifier,
-                    viewModel,
-                    item?.menuItems?.isEmpty()
-                )
+                Surface(modifier = modifier) {
+                    Greeting(modifier, viewModel)
+                }
             }
         }
         enableEdgeToEdge()
     }
 
     @Composable
+    fun Greeting(modifier: Modifier = Modifier, viewModel: LandingViewModel = viewModel()) {
+        val navController = rememberNavController()
+        val item = Gson().fromJson(SharedPref.getResponse(), JSONResponse::class.java)
+        viewModel.setState(CommandUiState.Success(item))
+        DashboardActivityScreen(
+            modifier,
+            viewModel,
+            item?.menuItems?.isEmpty(),
+            navController,
+            viewModel.loader
+        )
+    }
+
+    @Preview(showBackground = true)
+    @Composable
+    fun GreetingPreview() {
+        AppTheme {
+            val modifier = Modifier.fillMaxSize()
+            Surface(modifier = modifier) {
+                Greeting(modifier)
+            }
+        }
+    }
+
+    @Composable
     fun DashboardActivityScreen(
         modifier: Modifier = Modifier,
         viewModel: LandingViewModel,
-        menuEmpty: Boolean?
+        menuEmpty: Boolean?,
+        navController: NavHostController,
+        loader: CommandUiState,
     ) {
-        val navController = rememberNavController()
-        navController.addOnDestinationChangedListener { controller, destination, args ->
-        }
         val coroutineScope = rememberCoroutineScope()
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         var clickPosition by remember { mutableStateOf(0) }
@@ -142,7 +165,7 @@ class LandingActivity : ComponentActivity() {
                 Box(modifier = modifier.padding(innerPadding)) {
                     NavHost(
                         navController,
-                        startDestination = if (menuEmpty == true) "Rewards" else "Home"
+                        startDestination = "Home"
                     ) {
                         composable("Home") {
                             HomeScreen(
@@ -166,6 +189,7 @@ class LandingActivity : ComponentActivity() {
                             )
                         }
                     }
+                    if (loader is CommandUiState.Loading) LoaderScreen()
                 }
             }
         }
@@ -222,20 +246,6 @@ class LandingActivity : ComponentActivity() {
                 fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
                 fontSize = 15.sp,
                 color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
-            )
-        }
-    }
-
-    @Preview(showBackground = true)
-    @Composable
-    fun GreetingPreview2() {
-        AppTheme {
-            val modifier = Modifier.fillMaxSize()
-            val viewModel = viewModel<LandingViewModel>()
-            DashboardActivityScreen(
-                modifier,
-                viewModel,
-                true
             )
         }
     }

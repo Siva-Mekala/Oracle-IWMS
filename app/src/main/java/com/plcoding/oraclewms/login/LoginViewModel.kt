@@ -23,6 +23,8 @@ open class LoginViewModel : ViewModel() {
 
     open var TAG = LoginActivity::class.java.simpleName
 
+    var loader: CommandUiState by mutableStateOf(CommandUiState.Empty)
+
     var cmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
         private set
 
@@ -39,6 +41,7 @@ open class LoginViewModel : ViewModel() {
         obj.addProperty("sessionId", id)
         obj.addProperty("command", cmd)
         cmdState = CommandUiState.Loading
+        loader = CommandUiState.Loading
         BaseApiInterface.create()
             .sendCommand(
                 BuildConfig.SEND_COMMAND,
@@ -53,12 +56,15 @@ open class LoginViewModel : ViewModel() {
                         val gson = Gson()
                         SharedPref.setResponse(gson.toJson(jsonRes?.jsonResponse))
                         cmdState = CommandUiState.Success(jsonRes?.jsonResponse)
+                        loader = CommandUiState.Success(null)
                     } else {
+                        loader = CommandUiState.Error
                         cmdState = CommandUiState.Error
                     }
                 }
 
                 override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                    loader = CommandUiState.Error
                     cmdState = CommandUiState.Error
                 }
             })

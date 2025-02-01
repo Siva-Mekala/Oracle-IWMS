@@ -28,6 +28,8 @@ fun HomeScreen(
     state: CommandUiState,
     onItemClick: (Int) -> (Unit)
 ) {
+    Log.d("HomeScreen","Inside composable")
+
     LaunchedEffect(Unit) {
         ///viewModel.fetchDashboardData()
     }

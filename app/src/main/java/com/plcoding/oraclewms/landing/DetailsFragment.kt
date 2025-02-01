@@ -1,5 +1,6 @@
 package com.plcoding.oraclewms.landing
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +54,7 @@ fun DetailsScreen(
     clickPosition: Int,
     startHome: Boolean? = false
 ) {
+    Log.d("DetailScreen","Inside composable")
     BackHandler {
         navController.popBackStack()
         viewModel.sendCommand(
