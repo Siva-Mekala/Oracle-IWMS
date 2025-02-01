@@ -1,10 +1,7 @@
 package com.plcoding.oraclewms.home
 
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
@@ -62,16 +59,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navOptions
 import com.example.compose.AppTheme
 import com.google.gson.Gson
-import com.plcoding.focusfun.landing.DashBoardScreen
 import com.plcoding.focusfun.landing.HomeScreen
 import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
-import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.JSONResponse
 import com.plcoding.oraclewms.landing.DetailsScreen
 import com.plcoding.oraclewms.login.CommandUiState
@@ -217,7 +211,7 @@ class LandingActivity : ComponentActivity() {
                 text = "Logout",
                 modifier = Modifier
                     .clickable {
-
+                    viewModel.endShell(Utils.deviceUUID(),this@LandingActivity)
                     }
                     .padding(start = 15.dp),
                 fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -65,10 +64,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.AppTheme
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.home.LandingActivity
+
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,6 +96,7 @@ class LoginActivity : ComponentActivity() {
         var email = rememberSaveable { mutableStateOf("") }
         var password = rememberSaveable { mutableStateOf("") }
         var environment by rememberSaveable { mutableStateOf("dev") }
+        val envs: ArrayList<String> = Gson().fromJson(SharedPref.getEnvResponse(), object : TypeToken<ArrayList<String?>?>() {}.type)
         Box(contentAlignment = Alignment.Center) {
             Column {
                 Text(
@@ -183,7 +186,7 @@ class LoginActivity : ComponentActivity() {
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        SpinnerSample(listOf("dev", "stag", "prod"), "dev",
+                        SpinnerSample(envs, envs.get(0),
                             onSelectionChanged = {
                                 environment = it
                             })

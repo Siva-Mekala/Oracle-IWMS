@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.plcoding.oraclewms.BaseApiInterface
 import com.plcoding.oraclewms.BuildConfig
+import com.plcoding.oraclewms.api.Dev
 import com.plcoding.oraclewms.api.EnvApiResponse
 import retrofit2.Call
 import retrofit2.Callback
@@ -23,19 +24,19 @@ open class SplashViewModel : ViewModel() {
         BaseApiInterface.create()
             .environments(
                 BuildConfig.ENVIRONMENTS,
-            ).enqueue(object : Callback<EnvApiResponse> {
+            ).enqueue(object : Callback<Map<String, Dev>> {
                 override fun onResponse(
-                    call: Call<EnvApiResponse>,
-                    response: Response<EnvApiResponse>
+                    call: Call<Map<String, Dev>>,
+                    response: Response<Map<String, Dev>>
                 ) {
                     if (response.isSuccessful) {
-                        getEnvState = EnvironmentsUiState.Success(response.body())
+                        getEnvState = EnvironmentsUiState.Success(response.body()?.keys?.toList())
                     } else {
                         getEnvState = EnvironmentsUiState.Error
                     }
                 }
 
-                override fun onFailure(call: Call<EnvApiResponse>, t: Throwable) {
+                override fun onFailure(call: Call<Map<String, Dev>>, t: Throwable) {
                     getEnvState = EnvironmentsUiState.Error
                 }
             })

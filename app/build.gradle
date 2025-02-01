@@ -55,6 +55,7 @@ android {
             def baseUrl = "http://64.23.189.32:3000/"
             buildConfigField("String", "BASE_URL", "\"${baseUrl}\"")
             buildConfigField("String", "START_SHELL", "\"${baseUrl}start-shell\"")
+            buildConfigField("String", "END_SHELL", "\"${baseUrl}end-shell\"")
             buildConfigField("String", "SEND_COMMAND", "\"${baseUrl}send-command\"")
             buildConfigField("String", "ENVIRONMENTS", "\"${baseUrl}environments\"")
         }
@@ -63,6 +64,7 @@ android {
             def baseUrl = "http://64.23.189.32:3000/"
             buildConfigField("String", "BASE_URL", "\"${baseUrl}\"")
             buildConfigField("String", "START_SHELL", "\"${baseUrl}start-shell\"")
+            buildConfigField("String", "END_SHELL", "\"${baseUrl}end-shell\"")
             buildConfigField("String", "SEND_COMMAND", "\"${baseUrl}send-command\"")
             buildConfigField("String", "ENVIRONMENTS", "\"${baseUrl}environments\"")
         }
