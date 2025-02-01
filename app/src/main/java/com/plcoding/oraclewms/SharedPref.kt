@@ -77,7 +77,7 @@ object SharedPref {
             remove(KEY_IS_USER_LOGGED_IN)
             remove(KEY_ENV)
             remove(KEY_RESPONSE)
-            remove(ENV_RESPONSE)
+            ///remove(ENV_RESPONSE)
             apply()
         }
 

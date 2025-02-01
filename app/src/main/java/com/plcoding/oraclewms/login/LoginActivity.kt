@@ -92,7 +92,6 @@ class LoginActivity : ComponentActivity() {
     @SuppressLint("HardwareIds")
     @Composable
     fun Greeting(viewModel: LoginViewModel, shellState: ShellUiState, cmdState: CommandUiState) {
-        var checkState = rememberSaveable { mutableStateOf(false) }
         var email = rememberSaveable { mutableStateOf("") }
         var password = rememberSaveable { mutableStateOf("") }
         var environment by rememberSaveable { mutableStateOf("dev") }
