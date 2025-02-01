@@ -15,7 +15,6 @@ import com.plcoding.oraclewms.BuildConfig
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.home.LandingActivity
-import com.plcoding.oraclewms.termsAndConditions.TermsAndConditionsView
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -23,11 +22,6 @@ import retrofit2.Response
 open class LoginViewModel : ViewModel() {
 
     open var TAG = LoginActivity::class.java.simpleName
-    var preCmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
-        private set
-    fun setPreState(state: CommandUiState) {
-        preCmdState = state
-    }
 
     var cmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
         private set
@@ -55,7 +49,7 @@ open class LoginViewModel : ViewModel() {
                     response: Response<ApiResponse>
                 ) {
                     if (response.isSuccessful) {
-                        val jsonRes=response.body()
+                        val jsonRes = response.body()
                         val gson = Gson()
                         SharedPref.setResponse(gson.toJson(jsonRes?.jsonResponse))
                         cmdState = CommandUiState.Success(jsonRes?.jsonResponse)
@@ -92,7 +86,7 @@ open class LoginViewModel : ViewModel() {
                     response: Response<ApiResponse>
                 ) {
                     if (response.isSuccessful) {
-                        val jsonRes=response.body()
+                        val jsonRes = response.body()
                         shellState = ShellUiState.Success(jsonRes?.jsonResponse)
                         sendCommand(id, "${email.value}\t${password.value}\n")
                     } else {
@@ -105,6 +99,7 @@ open class LoginViewModel : ViewModel() {
                 }
             })
     }
+
     fun endShell(
         id: String,
         context: Context
@@ -122,10 +117,8 @@ open class LoginViewModel : ViewModel() {
                     call: Call<JsonObject>,
                     response: Response<JsonObject>
                 ) {
-
-                        SharedPref.deleteAllPref()
-                        startActivity(context)
-
+                    SharedPref.deleteAllPref()
+                    startActivity(context)
                 }
 
                 override fun onFailure(call: Call<JsonObject>, t: Throwable) {
@@ -139,6 +132,5 @@ open class LoginViewModel : ViewModel() {
         val intent = Intent(context, LoginActivity::class.java)
         context.startActivity(intent)
         (context as LandingActivity).finish()
-
     }
 }

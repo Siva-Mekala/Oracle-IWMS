@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.Dev
-import com.plcoding.oraclewms.api.EnvApiResponse
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call

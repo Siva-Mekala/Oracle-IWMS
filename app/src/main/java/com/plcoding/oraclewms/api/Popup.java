@@ -14,6 +14,11 @@ public class Popup implements Serializable {
     @Expose
     private String type;
 
+    public Popup(String content, String type) {
+        this.content = content;
+        this.type = type;
+    }
+
     public String getContent() {
         return content;
     }

@@ -21,6 +21,7 @@ object SharedPref {
         editor.commit()
 
     }
+
     fun getEnvResponse(): String? {
         return sharedPref.getString(ENV_RESPONSE, null)
     }

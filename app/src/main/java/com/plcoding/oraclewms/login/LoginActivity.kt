@@ -96,7 +96,10 @@ class LoginActivity : ComponentActivity() {
         var email = rememberSaveable { mutableStateOf("") }
         var password = rememberSaveable { mutableStateOf("") }
         var environment by rememberSaveable { mutableStateOf("dev") }
-        val envs: ArrayList<String> = Gson().fromJson(SharedPref.getEnvResponse(), object : TypeToken<ArrayList<String?>?>() {}.type)
+        val envs: ArrayList<String> = Gson().fromJson(
+            SharedPref.getEnvResponse(),
+            object : TypeToken<ArrayList<String?>?>() {}.type
+        )
         Box(contentAlignment = Alignment.Center) {
             Column {
                 Text(
@@ -215,7 +218,6 @@ class LoginActivity : ComponentActivity() {
         if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading) LoaderScreen()
         else if (cmdState is CommandUiState.Success) {
             cmdState.response?.let {
-                if (it == null) return@let
                 it.popups.let { ups ->
                     if (ups == null || ups.isEmpty()) {
                         SharedPref.setUserLoggedIn(true)
@@ -226,16 +228,22 @@ class LoginActivity : ComponentActivity() {
                         startActivity(intent)
                         finish()
                     } else {
-                        AlertDialogExample({
-                            finish()
-                        }, {
-                            if (ups[0].content.equals("Invalid Login")) return@AlertDialogExample
-                            else viewModel.sendCommand(   Utils.deviceUUID(), "\u0001")
-                        }, "Alert", ups[0].content, "Yes", "No")
+                        AlertDialogExample(
+                            {
+                                finish()
+                            },
+                            {
+                                if (ups[0].content.equals("Invalid Login")) return@AlertDialogExample
+                                else viewModel.sendCommand(Utils.deviceUUID(), "\u0001")
+                            },
+                            "Alert",
+                            ups[0].content,
+                            if (ups[0].content.equals("Invalid Login")) null else "Yes",
+                            "No"
+                        )
                     }
                 }
             }
-
         }
     }
 
@@ -420,8 +428,8 @@ fun AlertDialogExample(
     onConfirmation: () -> Unit,
     dialogTitle: String,
     dialogText: String,
-    yes: String,
-    no: String
+    yes: String?,
+    no: String?
 ) {
     AlertDialog(
         title = {
@@ -431,7 +439,6 @@ fun AlertDialogExample(
             androidx.compose.material.Text(text = dialogText)
         },
         onDismissRequest = {
-            //onDismissRequest()
         },
         confirmButton = {
             TextButton(
@@ -439,7 +446,9 @@ fun AlertDialogExample(
                     onConfirmation()
                 }
             ) {
-                androidx.compose.material.Text("Confirm")
+                yes?.let {
+                    Text(yes)
+                }
             }
         },
         dismissButton = {
@@ -448,7 +457,9 @@ fun AlertDialogExample(
                     onDismissRequest()
                 }
             ) {
-                androidx.compose.material.Text("Dismiss")
+                no?.let {
+                    Text(no)
+                }
             }
         }
     )

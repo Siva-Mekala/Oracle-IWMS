@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import com.plcoding.oraclewms.BaseApiInterface
 import com.plcoding.oraclewms.BuildConfig
 import com.plcoding.oraclewms.api.Dev
-import com.plcoding.oraclewms.api.EnvApiResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

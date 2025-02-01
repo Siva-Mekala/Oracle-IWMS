@@ -99,7 +99,7 @@ class LandingActivity : ComponentActivity() {
     fun DashboardActivityScreen(
         modifier: Modifier = Modifier,
         viewModel: LandingViewModel,
-        menuEmpty : Boolean?
+        menuEmpty: Boolean?
     ) {
         val navController = rememberNavController()
         navController.addOnDestinationChangedListener { controller, destination, args ->
@@ -216,7 +216,7 @@ class LandingActivity : ComponentActivity() {
                 text = "Logout",
                 modifier = Modifier
                     .clickable {
-                    viewModel.endShell(Utils.deviceUUID(),this@LandingActivity)
+                        viewModel.endShell(Utils.deviceUUID(), this@LandingActivity)
                     }
                     .padding(start = 15.dp),
                 fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
@@ -247,7 +247,7 @@ class LandingActivity : ComponentActivity() {
                 response?.controls?.let {
                     if (it.toString().contains("22"))
                         IconButton(onClick = {
-                            viewModel.sendCommand(  Utils.deviceUUID(), "\u0017")
+                            viewModel.sendCommand(Utils.deviceUUID(), "\u0017")
                         }) {
                             Icon(
                                 Icons.Filled.ArrowBack,
@@ -256,8 +256,10 @@ class LandingActivity : ComponentActivity() {
                         }
                     if (it.toString().contains("19"))
                         IconButton(onClick = {
-                            viewModel.sendCommand(    Utils.deviceUUID(),
-                                "\u0015")
+                            viewModel.sendCommand(
+                                Utils.deviceUUID(),
+                                "\u0015"
+                            )
                         }) {
                             Icon(
                                 Icons.Filled.KeyboardArrowUp,
@@ -268,7 +270,8 @@ class LandingActivity : ComponentActivity() {
                         IconButton(onClick = {
                             viewModel.sendCommand(
                                 Utils.deviceUUID(),
-                                "\u0004")
+                                "\u0004"
+                            )
                         }) {
                             Icon(
                                 Icons.Filled.KeyboardArrowDown,
@@ -311,7 +314,7 @@ class LandingActivity : ComponentActivity() {
             elevation = 0.dp,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Row (verticalAlignment = Alignment.CenterVertically){
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(
                     imageVector = Icons.Outlined.Menu,
                     contentDescription = "",
@@ -328,7 +331,9 @@ class LandingActivity : ComponentActivity() {
                     colorFilter = ColorFilter.tint(androidx.compose.material3.MaterialTheme.colorScheme.onPrimaryContainer)
                 )
                 Text(
-                    text = if (cmdState is CommandUiState.Success) { cmdState.response.let { if(it == null) "iMWS" else it.screenName.let { if (it == null) "iMWS" else it.value}} } else "iMWS",
+                    text = if (cmdState is CommandUiState.Success) {
+                        cmdState.response.let { if (it == null) "iMWS" else it.screenName.let { if (it == null) "iMWS" else it.value } }
+                    } else "iMWS",
                     modifier = Modifier
                         .padding(start = 15.dp),
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),

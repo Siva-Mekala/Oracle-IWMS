@@ -1,6 +1,5 @@
 package com.plcoding.oraclewms.login
 
-import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.JSONResponse
 
 sealed interface ShellUiState {

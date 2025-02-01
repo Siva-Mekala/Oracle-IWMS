@@ -37,7 +37,6 @@ import com.example.compose.AppTheme
 import com.google.gson.Gson
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
-import com.plcoding.oraclewms.api.EnvApiResponse
 import com.plcoding.oraclewms.home.LandingActivity
 import com.plcoding.oraclewms.termsAndConditions.TermsAndConditionsView
 
@@ -49,7 +48,7 @@ class SplashActivityView : ComponentActivity() {
             val viewModel = viewModel<SplashViewModel>()
             AppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    SplashScreen(viewModel, viewModel.getEnvState){
+                    SplashScreen(viewModel, viewModel.getEnvState) {
                         startActivity(it)
                     }
                 }
@@ -62,7 +61,12 @@ class SplashActivityView : ComponentActivity() {
             val gson = Gson()
             SharedPref.setEnvResponse(gson.toJson(envApiResponse))
         }
-        startActivity(Intent(this, if (SharedPref.isUserLoggedIn()) LandingActivity::class.java else TermsAndConditionsView::class.java))
+        startActivity(
+            Intent(
+                this,
+                if (SharedPref.isUserLoggedIn()) LandingActivity::class.java else TermsAndConditionsView::class.java
+            )
+        )
         finish()
     }
 
@@ -93,7 +97,7 @@ class SplashActivityView : ComponentActivity() {
     fun SplashScreen(
         viewModel: SplashViewModel,
         envState: EnvironmentsUiState,
-        onNavigate: (response: List<String>? ) -> Unit = {}
+        onNavigate: (response: List<String>?) -> Unit = {}
     ) {
         val scale = remember {
             Animatable(1f)

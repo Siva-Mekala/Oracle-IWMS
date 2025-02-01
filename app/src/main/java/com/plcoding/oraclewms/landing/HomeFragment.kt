@@ -17,7 +17,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.navOptions
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.login.CommandUiState
 
@@ -32,11 +31,10 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         ///viewModel.fetchDashboardData()
     }
-    Log.d("HomeScreen", ""+state)
     if (state is CommandUiState.Success)
         state.response?.let { res ->
             if (res.menuItems.isEmpty()) return@let
-            LazyColumn (modifier) {
+            LazyColumn(modifier) {
                 items(res.menuItems.size) {
                     Card(
                         modifier = Modifier
