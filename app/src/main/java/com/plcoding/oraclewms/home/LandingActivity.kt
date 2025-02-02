@@ -72,7 +72,6 @@ import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.api.JSONResponse
 import com.plcoding.oraclewms.landing.DetailsScreen
 import com.plcoding.oraclewms.login.CommandUiState
-import com.plcoding.oraclewms.login.LoaderScreen
 import kotlinx.coroutines.launch
 
 class LandingActivity : ComponentActivity() {
@@ -157,7 +156,7 @@ class LandingActivity : ComponentActivity() {
                         viewModel, when (viewModel.cmdState) {
                             is CommandUiState.Success -> (viewModel.cmdState as CommandUiState.Success).response
                             else -> null
-                        },navController
+                        }, navController
                     )
                 }) { innerPadding ->
                 Box(modifier = modifier.padding(innerPadding)) {
@@ -173,7 +172,6 @@ class LandingActivity : ComponentActivity() {
                                 viewModel.cmdState
                             ) {
                                 clickPosition = it
-                                navController.navigate("Rewards")
                             }
                         }
                         composable("Rewards") {
@@ -249,44 +247,52 @@ class LandingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun bottomAppBar(viewModel: LandingViewModel, response: JSONResponse?, navController: NavHostController) {
+    fun bottomAppBar(
+        viewModel: LandingViewModel,
+        response: JSONResponse?,
+        navController: NavHostController
+    ) {
         BottomAppBar(
             actions = {
                 response?.controls?.let {
                     for (it in it) {
-                    if (it.value.contains("Ctrl-W"))
-                        IconButton(onClick = {
-                            viewModel.sendCommand(Utils.deviceUUID(),  Utils.getControlCharacterValueOptimized("Ctrl-W"))
-                        }) {
-                            Icon(
-                                Icons.Filled.ArrowBack,
-                                contentDescription = "Localized description"
-                            )
-                        }
-                    if (it.value.contains("Ctrl-U"))
-                        IconButton(onClick = {
-                            viewModel.sendCommand(
-                                Utils.deviceUUID(),
-                                Utils.getControlCharacterValueOptimized("Ctrl-U")
-                            )
-                        }) {
-                            Icon(
-                                Icons.Filled.KeyboardArrowUp,
-                                contentDescription = "Localized description",
-                            )
-                        }
-                    if (it.value.contains("Ctrl-D"))
-                        IconButton(onClick = {
-                            viewModel.sendCommand(
-                                Utils.deviceUUID(), Utils.getControlCharacterValueOptimized("Ctrl-D")
-                            )
-                        }) {
-                            Icon(
-                                Icons.Filled.KeyboardArrowDown,
-                                contentDescription = "Localized description",
-                            )
-                        }
-                        }
+                        if (it.value.contains("Ctrl-W"))
+                            IconButton(onClick = {
+                                viewModel.sendCommand(
+                                    Utils.deviceUUID(),
+                                    Utils.getControlCharacterValueOptimized("Ctrl-W")
+                                )
+                            }) {
+                                Icon(
+                                    Icons.Filled.ArrowBack,
+                                    contentDescription = "Localized description"
+                                )
+                            }
+                        if (it.value.contains("Ctrl-U"))
+                            IconButton(onClick = {
+                                viewModel.sendCommand(
+                                    Utils.deviceUUID(),
+                                    Utils.getControlCharacterValueOptimized("Ctrl-U")
+                                )
+                            }) {
+                                Icon(
+                                    Icons.Filled.KeyboardArrowUp,
+                                    contentDescription = "Localized description",
+                                )
+                            }
+                        if (it.value.contains("Ctrl-D"))
+                            IconButton(onClick = {
+                                viewModel.sendCommand(
+                                    Utils.deviceUUID(),
+                                    Utils.getControlCharacterValueOptimized("Ctrl-D")
+                                )
+                            }) {
+                                Icon(
+                                    Icons.Filled.KeyboardArrowDown,
+                                    contentDescription = "Localized description",
+                                )
+                            }
+                    }
                 }
 
             },
@@ -304,32 +310,37 @@ class LandingActivity : ComponentActivity() {
                         onDismissRequest = { expanded = false }
                     ) {
                         response?.controls?.forEach {
-                            if (it.value.contains("Ctrl-W") || it.value.contains("Ctrl-D") || it.value.contains("Ctrl-U")) return@forEach
+                            if (it.value.contains("Ctrl-W") || it.value.contains("Ctrl-D") || it.value.contains(
+                                    "Ctrl-U"
+                                )
+                            ) return@forEach
                             DropdownMenuItem(
                                 text = { Text(it.value) },
                                 onClick = {
-
-                                    if(it.value.contains("Ctrl-X")){
-                                        if(navController.currentDestination?.route == "Home"){
-                                            viewModel.endShell(Utils.deviceUUID(),this@LandingActivity)
-                                        }else{
-
+                                    expanded = false
+                                    if (it.value.contains("Ctrl-X")) {
+                                        if (navController.currentDestination?.route == "Home") {
+                                            viewModel.endShell(
+                                                Utils.deviceUUID(),
+                                                this@LandingActivity
+                                            )
+                                        } else {
                                             viewModel.sendCommand(
                                                 Utils.deviceUUID(),
-                                                Utils.getControlCharacterValueOptimized(it.value.split(":")[0])
+                                                Utils.getControlCharacterValueOptimized(
+                                                    it.value.split(
+                                                        ":"
+                                                    )[0]
+                                                )
                                             )
                                             navController.popBackStack()
                                         }
-                                    }else{
+                                    } else {
                                         viewModel.sendCommand(
                                             Utils.deviceUUID(),
                                             Utils.getControlCharacterValueOptimized(it.value.split(":")[0])
                                         )
                                     }
-
-
-
-
                                 }
                             )
                         }

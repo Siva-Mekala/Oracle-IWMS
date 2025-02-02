@@ -18,6 +18,7 @@ import com.plcoding.oraclewms.home.LandingActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.net.HttpURLConnection
 
 open class LoginViewModel : ViewModel() {
 
@@ -58,14 +59,14 @@ open class LoginViewModel : ViewModel() {
                         cmdState = CommandUiState.Success(jsonRes?.jsonResponse)
                         loader = CommandUiState.Success(null)
                     } else {
-                        loader = CommandUiState.Error
-                        cmdState = CommandUiState.Error
+                        loader = CommandUiState.Error(response.code())
+                        cmdState = CommandUiState.Error(response.code())
                     }
                 }
 
                 override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
-                    loader = CommandUiState.Error
-                    cmdState = CommandUiState.Error
+                    loader = CommandUiState.Error(HttpURLConnection.HTTP_INTERNAL_ERROR)
+                    cmdState = CommandUiState.Error(HttpURLConnection.HTTP_INTERNAL_ERROR)
                 }
             })
     }
@@ -134,7 +135,7 @@ open class LoginViewModel : ViewModel() {
             })
     }
 
-    private fun startActivity(context: Context) {
+    fun startActivity(context: Context) {
         val intent = Intent(context, LoginActivity::class.java)
         context.startActivity(intent)
         (context as LandingActivity).finish()

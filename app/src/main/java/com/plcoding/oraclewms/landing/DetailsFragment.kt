@@ -28,15 +28,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
@@ -46,6 +43,7 @@ import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.login.CommandUiState
+import java.net.HttpURLConnection
 
 @Composable
 fun DetailsScreen(
@@ -54,7 +52,7 @@ fun DetailsScreen(
     viewModel: LandingViewModel,
     response: CommandUiState,
     clickPosition: Int,
-    startHome: Boolean? = false
+    menuEmpty: Boolean?
 ) {
     BackHandler {
         navController.popBackStack()
@@ -65,7 +63,7 @@ fun DetailsScreen(
     }
 
     val scanner = GmsBarcodeScanning.getClient(LocalContext.current)
-    if (startHome == false)
+    if (menuEmpty == false)
         LaunchedEffect(true) {
             viewModel.sendCommand(
                 Utils.deviceUUID(),
@@ -95,7 +93,8 @@ fun DetailsScreen(
                                         )
                                     } else {
                                         viewModel.sendCommand(
-                                            Utils.deviceUUID(), Utils.getControlCharacterValueOptimized("Ctrl-A")
+                                            Utils.deviceUUID(),
+                                            Utils.getControlCharacterValueOptimized("Ctrl-A")
                                         )
                                     }
                                 } else {
@@ -112,6 +111,12 @@ fun DetailsScreen(
                 }
             }
         }
+    } else if (response is CommandUiState.Error){
+        if (response.code == HttpURLConnection.HTTP_NOT_FOUND) viewModel.startActivity(LocalContext.current)
+        else{
+        }
+    } else {
+
     }
 }
 
