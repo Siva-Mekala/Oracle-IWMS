@@ -31,13 +31,16 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -122,6 +125,7 @@ class LandingActivity : ComponentActivity() {
         viewModel: LandingViewModel,
         navController: NavHostController
     ) {
+        var showBottomSheet by remember { mutableStateOf(false) }
         val coroutineScope = rememberCoroutineScope()
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         var clickPosition by remember { mutableStateOf(0) }
@@ -155,7 +159,9 @@ class LandingActivity : ComponentActivity() {
                             is CommandUiState.Success -> (viewModel.cmdState as CommandUiState.Success).response
                             else -> null
                         }, navController
-                    )
+                    ) {
+                        showBottomSheet = true
+                    }
                 }) { innerPadding ->
                 Box(modifier = modifier.padding(innerPadding)) {
                     NavHost(
@@ -184,10 +190,73 @@ class LandingActivity : ComponentActivity() {
                     }
 //                    if (loader is CommandUiState.Loading) LoaderScreen()
                 }
+                if (showBottomSheet) MoreInfo (viewModel, when (viewModel.cmdState) {
+                    is CommandUiState.Success -> (viewModel.cmdState as CommandUiState.Success).response
+                    else -> null
+                }, navController)
             }
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MoreInfo(viewModel: LandingViewModel,
+                 response: JSONResponse?,
+                 navController: NavHostController) {
+        val sheetState = rememberModalBottomSheetState()
+        var showBottomSheet by remember { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
+        ModalBottomSheet (
+            onDismissRequest = {
+                showBottomSheet = false
+            },
+            sheetState = sheetState
+        ) {
+            response?.controls?.forEach {
+                if (it.value.contains("Ctrl-W") || it.value.contains("Ctrl-D") || it.value.contains(
+                        "Ctrl-U"
+                    )
+                ) return@forEach
+                Text(it.value,
+                    fontFamily = FontFamily(
+                        Font(
+                            R.font.spacegrotesk_medium
+                        )
+                    ),
+                    fontSize = 15.sp,
+                    modifier = Modifier.fillMaxWidth().padding(15.dp).clickable {
+                        coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                showBottomSheet = false
+                            }
+                        }
+                    if (it.value.contains("Ctrl-X")) {
+                        if (navController.currentDestination?.route == "Home") {
+                            viewModel.endShell(
+                                Utils.deviceUUID(),
+                                this@LandingActivity
+                            )
+                        } else {
+                            viewModel.sendCommand(
+                                Utils.deviceUUID(),
+                                Utils.getControlCharacterValueOptimized(
+                                    it.value.split(
+                                        ":"
+                                    )[0]
+                                )
+                            )
+                            navController.popBackStack()
+                        }
+                    } else {
+                        viewModel.sendCommand(
+                            Utils.deviceUUID(),
+                            Utils.getControlCharacterValueOptimized(it.value.split(":")[0])
+                        )
+                    }
+                }.padding(5.dp))
+            }
+        }
+    }
 
     @Composable
     fun DrawerContentComponent(
@@ -247,7 +316,8 @@ class LandingActivity : ComponentActivity() {
     fun bottomAppBar(
         viewModel: LandingViewModel,
         response: JSONResponse?,
-        navController: NavHostController
+        navController: NavHostController,
+        onClick : () ->Unit
     ) {
         BottomAppBar(
             actions = {
@@ -299,54 +369,8 @@ class LandingActivity : ComponentActivity() {
                 }
             },
             floatingActionButton = {
-                var expanded by remember { mutableStateOf(false) }
-                Box(
-                    modifier = Modifier
-                        .padding(16.dp)
-                ) {
-                    IconButton(onClick = { expanded = !expanded }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More options")
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        response?.controls?.forEach {
-                            if (it.value.contains("Ctrl-W") || it.value.contains("Ctrl-D") || it.value.contains(
-                                    "Ctrl-U"
-                                )
-                            ) return@forEach
-                            DropdownMenuItem(
-                                text = { Text(it.value) },
-                                onClick = {
-                                    expanded = false
-                                    if (it.value.contains("Ctrl-X")) {
-                                        if (navController.currentDestination?.route == "Home") {
-                                            viewModel.endShell(
-                                                Utils.deviceUUID(),
-                                                this@LandingActivity
-                                            )
-                                        } else {
-                                            viewModel.sendCommand(
-                                                Utils.deviceUUID(),
-                                                Utils.getControlCharacterValueOptimized(
-                                                    it.value.split(
-                                                        ":"
-                                                    )[0]
-                                                )
-                                            )
-                                            navController.popBackStack()
-                                        }
-                                    } else {
-                                        viewModel.sendCommand(
-                                            Utils.deviceUUID(),
-                                            Utils.getControlCharacterValueOptimized(it.value.split(":")[0])
-                                        )
-                                    }
-                                }
-                            )
-                        }
-                    }
+                IconButton(onClick = { onClick() }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More options")
                 }
             }
         )
