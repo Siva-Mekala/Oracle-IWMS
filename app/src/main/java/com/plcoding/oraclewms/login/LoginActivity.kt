@@ -482,6 +482,6 @@ fun AlertDialogExample(
                     Text(no)
                 }
             }
-        }
+        },
     )
 }
