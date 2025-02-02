@@ -118,12 +118,16 @@ class LoginActivity : ComponentActivity() {
                             "Login", fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
                             style = TextStyle(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                fontSize = 30.sp
+                                fontSize = 20.sp
                             ),
                             modifier = Modifier
                                 .padding(10.dp)
                                 .align(Alignment.CenterHorizontally)
                         )
+                        SpinnerSample(envs, envs.get(0),
+                            onSelectionChanged = {
+                                environment = it
+                            })
                         OutlinedTextField(
                             label = {
                                 Text(
@@ -188,10 +192,7 @@ class LoginActivity : ComponentActivity() {
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        SpinnerSample(envs, envs.get(0),
-                            onSelectionChanged = {
-                                environment = it
-                            })
+
                         Button(
                             onClick = {
                                 viewModel.startShell(
@@ -203,7 +204,7 @@ class LoginActivity : ComponentActivity() {
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 15.dp, bottom = 15.dp, end = 15.dp)
+                                .padding(15.dp)
                         ) {
                             Text(
                                 "Login", fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
@@ -237,8 +238,8 @@ class LoginActivity : ComponentActivity() {
                             },
                             "Alert",
                             ups[0].content,
-                            if (ups[0].content.equals("Invalid Login")) null else "Yes",
-                            "No"
+                            if (ups[0].content.equals("Invalid Login")) null else "Accept",
+                            "Decline"
                         )
                     }
                 }
@@ -335,8 +336,8 @@ class LoginActivity : ComponentActivity() {
         preselected: String,
         onSelectionChanged: (myData: String) -> Unit,
         modifier: Modifier = Modifier
-            .wrapContentWidth()
-            .padding(15.dp)
+            .fillMaxWidth()
+            .padding(15.dp, 5.dp, 15.dp, 5.dp)
     ) {
         var selected by rememberSaveable { mutableStateOf(preselected) }
         var expanded by rememberSaveable { mutableStateOf(false) } // initial value
@@ -357,13 +358,14 @@ class LoginActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .fillMaxWidth(0.8f)
                 )
                 Icon(Icons.Outlined.ArrowDropDown, null, modifier = Modifier.padding(8.dp))
 
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
-                    modifier = Modifier.wrapContentWidth()   // delete this modifier and use .wrapContentWidth() if you would like to wrap the dropdown menu around the content
+                    modifier = Modifier.fillMaxWidth()  // delete this modifier and use .wrapContentWidth() if you would like to wrap the dropdown menu around the content
                 ) {
                     list.forEach { listEntry ->
                         DropdownMenuItem(
@@ -378,7 +380,7 @@ class LoginActivity : ComponentActivity() {
                                     fontFamily = FontFamily(Font(R.font.spacegrotesk_light)),
                                     fontSize = 15.sp,
                                     modifier = Modifier
-                                        .wrapContentWidth()  //optional instad of fillMaxWidth
+                                        .fillMaxWidth() //optional instad of fillMaxWidth
                                 )
                             }
                         )
