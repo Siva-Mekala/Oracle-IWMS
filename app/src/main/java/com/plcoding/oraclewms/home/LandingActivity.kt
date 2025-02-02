@@ -101,7 +101,6 @@ class LandingActivity : ComponentActivity() {
         DashboardActivityScreen(
             modifier,
             viewModel,
-            item?.menuItems?.isEmpty(),
             navController
         )
     }
@@ -121,7 +120,6 @@ class LandingActivity : ComponentActivity() {
     fun DashboardActivityScreen(
         modifier: Modifier = Modifier,
         viewModel: LandingViewModel,
-        menuEmpty: Boolean?,
         navController: NavHostController
     ) {
         val coroutineScope = rememberCoroutineScope()
@@ -180,8 +178,7 @@ class LandingActivity : ComponentActivity() {
                                 navController,
                                 viewModel,
                                 viewModel.cmdState,
-                                clickPosition,
-                                menuEmpty
+                                clickPosition
                             )
                         }
                     }

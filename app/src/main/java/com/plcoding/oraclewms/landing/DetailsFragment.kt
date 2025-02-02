@@ -51,8 +51,7 @@ fun DetailsScreen(
     navController: NavController,
     viewModel: LandingViewModel,
     response: CommandUiState,
-    clickPosition: Int,
-    menuEmpty: Boolean?
+    clickPosition: Int
 ) {
     BackHandler {
         navController.popBackStack()
@@ -63,7 +62,7 @@ fun DetailsScreen(
     }
 
     val scanner = GmsBarcodeScanning.getClient(LocalContext.current)
-    if (menuEmpty == false)
+    if (response is CommandUiState.Success && response.response?.menuItems?.isEmpty() == false)
         LaunchedEffect(true) {
             viewModel.sendCommand(
                 Utils.deviceUUID(),
@@ -116,7 +115,6 @@ fun DetailsScreen(
         else{
         }
     } else {
-
     }
 }
 

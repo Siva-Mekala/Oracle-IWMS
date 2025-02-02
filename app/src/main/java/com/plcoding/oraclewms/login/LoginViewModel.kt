@@ -124,18 +124,17 @@ open class LoginViewModel : ViewModel() {
                     call: Call<JsonObject>,
                     response: Response<JsonObject>
                 ) {
-                    SharedPref.deleteAllPref()
                     startActivity(context)
                 }
 
                 override fun onFailure(call: Call<JsonObject>, t: Throwable) {
-                    SharedPref.deleteAllPref()
                     startActivity(context)
                 }
             })
     }
 
     fun startActivity(context: Context) {
+        SharedPref.deleteAllPref()
         val intent = Intent(context, LoginActivity::class.java)
         context.startActivity(intent)
         (context as LandingActivity).finish()
