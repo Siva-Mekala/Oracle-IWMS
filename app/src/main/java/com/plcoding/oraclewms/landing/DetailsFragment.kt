@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.loader.content.Loader
 import androidx.navigation.NavController
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
@@ -49,6 +50,7 @@ import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.login.CommandUiState
+import com.plcoding.oraclewms.login.LoaderScreen
 import java.net.HttpURLConnection
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -120,7 +122,10 @@ fun DetailsScreen(
         if (state.code == HttpURLConnection.HTTP_NOT_FOUND) viewModel.startActivity(LocalContext.current)
         else {
         }
+    } else if (state is CommandUiState.Loading){
+        LoaderScreen()
     } else {
+
     }
 }
 

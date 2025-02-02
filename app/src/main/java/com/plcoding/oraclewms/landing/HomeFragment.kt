@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.login.CommandUiState
+import com.plcoding.oraclewms.login.LoaderScreen
 import java.net.HttpURLConnection
 
 @Composable
@@ -71,6 +72,8 @@ fun HomeScreen(
         if (state.code == HttpURLConnection.HTTP_NOT_FOUND) viewModel.startActivity(LocalContext.current)
         else {
         }
+    } else if (state is CommandUiState.Loading){
+        LoaderScreen()
     } else {
 
     }

@@ -188,12 +188,13 @@ class LandingActivity : ComponentActivity() {
                             )
                         }
                     }
-//                    if (loader is CommandUiState.Loading) LoaderScreen()
                 }
                 if (showBottomSheet) MoreInfo (viewModel, when (viewModel.cmdState) {
                     is CommandUiState.Success -> (viewModel.cmdState as CommandUiState.Success).response
                     else -> null
-                }, navController)
+                }, navController) {
+                    showBottomSheet = false
+                }
             }
         }
     }
@@ -202,12 +203,13 @@ class LandingActivity : ComponentActivity() {
     @Composable
     fun MoreInfo(viewModel: LandingViewModel,
                  response: JSONResponse?,
-                 navController: NavHostController) {
+                 navController: NavHostController, onDismiss : () -> Unit) {
         val sheetState = rememberModalBottomSheetState()
         var showBottomSheet by remember { mutableStateOf(false) }
         val coroutineScope = rememberCoroutineScope()
         ModalBottomSheet (
             onDismissRequest = {
+                onDismiss()
                 showBottomSheet = false
             },
             sheetState = sheetState
@@ -227,6 +229,7 @@ class LandingActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth().padding(15.dp).clickable {
                         coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
+                                onDismiss()
                                 showBottomSheet = false
                             }
                         }
