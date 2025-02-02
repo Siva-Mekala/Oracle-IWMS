@@ -40,7 +40,7 @@ open class LoginViewModel : ViewModel() {
         Log.d(TAG, "Inside sendCommand")
         val obj = JsonObject()
         obj.addProperty("sessionId", id)
-        obj.addProperty("command", cmd.trim())
+        obj.addProperty("command", cmd)
         cmdState = CommandUiState.Loading
         loader = CommandUiState.Loading
         BaseApiInterface.create()

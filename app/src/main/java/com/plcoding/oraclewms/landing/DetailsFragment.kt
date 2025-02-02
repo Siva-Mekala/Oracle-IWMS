@@ -22,6 +22,8 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.Card
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,6 +56,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
+import androidx.loader.content.Loader
 import androidx.navigation.NavController
 import com.example.compose.AppTheme
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
@@ -96,7 +100,7 @@ fun DetailsScreen(
     if (state is CommandUiState.Success) {
         state.response?.formFields.let {
             if (it == null) {
-            } else ListScreen(it, scanner, modifier, viewModel)
+            } else ListScreen(it, scanner, modifier, viewModel, state)
         }
         state.response?.popups.let {
             it.let { ups ->
@@ -285,7 +289,7 @@ fun WareHouseTextField(viewModel: LandingViewModel, popup: Popup, onChange: (Str
         )
     }
     val focusRequester = remember { FocusRequester() }
-    TextField(
+    OutlinedTextField(
         label = {
             Text(
                 popup.content,
@@ -312,7 +316,11 @@ fun WareHouseTextField(viewModel: LandingViewModel, popup: Popup, onChange: (Str
                 }
             }
         ),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        colors = TextFieldDefaults.colors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+        )
     )
 }
 
@@ -321,13 +329,33 @@ fun ListScreen(
     item: List<FormField>,
     scanner: GmsBarcodeScanner,
     modifier: Modifier,
-    viewModel: LandingViewModel
+    viewModel: LandingViewModel,
+    state: CommandUiState
+
 ) {
     LazyColumn(
         modifier,
         verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(start = 5.dp, end = 5.dp)
     ) {
+        item {
+            Card(
+
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary)
+            ) {
+                Text(
+                    text = if (state is CommandUiState.Success) {
+                        state.response.let { if (it == null) "iMWS" else it.screenName.let { if (it == null) "iMWS" else it.value } }
+                    } else "iMWS",
+                    modifier = Modifier
+                        .padding( 5.dp),
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+        }
         items(item.size) { x ->
             ListItem(item = item.get(x), scanner, viewModel)
         }
@@ -366,7 +394,7 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
                     painter = painterResource(R.drawable.scan),
                     null,
                     modifier = Modifier
-                        .size(35.dp)
+                        .size(40.dp)
                         .clickable {
                             if (item.cursor) scanner
                                 .startScan()
@@ -381,7 +409,7 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
                                     println("barcode2")
                                 }
                         }
-                        .padding(8.dp)
+                        .padding(5.dp)
                 )
             else if (item.formatters?.format_date == true)
                 if (item.cursor) Icon(
@@ -391,7 +419,7 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
                         .clickable {
                             showDate.value = true
                         }
-                        .padding(8.dp)
+                        .padding(5.dp)
                 )
         },
         enabled = cursor,
@@ -399,7 +427,7 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
         onValueChange = { textObj.value = it },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(5.dp)
+            .padding(start=5.dp, end=5.dp)
             .focusRequester(focusRequester),
         keyboardActions = KeyboardActions(
             onNext = {
