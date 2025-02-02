@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.BottomAppBar
@@ -342,7 +343,9 @@ class LandingActivity : ComponentActivity() {
                         }) {
                             Icon(
                                 Icons.Filled.ArrowBack,
-                                contentDescription = "Localized description"
+                                contentDescription = "Localized description",
+                                Modifier.size(40.dp).padding(5.dp)
+                                
                             )
                         }
                     if (it.toString().contains("Ctrl-U"))
@@ -355,6 +358,7 @@ class LandingActivity : ComponentActivity() {
                             Icon(
                                 Icons.Filled.KeyboardArrowUp,
                                 contentDescription = "Localized description",
+                                Modifier.size(40.dp).padding(5.dp)
                             )
                         }
                     if (it.toString().contains("Ctrl-D"))
@@ -367,13 +371,14 @@ class LandingActivity : ComponentActivity() {
                             Icon(
                                 Icons.Filled.KeyboardArrowDown,
                                 contentDescription = "Localized description",
+                                Modifier.size(40.dp).padding(5.dp)
                             )
                         }
                 }
             },
             floatingActionButton = {
                 IconButton(onClick = { onClick() }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                    Icon(Icons.Filled.MoreHoriz, contentDescription = "More options",   Modifier.size(40.dp).padding(5.dp))
                 }
             }
         )
