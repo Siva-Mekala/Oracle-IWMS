@@ -40,7 +40,7 @@ open class LoginViewModel : ViewModel() {
         Log.d(TAG, "Inside sendCommand")
         val obj = JsonObject()
         obj.addProperty("sessionId", id)
-        obj.addProperty("command", cmd)
+        obj.addProperty("command", cmd.trim())
         cmdState = CommandUiState.Loading
         loader = CommandUiState.Loading
         BaseApiInterface.create()
@@ -95,7 +95,7 @@ open class LoginViewModel : ViewModel() {
                     if (response.isSuccessful) {
                         val jsonRes = response.body()
                         shellState = ShellUiState.Success(jsonRes?.jsonResponse)
-                        sendCommand(id, "${email.value}\t${password.value}\n")
+                        sendCommand(id, "${email.value.trim()}\t${password.value.trim()}\n")
                     } else {
                         shellState = ShellUiState.Error
                     }
