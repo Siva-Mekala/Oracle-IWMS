@@ -45,17 +45,18 @@ fun HomeScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 15.dp, end = 15.dp, top = 15.dp)
+                                .padding(start = 5.dp, end = 5.dp, top = 3.dp, bottom = 3.dp)
                                 .clickable {
                                     onItemClick(res.menuItems.get(it).optionNumber)
                                     navController.navigate("Rewards")
                                 },
-                            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary)
+                            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.onPrimary),
+                            border = CardDefaults.outlinedCardBorder(true)
                         ) {
                             Text(
                                 text = "${res.menuItems.get(it).value}",
-                                color = MaterialTheme.colorScheme.onSecondary,
-                                modifier = modifier.padding(15.dp),
+                                color = MaterialTheme.colorScheme.secondary,
+                                modifier = modifier.padding(start = 10.dp, end = 5.dp, top = 5.dp, bottom = 5.dp),
                                 fontFamily = FontFamily(
                                     Font(
                                         R.font.spacegrotesk_medium

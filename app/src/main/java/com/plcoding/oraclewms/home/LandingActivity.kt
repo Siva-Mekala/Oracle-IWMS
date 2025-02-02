@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.IconButton
@@ -29,11 +32,14 @@ import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -54,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -135,13 +142,13 @@ class LandingActivity : ComponentActivity() {
             drawerContent = {
                 ModalDrawerSheet(drawerContainerColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer) {
                     DrawerContentComponent(
-                        closeDrawer = {
-                            coroutineScope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
-                            }
-                        },
+//                        closeDrawer = {
+//                            coroutineScope.launch {
+//                                drawerState.apply {
+//                                    if (isClosed) open() else close()
+//                                }
+//                            }
+//                        },
                         viewModel
                     )
                 }
@@ -152,7 +159,7 @@ class LandingActivity : ComponentActivity() {
                 .navigationBarsPadding(),
                 containerColor = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer,
                 topBar = {
-                    DashBoardToolBar(drawerState, viewModel.cmdState)
+                    DashBoardToolBar(drawerState, viewModel.cmdState,  viewModel)
                 },
                 bottomBar = {
                     bottomAppBar(
@@ -264,7 +271,6 @@ class LandingActivity : ComponentActivity() {
 
     @Composable
     fun DrawerContentComponent(
-        closeDrawer: () -> Unit,
         viewModel: LandingViewModel
     ) {
         Column {
@@ -275,8 +281,8 @@ class LandingActivity : ComponentActivity() {
                 info.add(HomeInfo("Company", item.response?.appName?.value ?: ""))
                 info.add(HomeInfo("Facility", item.response?.facilityName?.value ?: ""))
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                    modifier = Modifier.padding(15.dp)
+                    verticalArrangement = Arrangement.spacedBy(0.dp),
+                    modifier = Modifier.padding(start=10.dp)
                 ) {
                     items(info.size) {
                         Row {
@@ -288,31 +294,31 @@ class LandingActivity : ComponentActivity() {
                                     )
                                 ),
                                 fontSize = 15.sp,
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
                             )
                             Text(
                                 text = info.get(it).subHeader,
                                 fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
                                 fontSize = 15.sp,
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.padding(20.dp))
-            Text(
-                text = "Logout",
-                modifier = Modifier
-                    .clickable {
-                        viewModel.endShell(Utils.deviceUUID(), this@LandingActivity)
-                    }
-                    .padding(start = 15.dp),
-                fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                fontSize = 15.sp,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
-            )
+//            Spacer(modifier = Modifier.padding(20.dp))
+//            Text(
+//                text = "Logout",
+//                modifier = Modifier
+//                    .clickable {
+//                        viewModel.endShell(Utils.deviceUUID(), this@LandingActivity)
+//                    }
+//                    .padding(start = 15.dp),
+//                fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+//                fontSize = 15.sp,
+//                color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
+//            )
         }
     }
 
@@ -385,40 +391,74 @@ class LandingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun DashBoardToolBar(drawerState: DrawerState, cmdState: CommandUiState) {
+    fun DashBoardToolBar(drawerState: DrawerState, cmdState: CommandUiState,viewModel: LandingViewModel ) {
         val scope = rememberCoroutineScope()
         TopAppBar(
             backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer,
             elevation = 0.dp,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().height(120.dp)
+
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    imageVector = Icons.Outlined.Menu,
-                    contentDescription = "",
-                    modifier = Modifier
-                        .clickable {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
+//            Row(verticalAlignment = Alignment.CenterVertically) {
+//                Image(
+//                    imageVector = Icons.Outlined.Menu,
+//                    contentDescription = "",
+//                    modifier = Modifier
+//                        .clickable {
+//                            scope.launch {
+//                                drawerState.apply {
+//                                    if (isClosed) open() else close()
+//                                }
+//                            }
+//                        }
+//                        .padding(start = 10.dp)
+//                        .size(width = 48.dp, height = 30.dp),
+//                    colorFilter = ColorFilter.tint(androidx.compose.material3.MaterialTheme.colorScheme.onPrimaryContainer)
+//                )
+//                Text(
+//                    text = if (cmdState is CommandUiState.Success) {
+//                        cmdState.response.let { if (it == null) "iMWS" else it.screenName.let { if (it == null) "iMWS" else it.value } }
+//                    } else "iMWS",
+//                    modifier = Modifier
+//                        .padding(start = 15.dp),
+//                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+//                    fontSize = 20.sp,
+//                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
+//                )
+//            }
+
+            Card(
+                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+                modifier = Modifier.padding(5.dp).fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                border = CardDefaults.outlinedCardBorder(true)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+
+
+                    Text("Welcome IMWS", Modifier.padding(5.dp), fontSize = 20.sp)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Image(
+                        painter = painterResource(R.drawable.logout),
+                        contentDescription = "Logout",
+                        modifier = Modifier
+                            .clickable {
+
+                                viewModel.sendCommand(Utils.deviceUUID(),Utils.getControlCharacterValueOptimized("Ctrl-W"))
+                                viewModel.endShell(Utils.deviceUUID(), this@LandingActivity)
                             }
-                        }
-                        .padding(start = 10.dp)
-                        .size(width = 48.dp, height = 30.dp),
-                    colorFilter = ColorFilter.tint(androidx.compose.material3.MaterialTheme.colorScheme.onPrimaryContainer)
+                            .padding(5.dp)
+                            .size(width = 20.dp, height = 20.dp),
+                        colorFilter = ColorFilter.tint(androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
+                    )
+                }
+
+                DrawerContentComponent(
+                    viewModel
                 )
-                Text(
-                    text = if (cmdState is CommandUiState.Success) {
-                        cmdState.response.let { if (it == null) "iMWS" else it.screenName.let { if (it == null) "iMWS" else it.value } }
-                    } else "iMWS",
-                    modifier = Modifier
-                        .padding(start = 15.dp),
-                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                    fontSize = 20.sp,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
-                )
+
             }
+
         }
     }
 
