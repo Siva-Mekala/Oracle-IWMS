@@ -67,7 +67,7 @@ fun HomeScreen(
                 }
             }
         }
-    } else if (state is CommandUiState.Error){
+    } else if (state is CommandUiState.Error) {
         if (state.code == HttpURLConnection.HTTP_NOT_FOUND) viewModel.startActivity(LocalContext.current)
         else {
         }

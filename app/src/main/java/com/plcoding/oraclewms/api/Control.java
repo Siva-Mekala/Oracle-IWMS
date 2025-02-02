@@ -46,6 +46,6 @@ public class Control implements Serializable {
     @NonNull
     @Override
     public String toString() {
-        return "" + lineNumber;
+        return value;
     }
 }

@@ -252,46 +252,51 @@ class LandingActivity : ComponentActivity() {
         BottomAppBar(
             actions = {
                 response?.controls?.let {
-                    for (it in it) {
-                        if (it.value.contains("Ctrl-W"))
-                            IconButton(onClick = {
+                    if (it.toString().contains("Ctrl-W"))
+                        IconButton(onClick = {
+                            if (navController.currentDestination?.route == "Home") {
+                                viewModel.endShell(
+                                    Utils.deviceUUID(),
+                                    this@LandingActivity
+                                )
+                            } else {
+                                navController.popBackStack()
                                 viewModel.sendCommand(
                                     Utils.deviceUUID(),
                                     Utils.getControlCharacterValueOptimized("Ctrl-W")
                                 )
-                            }) {
-                                Icon(
-                                    Icons.Filled.ArrowBack,
-                                    contentDescription = "Localized description"
-                                )
                             }
-                        if (it.value.contains("Ctrl-U"))
-                            IconButton(onClick = {
-                                viewModel.sendCommand(
-                                    Utils.deviceUUID(),
-                                    Utils.getControlCharacterValueOptimized("Ctrl-U")
-                                )
-                            }) {
-                                Icon(
-                                    Icons.Filled.KeyboardArrowUp,
-                                    contentDescription = "Localized description",
-                                )
-                            }
-                        if (it.value.contains("Ctrl-D"))
-                            IconButton(onClick = {
-                                viewModel.sendCommand(
-                                    Utils.deviceUUID(),
-                                    Utils.getControlCharacterValueOptimized("Ctrl-D")
-                                )
-                            }) {
-                                Icon(
-                                    Icons.Filled.KeyboardArrowDown,
-                                    contentDescription = "Localized description",
-                                )
-                            }
-                    }
+                        }) {
+                            Icon(
+                                Icons.Filled.ArrowBack,
+                                contentDescription = "Localized description"
+                            )
+                        }
+                    if (it.toString().contains("Ctrl-U"))
+                        IconButton(onClick = {
+                            viewModel.sendCommand(
+                                Utils.deviceUUID(),
+                                Utils.getControlCharacterValueOptimized("Ctrl-U")
+                            )
+                        }) {
+                            Icon(
+                                Icons.Filled.KeyboardArrowUp,
+                                contentDescription = "Localized description",
+                            )
+                        }
+                    if (it.toString().contains("Ctrl-D"))
+                        IconButton(onClick = {
+                            viewModel.sendCommand(
+                                Utils.deviceUUID(),
+                                Utils.getControlCharacterValueOptimized("Ctrl-D")
+                            )
+                        }) {
+                            Icon(
+                                Icons.Filled.KeyboardArrowDown,
+                                contentDescription = "Localized description",
+                            )
+                        }
                 }
-
             },
             floatingActionButton = {
                 var expanded by remember { mutableStateOf(false) }

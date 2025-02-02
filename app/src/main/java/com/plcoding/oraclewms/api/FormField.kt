@@ -7,6 +7,7 @@ data class FormField(
     var form_value: String? = null,
     var line_number: Int? = null,
     var cursor: Boolean = false,
+    var formatters: Formatters? = null,
     var bar_code: Boolean = false
 ) {
 

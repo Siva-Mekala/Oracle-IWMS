@@ -13,11 +13,16 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Icon
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -50,7 +55,7 @@ fun DetailsScreen(
     modifier: Modifier,
     navController: NavController,
     viewModel: LandingViewModel,
-    response: CommandUiState,
+    state: CommandUiState,
     clickPosition: Int
 ) {
     BackHandler {
@@ -62,24 +67,22 @@ fun DetailsScreen(
     }
 
     val scanner = GmsBarcodeScanning.getClient(LocalContext.current)
-    if (response is CommandUiState.Success && response.response?.menuItems?.isEmpty() == false)
+    if (state is CommandUiState.Success && state.response?.menuItems?.isEmpty() == false)
         LaunchedEffect(true) {
             viewModel.sendCommand(
                 Utils.deviceUUID(),
                 "${clickPosition}\n"
             )
         }
-
-    if (response is CommandUiState.Success) {
-        response.response?.formFields.let {
+    if (state is CommandUiState.Success) {
+        state.response?.formFields.let {
             if (it == null) {
             } else ListScreen(it, scanner, modifier, viewModel)
         }
-        response.response?.popups.let {
+        state.response?.popups.let {
             it.let { ups ->
                 if (ups.isNullOrEmpty()) {
                 } else {
-
                     val showDialog = remember { mutableStateOf(true) }
                     if (showDialog.value) {
                         popDialog(
@@ -110,9 +113,9 @@ fun DetailsScreen(
                 }
             }
         }
-    } else if (response is CommandUiState.Error){
-        if (response.code == HttpURLConnection.HTTP_NOT_FOUND) viewModel.startActivity(LocalContext.current)
-        else{
+    } else if (state is CommandUiState.Error) {
+        if (state.code == HttpURLConnection.HTTP_NOT_FOUND) viewModel.startActivity(LocalContext.current)
+        else {
         }
     } else {
     }
@@ -135,12 +138,18 @@ fun popDialog(
     if (showDialog.value) {
         AlertDialog(
             title = {
-                Text(text = dialogTitle)
+                Text(
+                    text = dialogTitle,
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_bold))
+                )
             },
             text = {
                 //repeat(ups.size) {
                 if (ups.get(0).type.equals("message")) {
-                    Text(text = ups.get(0).content)
+                    Text(
+                        text = ups.get(0).content,
+                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
+                    )
                 } else {
                     WareHouseTextField(viewModel, ups.get(0)) {
                         text.value = it
@@ -160,7 +169,10 @@ fun popDialog(
                     }
                 ) {
                     yes?.let {
-                        Text(it)
+                        Text(
+                            it,
+                            fontFamily = FontFamily(Font(R.font.spacegrotesk_regular))
+                        )
                     }
                 }
             }
@@ -245,18 +257,19 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
             }
         )
     }
+    val showDate = rememberSaveable { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val cursor = rememberSaveable { item.cursor }
     val focusManager = LocalFocusManager.current
     OutlinedTextField(
         label = {
             Text(
-                item?.form_key ?: "",
+                item.form_key ?: "",
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                 fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
             )
         },
-        value = textObj?.value ?: "",
+        value = textObj.value ?: "",
         trailingIcon = {
             if (item.bar_code)
                 Icon(
@@ -279,6 +292,17 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
                         }
                         .padding(8.dp)
                 )
+            else if (item.formatters?.format_date == true) {
+                Icon(
+                    Icons.Outlined.DateRange,
+                    null,
+                    modifier = Modifier
+                        .clickable {
+                            showDate.value = true
+                        }
+                        .padding(8.dp)
+                )
+            }
         },
         enabled = cursor,
         singleLine = true,
@@ -303,5 +327,43 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
             unfocusedIndicatorColor = Color.Transparent,
         )
     )
+    if (showDate.value) DatePickerModal({
+        textObj.value = ""
+    }, {
+        showDate.value = false
+    })
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DatePickerModal(
+    onDateSelected: (Long?) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val datePickerState = rememberDatePickerState()
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onDateSelected(datePickerState.selectedDateMillis)
+                onDismiss()
+            }) {
+                Text(
+                    "OK",
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_regular))
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    "Cancel",
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_regular))
+                )
+            }
+        }
+    ) {
+        DatePicker(state = datePickerState)
+    }
 }
 
