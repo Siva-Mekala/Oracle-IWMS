@@ -3,7 +3,9 @@ package com.plcoding.oraclewms.api;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class ApiResponse {
+import java.io.Serializable;
+
+public class ApiResponse implements Serializable {
     @SerializedName("json_response")
     @Expose
     private JSONResponse jsonResponse;

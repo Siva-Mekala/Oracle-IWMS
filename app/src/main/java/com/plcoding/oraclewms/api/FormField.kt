@@ -1,5 +1,7 @@
 package com.plcoding.oraclewms.api
 
+import java.io.Serializable
+
 data class FormField(
     var type: String? = null,
     var value: String? = null,
@@ -8,8 +10,4 @@ data class FormField(
     var line_number: Int? = null,
     var cursor: Boolean = false,
     var formatters: Formatters? = null
-) {
-
-    //var cursorState by mutableStateOf(cursor)
-
-}
+) : Serializable
