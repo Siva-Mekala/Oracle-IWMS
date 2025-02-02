@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -14,7 +15,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DateRange
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +35,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
@@ -49,6 +50,8 @@ import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.login.CommandUiState
 import java.net.HttpURLConnection
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
 @Composable
 fun DetailsScreen(
@@ -271,17 +274,18 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
         },
         value = textObj.value ?: "",
         trailingIcon = {
-            if (item.bar_code)
+            if (item.formatters?.format_barcode == true)
                 Icon(
-                    Icons.Outlined.Star,
+                    painter = painterResource(R.drawable.scan),
                     null,
                     modifier = Modifier
+                        .size(35.dp)
                         .clickable {
-                            scanner
+                            if (item.cursor) scanner
                                 .startScan()
                                 .addOnSuccessListener { barcode ->
                                     println("barcode")
-                                    println(barcode.rawValue)
+                                    textObj.value = barcode.rawValue
                                 }
                                 .addOnCanceledListener {
                                     println("barcode1")
@@ -292,8 +296,8 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
                         }
                         .padding(8.dp)
                 )
-            else if (item.formatters?.format_date == true) {
-                Icon(
+            else if (item.formatters?.format_date == true)
+                if (item.cursor) Icon(
                     Icons.Outlined.DateRange,
                     null,
                     modifier = Modifier
@@ -302,7 +306,6 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
                         }
                         .padding(8.dp)
                 )
-            }
         },
         enabled = cursor,
         singleLine = true,
@@ -328,7 +331,15 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
         )
     )
     if (showDate.value) DatePickerModal({
-        textObj.value = ""
+        textObj.value = it.let {
+            if (it == null) ""
+            else {
+                val calendar: Calendar = Calendar.getInstance()
+                calendar.setTimeInMillis(it)
+                val dateFormat = SimpleDateFormat("dd/MM/YYYY")
+                dateFormat.format(calendar.time)
+            }
+        }
     }, {
         showDate.value = false
     })
