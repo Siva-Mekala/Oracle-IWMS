@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +28,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -42,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -108,11 +111,11 @@ fun DetailsScreen(
                 } else {
                     val showDialog = remember { mutableStateOf(true) }
                     if (showDialog.value) {
-                        popDialog(
+                        DialogWithMsg(
                             onConfirmation = {
                                 if (ups.isNotEmpty()) {
                                     val firstUp = ups.first()
-                                    if (firstUp.type != "message") {
+                                    if (!firstUp.type.equals("message")) {
                                         viewModel.sendCommand(
                                             Utils.deviceUUID(), it + "\t"
                                         )
@@ -126,10 +129,8 @@ fun DetailsScreen(
                                     showDialog.value = false
                                 }
                             },
-                            dialogTitle = "Alert",
-                            yes = "Ok",
                             viewModel = viewModel,
-                            ups = ups,
+                            ups = ups.first(),
                             showDialog = showDialog
                         )
                     }
@@ -147,27 +148,11 @@ fun DetailsScreen(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun SplashPreview() {
-    val viewModel = viewModel<LandingViewModel>()
-    val showDialog = remember { mutableStateOf(true) }
-    AppTheme {
-        Surface(modifier = Modifier.wrapContentSize()) {
-            DialogWithMsg({}, "Enter Text", "yes", viewModel,
-                listOf(Popup("XYZ", "")), showDialog
-            )
-        }
-    }
-}
-
 @Composable
 fun DialogWithMsg(
     onConfirmation: (String) -> Unit,
-    dialogTitle: String,
-    yes: String?,
     viewModel: LandingViewModel,
-    ups: List<Popup>,
+    ups: Popup,
     showDialog: MutableState<Boolean>
 ) {
     val text = rememberSaveable {
@@ -184,26 +169,31 @@ fun DialogWithMsg(
             shape = RoundedCornerShape(16.dp),
         ) {
             Text(
-                text = dialogTitle,
-                modifier = Modifier.fillMaxWidth().background(Color.Red).padding(10.dp),
+                text = if (ups.type.equals("message")) "Notification" else "Enter Input",
+                modifier = Modifier.fillMaxWidth().background(if (ups.type.equals("message")) Color.Red else Color.Blue).padding(10.dp),
                 textAlign = TextAlign.Left,
                 color = Color.White
             )
             Spacer(modifier = Modifier.padding(15.dp))
-            if (ups.get(0).type.equals("message")) {
+            if (ups.type.equals("message")) {
                 Text(
-                    text = ups.get(0).content,
+                    text = ups.content,
                     modifier = Modifier.fillMaxWidth().padding(10.dp),
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
                 )
             } else {
-                WareHouseTextField(viewModel, ups.get(0)) {
+                Text(
+                    ups.content,
+                    modifier = Modifier.padding(start = 15.dp),
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
+                )
+                WareHouseTextField(viewModel, ups) {
                     text.value = it
                 }
             }
-
             Spacer(modifier = Modifier.padding(15.dp))
-
             Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
                 TextButton(
                     onClick = {
@@ -211,73 +201,14 @@ fun DialogWithMsg(
                         showDialog.value = false
                     }
                 ) {
-                    yes?.let {
-                        Text(
-                            it,
-                            fontFamily = FontFamily(Font(R.font.spacegrotesk_regular))
-                        )
-                    }
+                    Text(
+                        "Ok" ,
+                        fontSize = 15.sp,
+                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
+                    )
                 }
             }
         }
-    }
-}
-
-@Composable
-fun popDialog(
-    onConfirmation: (String) -> Unit,
-    dialogTitle: String,
-    yes: String?,
-    viewModel: LandingViewModel,
-    ups: List<Popup>,
-    showDialog: MutableState<Boolean>
-) {
-    val text = rememberSaveable {
-        mutableStateOf(
-            ""
-        )
-    }
-
-    if (showDialog.value) {
-        AlertDialog(
-            title = {
-                Text(
-                    text = dialogTitle,
-                    fontFamily = FontFamily(Font(R.font.spacegrotesk_bold))
-                )
-            },
-            text = {
-                if (ups.get(0).type.equals("message")) {
-                    Text(
-                        text = ups.get(0).content,
-                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
-                    )
-                } else {
-                    WareHouseTextField(viewModel, ups.get(0)) {
-                        text.value = it
-                    }
-                }
-            },
-            onDismissRequest = {
-                showDialog.value = false
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onConfirmation(text.value)
-                        showDialog.value = false
-                    }
-                ) {
-                    yes?.let {
-                        Text(
-                            it,
-                            fontFamily = FontFamily(Font(R.font.spacegrotesk_regular))
-                        )
-                    }
-                }
-            }
-//        properties = DialogProperties(false, false)
-        )
     }
 }
 
@@ -289,14 +220,7 @@ fun WareHouseTextField(viewModel: LandingViewModel, popup: Popup, onChange: (Str
         )
     }
     val focusRequester = remember { FocusRequester() }
-    OutlinedTextField(
-        label = {
-            Text(
-                popup.content,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
-            )
-        },
+    TextField(
         value = textObj.value,
         singleLine = true,
         onValueChange = {
@@ -305,7 +229,7 @@ fun WareHouseTextField(viewModel: LandingViewModel, popup: Popup, onChange: (Str
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(5.dp)
+            .padding(15.dp)
             .focusRequester(focusRequester),
         keyboardActions = KeyboardActions(
             onNext = {
@@ -316,11 +240,7 @@ fun WareHouseTextField(viewModel: LandingViewModel, popup: Popup, onChange: (Str
                 }
             }
         ),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-        colors = TextFieldDefaults.colors(
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-        )
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
     )
 }
 
@@ -331,29 +251,26 @@ fun ListScreen(
     modifier: Modifier,
     viewModel: LandingViewModel,
     state: CommandUiState
-
 ) {
     LazyColumn(
         modifier,
-        verticalArrangement = Arrangement.spacedBy(5.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(start = 5.dp, end = 5.dp)
     ) {
         item {
-            Card(
-
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary)
-            ) {
+            Column {
+                HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
                 Text(
                     text = if (state is CommandUiState.Success) {
                         state.response.let { if (it == null) "iMWS" else it.screenName.let { if (it == null) "iMWS" else it.value } }
                     } else "iMWS",
-                    modifier = Modifier
-                        .padding( 5.dp),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(10.dp),
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
                     fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
+                HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
             }
         }
         items(item.size) { x ->
@@ -379,7 +296,7 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
     val focusRequester = remember { FocusRequester() }
     val cursor = rememberSaveable { item.cursor }
     val focusManager = LocalFocusManager.current
-    OutlinedTextField(
+    TextField(
         label = {
             Text(
                 item.form_key ?: "",
@@ -425,13 +342,15 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
         enabled = cursor,
         singleLine = true,
         onValueChange = { textObj.value = it },
-        modifier = Modifier
+        modifier = if (cursor) Modifier
             .fillMaxWidth()
             .padding(start=5.dp, end=5.dp)
-            .focusRequester(focusRequester),
+            .focusRequester(focusRequester)
+        else Modifier
+            .fillMaxWidth()
+            .padding(start=5.dp, end=5.dp),
         keyboardActions = KeyboardActions(
             onNext = {
-                ///focusManager.moveFocus(FocusDirection.Down)
                 textObj.value?.let {
                     viewModel.sendCommand(
                         Utils.deviceUUID(), it + "\t"
@@ -441,10 +360,13 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         colors = TextFieldDefaults.colors(
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
+            focusedContainerColor = Color.Transparent,
+            unfocusedLabelColor = Color.Gray
         )
     )
+    if (cursor) LaunchedEffect(true) {
+        focusRequester.requestFocus()
+    }
     if (showDate.value) DatePickerModal({
         textObj.value = it.let {
             if (it == null) ""
