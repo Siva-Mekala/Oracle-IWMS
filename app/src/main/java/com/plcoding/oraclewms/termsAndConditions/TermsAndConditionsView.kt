@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.compose.AppTheme
 import com.plcoding.oraclewms.R
+import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.login.LoginActivity
 
 class TermsAndConditionsView : ComponentActivity() {
@@ -59,6 +60,7 @@ class TermsAndConditionsView : ComponentActivity() {
     }
 
     private fun startActivity() {
+        SharedPref.setSeenTc(true)
         startActivity(Intent(this, LoginActivity::class.java))
         finish()
     }

@@ -6,24 +6,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
@@ -32,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.plcoding.oraclewms.R
+import com.plcoding.oraclewms.api.Popup
+import com.plcoding.oraclewms.landing.DialogWithMsg
 import com.plcoding.oraclewms.login.CommandUiState
 import com.plcoding.oraclewms.login.LoaderScreen
 import java.net.HttpURLConnection
@@ -86,8 +83,19 @@ fun HomeScreen(
             }
         }
     } else if (state is CommandUiState.Error) {
-        if (state.code == HttpURLConnection.HTTP_NOT_FOUND) viewModel.startActivity(LocalContext.current)
-        else {
+        val context = LocalContext.current
+        if (state.code == HttpURLConnection.HTTP_NOT_FOUND) {
+            val showDialog = remember { mutableStateOf(true) }
+            DialogWithMsg(
+                onConfirmation = {
+                    viewModel.startActivity(context)
+                    showDialog.value = false
+                },
+                viewModel = viewModel,
+                ups = Popup("Your session expired. Please login again","message"),
+                showDialog = showDialog
+            )
+        } else {
         }
     } else if (state is CommandUiState.Loading){
         LoaderScreen()

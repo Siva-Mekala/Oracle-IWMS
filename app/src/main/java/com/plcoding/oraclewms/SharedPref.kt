@@ -11,6 +11,8 @@ object SharedPref {
     private const val KEY_ENV = "ENV"
     private const val KEY_RESPONSE = "RESPONSE"
     private const val ENV_RESPONSE = "ENV_RESPONSE"
+    private const val KEY_FIRSTTIME_TC = "KEY_FIRSTTIME_TC"
+    private const val KEY_HOME_INFO = "KEY_HOME_INFO"
 
     private lateinit var sharedPref: SharedPreferences
     private lateinit var context: Context
@@ -61,6 +63,16 @@ object SharedPref {
         return sharedPref.getString(KEY_RESPONSE, null)
     }
 
+    fun setHomeInfo(info: String) {
+        val editor: SharedPreferences.Editor = sharedPref.edit()
+        editor.putString(KEY_HOME_INFO, info)
+        editor.commit()
+    }
+
+    fun getHomeInfo(): String? {
+        return sharedPref.getString(KEY_HOME_INFO, null)
+    }
+
     fun setUserLoggedIn(state: Boolean) {
         val editor: SharedPreferences.Editor = sharedPref.edit()
         editor.putBoolean(KEY_IS_USER_LOGGED_IN, state)
@@ -71,12 +83,23 @@ object SharedPref {
         return sharedPref.getBoolean(KEY_IS_USER_LOGGED_IN, false)
     }
 
+    fun setSeenTc(state: Boolean) {
+        val editor: SharedPreferences.Editor = sharedPref.edit()
+        editor.putBoolean(KEY_FIRSTTIME_TC, state)
+        editor.commit()
+    }
+
+    fun isSeenTc(): Boolean {
+        return sharedPref.getBoolean(KEY_FIRSTTIME_TC, false)
+    }
+
     fun deleteAllPref() {
         sharedPref.edit {
             remove(KEY_AUTH_TOKEN)
             remove(KEY_IS_USER_LOGGED_IN)
             remove(KEY_ENV)
             remove(KEY_RESPONSE)
+            remove(KEY_HOME_INFO)
             ///remove(ENV_RESPONSE)
             apply()
         }

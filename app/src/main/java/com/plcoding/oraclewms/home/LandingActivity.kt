@@ -1,6 +1,7 @@
 package com.plcoding.oraclewms.home
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -250,25 +251,25 @@ class LandingActivity : ComponentActivity() {
     fun DrawerContentComponent(
         viewModel: LandingViewModel
     ) {
+        val names: List<String>? = SharedPref.getHomeInfo()?.split(",")
         Column (modifier = Modifier.padding(start = 5.dp, end = 5.dp)){
-            var item = viewModel.cmdState
             var info = arrayListOf<HomeInfo>()
             info.add(
                 HomeInfo(
                     "Env",
-                    if (item is CommandUiState.Success) item.response?.env?.value else ""
+                    names?.get(0)
                 )
             )
             info.add(
                 HomeInfo(
                     "Company",
-                    if (item is CommandUiState.Success) item.response?.appName?.value else ""
+                    names?.get(1)
                 )
             )
             info.add(
                 HomeInfo(
                     "Facility",
-                    if (item is CommandUiState.Success) item.response?.facilityName?.value else ""
+                    names?.get(2)
                 )
             )
             Row {
@@ -426,7 +427,7 @@ class LandingActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        "Welcome IMWS",
+                        "Welcome to IMWS",
                         Modifier.padding(5.dp),
                         fontSize = 20.sp,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
