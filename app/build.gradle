@@ -117,6 +117,8 @@ dependencies {
     implementation 'com.google.android.gms:play-services-code-scanner:16.1.0'
     implementation("androidx.compose.material:material-icons-core:1.6.6")
     implementation("androidx.compose.material:material-icons-extended:1.7.7")
+    implementation 'com.google.mlkit:barcode-scanning:17.3.0'
+    implementation 'com.google.android.gms:play-services-mlkit-barcode-scanning:18.3.1'
     // Import the Firebase BoM
     //implementation platform('com.google.firebase:firebase-bom:30.0.1')
 

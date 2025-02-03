@@ -1,5 +1,8 @@
 package com.plcoding.oraclewms.landing
 
+import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -63,6 +66,8 @@ import androidx.compose.ui.unit.sp
 import androidx.loader.content.Loader
 import androidx.navigation.NavController
 import com.example.compose.AppTheme
+import com.google.android.gms.common.moduleinstall.ModuleInstall
+import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.plcoding.focusfun.landing.LandingViewModel
@@ -92,7 +97,7 @@ fun DetailsScreen(
         )
     }
 
-    val scanner = GmsBarcodeScanning.getClient(LocalContext.current)
+    val context = LocalContext.current
     if (state is CommandUiState.Success && state.response?.menuItems?.isEmpty() == false)
         LaunchedEffect(true) {
             viewModel.sendCommand(
@@ -103,7 +108,7 @@ fun DetailsScreen(
     if (state is CommandUiState.Success) {
         state.response?.formFields.let {
             if (it == null) {
-            } else ListScreen(it, scanner, modifier, viewModel, state)
+            } else ListScreen(it, context, modifier, viewModel, state)
         }
         state.response?.popups.let {
             it.let { ups ->
@@ -258,7 +263,7 @@ fun WareHouseTextField(viewModel: LandingViewModel, popup: Popup, onChange: (Str
 @Composable
 fun ListScreen(
     item: List<FormField>,
-    scanner: GmsBarcodeScanner,
+    context: Context,
     modifier: Modifier,
     viewModel: LandingViewModel,
     state: CommandUiState
@@ -285,13 +290,30 @@ fun ListScreen(
             }
         }
         items(item.size) { x ->
-            ListItem(item = item.get(x), scanner, viewModel)
+            ListItem(item = item.get(x), context, viewModel)
         }
     }
 }
 
+fun startScanning(context: Context, textObj: MutableState<String?>) {
+    GmsBarcodeScanning.getClient(context)
+        .startScan()
+        .addOnSuccessListener { barcode ->
+            println("barcode")
+            textObj.value = barcode.rawValue
+        }
+        .addOnCanceledListener {
+            println("barcode1")
+        }
+        .addOnFailureListener { e ->
+            println("barcode2")
+            println(e.printStackTrace())
+            e.printStackTrace()
+        }
+}
+
 @Composable
-fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingViewModel) {
+fun ListItem(item: FormField, context: Context, viewModel: LandingViewModel) {
     val textObj = rememberSaveable {
         mutableStateOf(
             item.form_value?.trim().let {
@@ -324,17 +346,26 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
                     modifier = Modifier
                         .size(40.dp)
                         .clickable {
-                            if (item.cursor) scanner
-                                .startScan()
-                                .addOnSuccessListener { barcode ->
-                                    println("barcode")
-                                    textObj.value = barcode.rawValue
-                                }
-                                .addOnCanceledListener {
-                                    println("barcode1")
+                            if (item.cursor)
+
+
+
+                            ModuleInstall.getClient(context).installModules(ModuleInstallRequest.newBuilder()
+                                .addApi(GmsBarcodeScanning.getClient(context))
+                                .build())
+                                .addOnSuccessListener { response ->
+                                    if (response.areModulesAlreadyInstalled()) {
+                                        // Module already installed, proceed with scanning
+                                        startScanning(context,textObj)
+                                    } else {
+                                        // Module was just installed, wait briefly then scan
+                                        Handler(Looper.getMainLooper()).postDelayed({
+                                            startScanning(context,textObj)
+                                        }, 1000)
+                                    }
                                 }
                                 .addOnFailureListener { e ->
-                                    println("barcode2")
+                                    // Handle installation failure
                                 }
                         }
                         .padding(5.dp)
