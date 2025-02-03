@@ -337,7 +337,6 @@ class LandingActivity : ComponentActivity() {
         onClick: () -> Unit
     ) {
         Row (modifier = Modifier.height(55.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically){
             response?.controls?.let {
                 if (it.toString().contains("Ctrl-W"))
@@ -354,7 +353,7 @@ class LandingActivity : ComponentActivity() {
                                 Utils.getControlCharacterValueOptimized("Ctrl-W")
                             )
                         }
-                    }) {
+                    }, modifier = Modifier.weight(1f)) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Localized description",
@@ -370,7 +369,7 @@ class LandingActivity : ComponentActivity() {
                             Utils.deviceUUID(),
                             Utils.getControlCharacterValueOptimized("Ctrl-U")
                         )
-                    }) {
+                    }, modifier = Modifier.weight(1f)) {
                         Icon(
                             painter = painterResource(R.drawable.double_up_icon),
                             contentDescription = "Localized description",
@@ -385,7 +384,7 @@ class LandingActivity : ComponentActivity() {
                             Utils.deviceUUID(),
                             Utils.getControlCharacterValueOptimized("Ctrl-D")
                         )
-                    }) {
+                    }, modifier = Modifier.weight(1f)) {
                         Icon(
                             painter = painterResource(R.drawable.double_down_icon),
                             contentDescription = "Localized description",
@@ -394,7 +393,7 @@ class LandingActivity : ComponentActivity() {
                                 .padding(5.dp)
                         )
                     }
-                IconButton(onClick = { onClick() }) {
+                IconButton(onClick = { onClick() }, modifier = Modifier.weight(1f)) {
                     Icon(
                         Icons.Filled.MoreHoriz,
                         contentDescription = "More options",
