@@ -18,8 +18,6 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -116,31 +114,33 @@ class TermsAndConditionsView : ComponentActivity() {
             Text(
                 modifier = Modifier
                     .scale(scale.value)
-                    .padding(25.dp, 10.dp, 25.dp, 10.dp), text = "By accessing this app, we assume you accept these terms and conditions. Do not continue to use, if you do not agree to all of the terms and conditions stated on this page.",
+                    .padding(25.dp, 10.dp, 25.dp, 10.dp),
+                text = "By accessing this app, we assume you accept these terms and conditions. Do not continue to use, if you do not agree to all of the terms and conditions stated on this page.",
                 style = TextStyle(
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_regular)),
                     fontSize = 15.sp,
                     lineHeight = 20.sp
-                ), color = MaterialTheme.colorScheme.secondary
+                ),
+                color = MaterialTheme.colorScheme.secondary
             )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Button(onClick = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Button(onClick = {
 
-                        onDecline()
+                    onDecline()
 
-                    }, modifier = Modifier.padding(10.dp)) {
-                        Text("Decline")
-                    }
-                    Button(onClick = {
-
-                        onNavigate()
-
-                    }, modifier = Modifier.padding(10.dp)  ) {
-                        Text("Accept")
-                    }
-
+                }, modifier = Modifier.padding(10.dp)) {
+                    Text("Decline")
                 }
+                Button(onClick = {
+
+                    onNavigate()
+
+                }, modifier = Modifier.padding(10.dp)) {
+                    Text("Accept")
+                }
+
+            }
 
         }
     }

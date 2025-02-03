@@ -7,9 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
@@ -46,48 +44,56 @@ fun HomeScreen(
 ) {
     Log.d("HomeScreen", "Inside composable")
     viewModel.menuItems.let {
-    LazyColumn(modifier.background(color = Color.White)) {
-        items(it.size) { index ->
-            Column(
-                modifier = Modifier.fillMaxWidth().background(color = Color.White).clickable {
-                    onItemClick(it.get(index))
-                    navController.navigate("Rewards")
-                }, verticalArrangement = Arrangement.Center
-            ) {
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+        LazyColumn(modifier.background(color = Color.White)) {
+            items(it.size) { index ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(color = Color.White)
+                        .clickable {
+                            onItemClick(it.get(index))
+                            navController.navigate("Rewards")
+                        }, verticalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = "${it.get(index).optionNumber}",
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.background(
-                            color = Color(0xffD3D3D3),
-                            shape = CircleShape
-                        ).padding(5.dp),
-                        fontFamily = FontFamily(
-                            Font(
-                                R.font.spacegrotesk_medium
-                            )
-                        ),
-                        fontSize = 15.sp
-                    )
-                    Text(
-                        text = "${it.get(index).optionName}",
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(start = 10.dp, end = 10.dp),
-                        fontFamily = FontFamily(
-                            Font(
-                                R.font.spacegrotesk_medium
-                            )
-                        ),
-                        fontSize = 15.sp
-                    )
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${it.get(index).optionNumber}",
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier
+                                .background(
+                                    color = Color(0xffD3D3D3),
+                                    shape = CircleShape
+                                )
+                                .padding(5.dp),
+                            fontFamily = FontFamily(
+                                Font(
+                                    R.font.spacegrotesk_medium
+                                )
+                            ),
+                            fontSize = 15.sp
+                        )
+                        Text(
+                            text = "${it.get(index).optionName}",
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                            fontFamily = FontFamily(
+                                Font(
+                                    R.font.spacegrotesk_medium
+                                )
+                            ),
+                            fontSize = 15.sp
+                        )
+                    }
+                    HorizontalDivider(
+                        Modifier
+                            .fillMaxWidth()
+                            .alpha(0.4f), 2.dp, Color.Gray)
                 }
-                HorizontalDivider(Modifier.fillMaxWidth().alpha(0.4f), 2.dp, Color.Gray)
             }
         }
-    }
     }
     if (state is CommandUiState.Success) {
         state.response?.let { res ->
@@ -99,18 +105,19 @@ fun HomeScreen(
         val context = LocalContext.current
         if (state.code == HttpURLConnection.HTTP_NOT_FOUND) {
             val showDialog = remember { mutableStateOf(true) }
-            DialogWithMsg(
+            DialogWithMsg({},
                 onConfirmation = {
                     viewModel.startActivity(context)
                     showDialog.value = false
                 },
                 viewModel = viewModel,
-                ups = Popup("Your session expired. Please login again","message"),
-                showDialog = showDialog
+                ups = Popup("Your session expired. Please login again", "message"),
+                showDialog = showDialog,
+                false
             )
         } else {
         }
-    } else if (state is CommandUiState.Loading){
+    } else if (state is CommandUiState.Loading) {
         LoaderScreen()
     } else {
     }

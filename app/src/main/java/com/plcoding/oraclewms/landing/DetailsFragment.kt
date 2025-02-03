@@ -54,13 +54,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.compose.AppTheme
 import com.google.android.gms.common.moduleinstall.ModuleInstall
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
@@ -70,6 +68,7 @@ import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.login.CommandUiState
 import com.plcoding.oraclewms.login.LoaderScreen
+import com.plcoding.oraclewms.login.LoginViewModel
 import java.net.HttpURLConnection
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -98,7 +97,7 @@ fun DetailsScreen(
                 "${item?.optionNumber}\n"
             )
         }
-    ListScreen(scanner, modifier, viewModel, item?.optionName)
+    ListScreen(context, modifier, viewModel, item?.optionName)
     if (state is CommandUiState.Success) {
         state.response?.formFields.let {
         }
@@ -108,7 +107,7 @@ fun DetailsScreen(
                 } else {
                     val showDialog = remember { mutableStateOf(true) }
                     if (showDialog.value) {
-                        DialogWithMsg(
+                        DialogWithMsg( {},
                             onConfirmation = {
                                 if (ups.isNotEmpty()) {
                                     val firstUp = ups.first()
@@ -128,7 +127,8 @@ fun DetailsScreen(
                             },
                             viewModel = viewModel,
                             ups = ups.first(),
-                            showDialog = showDialog
+                            showDialog = showDialog,
+                            false
                         )
                     }
                 }
@@ -138,18 +138,19 @@ fun DetailsScreen(
         val context = LocalContext.current
         if (state.code == HttpURLConnection.HTTP_NOT_FOUND) {
             val showDialog = remember { mutableStateOf(true) }
-            DialogWithMsg(
+            DialogWithMsg({},
                 onConfirmation = {
                     viewModel.startActivity(context)
                     showDialog.value = false
                 },
                 viewModel = viewModel,
-                ups = Popup("Your session expired. Please login again","message"),
-                showDialog = showDialog
+                ups = Popup("Your session expired. Please login again", "message"),
+                showDialog = showDialog,
+                false
             )
         } else {
         }
-    } else if (state is CommandUiState.Loading){
+    } else if (state is CommandUiState.Loading) {
         LoaderScreen()
     } else {
 
@@ -158,10 +159,12 @@ fun DetailsScreen(
 
 @Composable
 fun DialogWithMsg(
+    onDismissRequest: () -> Unit,
     onConfirmation: (String) -> Unit,
-    viewModel: LandingViewModel,
+    viewModel: LoginViewModel,
     ups: Popup,
-    showDialog: MutableState<Boolean>
+    showDialog: MutableState<Boolean>,
+    error: Boolean
 ) {
     val text = rememberSaveable {
         mutableStateOf(
@@ -178,7 +181,10 @@ fun DialogWithMsg(
         ) {
             Text(
                 text = if (ups.type.equals("message")) "Notification" else "Enter Input",
-                modifier = Modifier.fillMaxWidth().background(if (ups.type.equals("message")) Color.Red else Color.Blue).padding(10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(if (ups.type.equals("message")) Color.Red else Color.Blue)
+                    .padding(10.dp),
                 textAlign = TextAlign.Left,
                 color = Color.White
             )
@@ -186,7 +192,9 @@ fun DialogWithMsg(
             if (ups.type.equals("message")) {
                 Text(
                     text = ups.content,
-                    modifier = Modifier.fillMaxWidth().padding(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
                 )
             } else {
@@ -197,12 +205,24 @@ fun DialogWithMsg(
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                 )
-                WareHouseTextField(viewModel, ups) {
+                WareHouseTextField(viewModel) {
                     text.value = it
                 }
             }
             Spacer(modifier = Modifier.padding(15.dp))
-            Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                if (error) TextButton(
+                    onClick = {
+                        onConfirmation(text.value)
+                        showDialog.value = false
+                    }
+                ) {
+                    Text(
+                        "Cancel",
+                        fontSize = 15.sp,
+                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
+                    )
+                }
                 TextButton(
                     onClick = {
                         onConfirmation(text.value)
@@ -210,7 +230,7 @@ fun DialogWithMsg(
                     }
                 ) {
                     Text(
-                        "Ok" ,
+                        "Ok",
                         fontSize = 15.sp,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
                     )
@@ -221,7 +241,7 @@ fun DialogWithMsg(
 }
 
 @Composable
-fun WareHouseTextField(viewModel: LandingViewModel, popup: Popup, onChange: (String) -> Unit) {
+fun WareHouseTextField(viewModel: LoginViewModel, onChange: (String) -> Unit) {
     val textObj = rememberSaveable {
         mutableStateOf(
             ""
@@ -254,13 +274,12 @@ fun WareHouseTextField(viewModel: LandingViewModel, popup: Popup, onChange: (Str
 
 @Composable
 fun ListScreen(
-    item: List<FormField>,
     context: Context,
     modifier: Modifier,
     viewModel: LandingViewModel,
     optionName: String?
 ) {
-    viewModel.formItems.let {
+    viewModel.formItems.let { item ->
         LazyColumn(
             modifier,
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -270,8 +289,9 @@ fun ListScreen(
                 Column {
                     HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
                     Text(
-                        text = optionName?:"iMWS",
-                        modifier = Modifier.fillMaxWidth()
+                        text = optionName ?: "iMWS",
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .padding(10.dp),
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
                         fontSize = 15.sp,
@@ -342,24 +362,28 @@ fun ListItem(item: FormField, context: Context, viewModel: LandingViewModel) {
                             if (item.cursor)
 
 
-
-                            ModuleInstall.getClient(context).installModules(ModuleInstallRequest.newBuilder()
-                                .addApi(GmsBarcodeScanning.getClient(context))
-                                .build())
-                                .addOnSuccessListener { response ->
-                                    if (response.areModulesAlreadyInstalled()) {
-                                        // Module already installed, proceed with scanning
-                                        startScanning(context,textObj)
-                                    } else {
-                                        // Module was just installed, wait briefly then scan
-                                        Handler(Looper.getMainLooper()).postDelayed({
-                                            startScanning(context,textObj)
-                                        }, 1000)
+                                ModuleInstall
+                                    .getClient(context)
+                                    .installModules(
+                                        ModuleInstallRequest
+                                            .newBuilder()
+                                            .addApi(GmsBarcodeScanning.getClient(context))
+                                            .build()
+                                    )
+                                    .addOnSuccessListener { response ->
+                                        if (response.areModulesAlreadyInstalled()) {
+                                            // Module already installed, proceed with scanning
+                                            startScanning(context, textObj)
+                                        } else {
+                                            // Module was just installed, wait briefly then scan
+                                            Handler(Looper.getMainLooper()).postDelayed({
+                                                startScanning(context, textObj)
+                                            }, 1000)
+                                        }
                                     }
-                                }
-                                .addOnFailureListener { e ->
-                                    // Handle installation failure
-                                }
+                                    .addOnFailureListener { e ->
+                                        // Handle installation failure
+                                    }
                         }
                         .padding(5.dp)
                 )
@@ -379,11 +403,11 @@ fun ListItem(item: FormField, context: Context, viewModel: LandingViewModel) {
         onValueChange = { textObj.value = it },
         modifier = if (item.cursor) Modifier
             .fillMaxWidth()
-            .padding(start=5.dp, end=5.dp)
+            .padding(start = 5.dp, end = 5.dp)
             .focusRequester(focusRequester)
         else Modifier
             .fillMaxWidth()
-            .padding(start=5.dp, end=5.dp),
+            .padding(start = 5.dp, end = 5.dp),
         keyboardActions = KeyboardActions(
             onNext = {
                 textObj.value?.let {

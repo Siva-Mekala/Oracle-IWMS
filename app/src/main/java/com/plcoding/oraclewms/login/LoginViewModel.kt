@@ -37,7 +37,7 @@ open class LoginViewModel : ViewModel() {
 
     fun setState(res: CommandUiState) {
         cmdState = res
-        if (res is CommandUiState.Success){
+        if (res is CommandUiState.Success) {
             formItems.clear()
             menuItems.clear()
             res.response?.menuItems?.let {

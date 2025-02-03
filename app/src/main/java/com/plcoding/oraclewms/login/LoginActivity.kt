@@ -1,6 +1,7 @@
 package com.plcoding.oraclewms.login
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -10,7 +11,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.AlertDialog
@@ -40,7 +39,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -77,6 +75,7 @@ import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.home.LandingActivity
+import com.plcoding.oraclewms.landing.DialogWithMsg
 
 
 class LoginActivity : ComponentActivity() {
@@ -86,27 +85,34 @@ class LoginActivity : ComponentActivity() {
         setContent {
             AppTheme {
                 val viewModel = viewModel<LoginViewModel>()
+                val modifier = Modifier.fillMaxSize()
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier,
                     color = MaterialTheme.colorScheme.surface
                 ) {
-                    Greeting(viewModel, viewModel.shellState, viewModel.cmdState)
+                    Greeting(viewModel, viewModel.shellState, viewModel.cmdState, modifier)
                 }
             }
         }
     }
 
-    @SuppressLint("HardwareIds")
     @Composable
-    fun Greeting(viewModel: LoginViewModel, shellState: ShellUiState, cmdState: CommandUiState) {
+    fun Greeting(
+        viewModel: LoginViewModel,
+        shellState: ShellUiState,
+        cmdState: CommandUiState,
+        modifier: Modifier
+    ) {
         var email = rememberSaveable { mutableStateOf("") }
         var password = rememberSaveable { mutableStateOf("") }
         var environment by rememberSaveable { mutableStateOf("dev") }
         var passwordVisible by remember { mutableStateOf(false) }
+        val checkState = remember { mutableStateOf(false) }
         val envs: ArrayList<String> = Gson().fromJson(
             SharedPref.getEnvResponse(),
             object : TypeToken<ArrayList<String?>?>() {}.type
         )
+        val showDialog = remember { mutableStateOf(true) }
         Box(contentAlignment = Alignment.Center) {
             Column {
                 Text(
@@ -132,10 +138,43 @@ class LoginActivity : ComponentActivity() {
                                 .padding(10.dp)
                                 .align(Alignment.CenterHorizontally)
                         )
-                        SpinnerSample(envs, envs.get(0),
-                            onSelectionChanged = {
-                                environment = it
-                            })
+                        Column {
+                            OutlinedTextField(
+                                label = {
+                                    Text(
+                                        "Environment",
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
+                                    )
+                                },
+                                value = environment,
+                                trailingIcon = {
+                                    Icon(
+                                        Icons.Outlined.ArrowDropDown,
+                                        null,
+                                        modifier = Modifier.padding(8.dp)
+                                    )
+                                },
+                                enabled = false,
+                                singleLine = true,
+                                onValueChange = { },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        checkState.value = true
+                                    }
+                                    .padding(15.dp, 15.dp, 15.dp, 5.dp),
+                                colors = TextFieldDefaults.colors(
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                )
+                            )
+                            if (checkState.value) SpinnerSample(envs, envs.get(0),
+                                onSelectionChanged = {
+                                    environment = it
+                                    checkState.value = false
+                                }, Modifier.fillMaxWidth())
+                        }
                         OutlinedTextField(
                             label = {
                                 Text(
@@ -177,9 +216,10 @@ class LoginActivity : ComponentActivity() {
                                     Icons.Filled.Visibility
                                 else Icons.Filled.VisibilityOff
 
-                                val description = if (passwordVisible) "Hide password" else "Show password"
-                                IconButton (onClick = {passwordVisible = !passwordVisible}){
-                                    Icon(imageVector  = image, description)
+                                val description =
+                                    if (passwordVisible) "Hide password" else "Show password"
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(imageVector = image, description)
                                 }
                             },
                             value = password.value,
@@ -200,7 +240,6 @@ class LoginActivity : ComponentActivity() {
                                 unfocusedIndicatorColor = Color.Transparent,
                             )
                         )
-//                        TermsAndPolicy(checkState)
                     }
                 }
 
@@ -248,18 +287,19 @@ class LoginActivity : ComponentActivity() {
                         startActivity(intent)
                         finish()
                     } else {
-                        AlertDialogExample(
+                        if (showDialog.value) DialogWithMsg(
                             {
                                 finish()
                             },
                             {
-                                if (ups[0].content.equals("Invalid Login")) return@AlertDialogExample
+                                showDialog.value = false
+                                if (ups[0].content.equals("Invalid Login")) { finish() }
                                 else viewModel.sendCommand(Utils.deviceUUID(), "\u0001")
                             },
-                            "Alert",
-                            ups[0].content,
-                            if (ups[0].content.equals("Invalid Login")) null else "Accept",
-                            "Decline"
+                            viewModel,
+                            ups[0],
+                            showDialog,
+                            !ups[0].content.equals("Invalid Login")
                         )
                     }
                 }
@@ -355,58 +395,36 @@ class LoginActivity : ComponentActivity() {
         list: List<String>,
         preselected: String,
         onSelectionChanged: (myData: String) -> Unit,
-        modifier: Modifier = Modifier
-            .fillMaxWidth()
-            .padding(15.dp, 5.dp, 15.dp, 5.dp)
+        modifier: Modifier
     ) {
         var selected by rememberSaveable { mutableStateOf(preselected) }
-        var expanded by rememberSaveable { mutableStateOf(false) } // initial value
+        var expanded by rememberSaveable { mutableStateOf(true) } // initial value
 
-        OutlinedCard(
-            modifier = modifier.clickable {
-                expanded = !expanded
-            }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = {
+                expanded = false
+                onSelectionChanged(selected)
+                               },
+            modifier = modifier  // delete this modifier and use .wrapContentWidth() if you would like to wrap the dropdown menu around the content
         ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = selected,
-                    fontFamily = FontFamily(Font(R.font.spacegrotesk_light)),
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .fillMaxWidth(0.8f)
-                )
-                Icon(Icons.Outlined.ArrowDropDown, null, modifier = Modifier.padding(8.dp))
-
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.fillMaxWidth()  // delete this modifier and use .wrapContentWidth() if you would like to wrap the dropdown menu around the content
-                ) {
-                    list.forEach { listEntry ->
-                        DropdownMenuItem(
-                            onClick = {
-                                selected = listEntry
-                                expanded = false
-                                onSelectionChanged(selected)
-                            },
-                            content = {
-                                Text(
-                                    text = listEntry,
-                                    fontFamily = FontFamily(Font(R.font.spacegrotesk_light)),
-                                    fontSize = 15.sp,
-                                    modifier = Modifier
-                                        .fillMaxWidth() //optional instad of fillMaxWidth
-                                )
-                            }
+            list.forEach { listEntry ->
+                DropdownMenuItem(
+                    onClick = {
+                        selected = listEntry
+                        expanded = false
+                        onSelectionChanged(selected)
+                    },
+                    content = {
+                        Text(
+                            text = listEntry,
+                            fontFamily = FontFamily(Font(R.font.spacegrotesk_light)),
+                            fontSize = 15.sp,
+                            modifier = Modifier
+                                .fillMaxWidth() //optional instad of fillMaxWidth
                         )
                     }
-                }
-
+                )
             }
         }
     }
@@ -416,8 +434,9 @@ class LoginActivity : ComponentActivity() {
     fun GreetingPreview() {
         AppTheme {
             val viewModel = viewModel<LoginViewModel>()
-            Surface(modifier = Modifier.fillMaxSize()) {
-                Greeting(viewModel, viewModel.shellState, viewModel.cmdState)
+            val modifier = Modifier.fillMaxSize()
+            Surface(modifier) {
+                Greeting(viewModel, viewModel.shellState, viewModel.cmdState, modifier)
             }
         }
     }
@@ -441,47 +460,4 @@ fun LoaderScreen() {
             trackColor = MaterialTheme.colorScheme.surfaceVariant,
         )
     }
-}
-
-@Composable
-fun AlertDialogExample(
-    onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit,
-    dialogTitle: String,
-    dialogText: String,
-    yes: String?,
-    no: String?
-) {
-    AlertDialog(
-        title = {
-            androidx.compose.material.Text(text = dialogTitle)
-        },
-        text = {
-            androidx.compose.material.Text(text = dialogText)
-        },
-        onDismissRequest = {
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onConfirmation()
-                }
-            ) {
-                yes?.let {
-                    Text(yes)
-                }
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    onDismissRequest()
-                }
-            ) {
-                no?.let {
-                    Text(no)
-                }
-            }
-        },
-    )
 }

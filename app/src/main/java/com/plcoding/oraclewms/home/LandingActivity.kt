@@ -1,13 +1,11 @@
 package com.plcoding.oraclewms.home
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -253,7 +251,7 @@ class LandingActivity : ComponentActivity() {
         viewModel: LandingViewModel
     ) {
         val names: List<String>? = SharedPref.getHomeInfo()?.split(",")
-        Column (modifier = Modifier.padding(start = 5.dp, end = 5.dp)){
+        Column(modifier = Modifier.padding(start = 5.dp, end = 5.dp)) {
             var info = arrayListOf<HomeInfo>()
             info.add(
                 HomeInfo(
@@ -337,8 +335,12 @@ class LandingActivity : ComponentActivity() {
         navController: NavHostController,
         onClick: () -> Unit
     ) {
-        Row (modifier = Modifier.height(55.dp).fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically){
+        Row(
+            modifier = Modifier
+                .height(55.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             response?.controls?.let {
                 if (it.toString().contains("Ctrl-W"))
                     IconButton(onClick = {
