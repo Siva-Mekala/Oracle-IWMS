@@ -72,6 +72,7 @@ open class LoginViewModel : ViewModel() {
                         val jsonRes = response.body()
                         val gson = Gson()
                         SharedPref.setResponse(gson.toJson(jsonRes?.jsonResponse))
+                        SharedPref.setHomeInfo("${jsonRes?.jsonResponse?.env?.value},${jsonRes?.jsonResponse?.appName?.value},${jsonRes?.jsonResponse?.facilityName?.value}")
                         menuItems.clear()
                         jsonRes?.jsonResponse?.let {
                             menuItems.addAll(it.menuItems)
