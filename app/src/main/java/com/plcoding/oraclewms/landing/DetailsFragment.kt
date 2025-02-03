@@ -177,7 +177,7 @@ fun DialogWithMsg(
             shape = RoundedCornerShape(16.dp),
         ) {
             Text(
-                text = if (ups.type.equals("message")) "Notification" else "Enter Input",
+                text = if (ups.type.equals("message")) "Alert" else "Enter Input",
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(if (ups.type.equals("message")) Color.Red else Color.Blue)
@@ -215,7 +215,7 @@ fun DialogWithMsg(
                     }
                 ) {
                     Text(
-                        "Cancel",
+                        "Dismiss",
                         fontSize = 15.sp,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
                     )
@@ -227,9 +227,10 @@ fun DialogWithMsg(
                     }
                 ) {
                     Text(
-                        "Ok",
+                        "Accept",
                         fontSize = 15.sp,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
+
                     )
                 }
             }

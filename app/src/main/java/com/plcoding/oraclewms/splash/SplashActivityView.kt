@@ -80,7 +80,8 @@ class SplashActivityView : ComponentActivity() {
         } else {
             Toast.makeText(
                 this,
-                "Please provide notification permission to get started",
+                "Please provide " +
+                        "notification permission to get started",
                 Toast.LENGTH_LONG
             ).show()
             finish()
