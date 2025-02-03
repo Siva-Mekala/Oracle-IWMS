@@ -1,5 +1,6 @@
 package com.plcoding.oraclewms.landing
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,26 +13,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.Icon
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.Card
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -42,7 +37,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
@@ -50,25 +44,23 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.unit.sp
-import androidx.loader.content.Loader
 import androidx.navigation.NavController
-import com.example.compose.AppTheme
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.api.FormField
+import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.login.CommandUiState
 import com.plcoding.oraclewms.login.LoaderScreen
@@ -82,7 +74,7 @@ fun DetailsScreen(
     navController: NavController,
     viewModel: LandingViewModel,
     state: CommandUiState,
-    clickPosition: Int
+    item: MenuItem?
 ) {
     BackHandler {
         navController.popBackStack()
@@ -97,13 +89,12 @@ fun DetailsScreen(
         LaunchedEffect(true) {
             viewModel.sendCommand(
                 Utils.deviceUUID(),
-                "${clickPosition}\n"
+                "${item?.optionNumber}\n"
             )
         }
+    ListScreen(scanner, modifier, viewModel, item?.optionName)
     if (state is CommandUiState.Success) {
         state.response?.formFields.let {
-            if (it == null) {
-            } else ListScreen(it, scanner, modifier, viewModel, state)
         }
         state.response?.popups.let {
             it.let { ups ->
@@ -257,41 +248,41 @@ fun WareHouseTextField(viewModel: LandingViewModel, popup: Popup, onChange: (Str
 
 @Composable
 fun ListScreen(
-    item: List<FormField>,
     scanner: GmsBarcodeScanner,
     modifier: Modifier,
     viewModel: LandingViewModel,
-    state: CommandUiState
+    optionName: String?
 ) {
-    LazyColumn(
-        modifier,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        contentPadding = PaddingValues(start = 5.dp, end = 5.dp)
-    ) {
-        item {
-            Column {
-                HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
-                Text(
-                    text = if (state is CommandUiState.Success) {
-                        state.response.let { if (it == null) "iMWS" else it.screenName.let { if (it == null) "iMWS" else it.value } }
-                    } else "iMWS",
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(10.dp),
-                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-                HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
+    viewModel.formItems.let {
+        LazyColumn(
+            modifier,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(start = 5.dp, end = 5.dp)
+        ) {
+            item {
+                Column {
+                    HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
+                    Text(
+                        text = optionName?:"iMWS",
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(10.dp),
+                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                        fontSize = 15.sp,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                    HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
+                }
             }
-        }
-        items(item.size) { x ->
-            ListItem(item = item.get(x), scanner, viewModel)
+            items(it.size) { index ->
+                ListItem(item = it.get(index), scanner, viewModel)
+            }
         }
     }
 }
 
 @Composable
 fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingViewModel) {
+    Log.d("DetailsFragment", "ListItem: ${item.cursor} ${item.form_key}")
     val textObj = rememberSaveable {
         mutableStateOf(
             item.form_value?.trim().let {
@@ -305,8 +296,8 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
     }
     val showDate = rememberSaveable { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
-    val cursor = rememberSaveable { item.cursor }
     val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     TextField(
         label = {
             Text(
@@ -350,10 +341,10 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
                         .padding(5.dp)
                 )
         },
-        enabled = cursor,
+        enabled = item.cursor,
         singleLine = true,
         onValueChange = { textObj.value = it },
-        modifier = if (cursor) Modifier
+        modifier = if (item.cursor) Modifier
             .fillMaxWidth()
             .padding(start=5.dp, end=5.dp)
             .focusRequester(focusRequester)
@@ -367,6 +358,8 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
                         Utils.deviceUUID(), it + "\t"
                     )
                 }
+                keyboardController?.hide()
+                focusManager.clearFocus()
             }
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -375,7 +368,7 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
             unfocusedLabelColor = Color.Gray
         )
     )
-    if (cursor) LaunchedEffect(true) {
+    if (item.cursor) LaunchedEffect(true) {
         focusRequester.requestFocus()
     }
     if (showDate.value) DatePickerModal({

@@ -68,6 +68,7 @@ import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.api.JSONResponse
+import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.landing.DetailsScreen
 import com.plcoding.oraclewms.login.CommandUiState
 import kotlinx.coroutines.launch
@@ -121,7 +122,7 @@ class LandingActivity : ComponentActivity() {
         navController: NavHostController
     ) {
         var showBottomSheet by remember { mutableStateOf(false) }
-        var clickPosition by remember { mutableStateOf(0) }
+        var clickPosition by remember { mutableStateOf<MenuItem?>(null) }
         Scaffold(modifier = modifier
             .statusBarsPadding()
             .navigationBarsPadding(),

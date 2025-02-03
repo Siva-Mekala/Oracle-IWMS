@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.plcoding.oraclewms.R
+import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.landing.DialogWithMsg
 import com.plcoding.oraclewms.login.CommandUiState
@@ -39,47 +40,57 @@ fun HomeScreen(
     navController: NavController,
     viewModel: LandingViewModel,
     state: CommandUiState,
-    onItemClick: (Int) -> (Unit)
+    onItemClick: (MenuItem) -> (Unit)
 ) {
     Log.d("HomeScreen", "Inside composable")
+    viewModel.menuItems.let {
+    LazyColumn(modifier.background(color = Color.White)) {
+        items(it.size) { index ->
+            Column(
+                modifier = Modifier.fillMaxWidth().background(color = Color.White).clickable {
+                    onItemClick(it.get(index))
+                    navController.navigate("Rewards")
+                }, verticalArrangement = Arrangement.Center
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "${it.get(index).optionNumber}",
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.background(
+                            color = Color(0xffD3D3D3),
+                            shape = CircleShape
+                        ).padding(5.dp),
+                        fontFamily = FontFamily(
+                            Font(
+                                R.font.spacegrotesk_medium
+                            )
+                        ),
+                        fontSize = 15.sp
+                    )
+                    Text(
+                        text = "${it.get(index).optionName}",
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                        fontFamily = FontFamily(
+                            Font(
+                                R.font.spacegrotesk_medium
+                            )
+                        ),
+                        fontSize = 15.sp
+                    )
+                }
+                HorizontalDivider(Modifier.fillMaxWidth().alpha(0.4f), 2.dp, Color.Gray)
+            }
+        }
+    }
+    }
     if (state is CommandUiState.Success) {
         state.response?.let { res ->
             if (res.menuItems.isEmpty()) navController.navigate("Rewards")
             else {
-                LazyColumn(modifier.background(color = Color.White)) {
-                    items(res.menuItems.size) {
-                        Column (modifier = Modifier.fillMaxWidth().background(color = Color.White).clickable {
-                            onItemClick(res.menuItems.get(it).optionNumber)
-                            navController.navigate("Rewards")
-                        }, verticalArrangement = Arrangement.Center){
-                            Row (modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically){
-                                Text(
-                                    text = "${res.menuItems.get(it).optionNumber}",
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier.background(color = Color(0xffD3D3D3), shape = CircleShape).padding(5.dp),
-                                    fontFamily = FontFamily(
-                                        Font(
-                                            R.font.spacegrotesk_medium
-                                        )
-                                    ),
-                                    fontSize = 15.sp
-                                )
-                                Text(
-                                    text = "${res.menuItems.get(it).optionName}",
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier.padding(start = 10.dp, end = 10.dp),
-                                    fontFamily = FontFamily(
-                                        Font(
-                                            R.font.spacegrotesk_medium
-                                        )
-                                    ),
-                                    fontSize = 15.sp
-                                )
-                            }
-                            HorizontalDivider(Modifier.fillMaxWidth().alpha(0.4f), 2.dp, Color.Gray)
-                        }
-                    }
-                }
             }
         }
     } else if (state is CommandUiState.Error) {
@@ -100,6 +111,5 @@ fun HomeScreen(
     } else if (state is CommandUiState.Loading){
         LoaderScreen()
     } else {
-
     }
 }

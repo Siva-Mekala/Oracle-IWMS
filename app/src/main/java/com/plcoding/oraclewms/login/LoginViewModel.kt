@@ -7,6 +7,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.google.gson.JsonObject
@@ -14,6 +15,8 @@ import com.plcoding.oraclewms.BaseApiInterface
 import com.plcoding.oraclewms.BuildConfig
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.api.ApiResponse
+import com.plcoding.oraclewms.api.FormField
+import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.home.LandingActivity
 import retrofit2.Call
 import retrofit2.Callback
@@ -29,8 +32,21 @@ open class LoginViewModel : ViewModel() {
     var cmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
         private set
 
+    var menuItems = arrayListOf<MenuItem>().toMutableStateList()
+    var formItems = arrayListOf<FormField>().toMutableStateList()
+
     fun setState(res: CommandUiState) {
         cmdState = res
+        if (res is CommandUiState.Success){
+            formItems.clear()
+            menuItems.clear()
+            res.response?.menuItems?.let {
+                menuItems.addAll(it)
+            }
+            res.response?.formFields?.let {
+                formItems.addAll(it)
+            }
+        }
     }
 
     var shellState: ShellUiState by mutableStateOf(ShellUiState.Empty)
@@ -56,6 +72,14 @@ open class LoginViewModel : ViewModel() {
                         val jsonRes = response.body()
                         val gson = Gson()
                         SharedPref.setResponse(gson.toJson(jsonRes?.jsonResponse))
+                        menuItems.clear()
+                        jsonRes?.jsonResponse?.let {
+                            menuItems.addAll(it.menuItems)
+                        }
+                        formItems.clear()
+                        jsonRes?.jsonResponse?.let {
+                            formItems.addAll(it.formFields)
+                        }
                         cmdState = CommandUiState.Success(jsonRes?.jsonResponse)
                         loader = CommandUiState.Success(null)
                     } else {
