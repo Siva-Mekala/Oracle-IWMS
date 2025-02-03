@@ -138,8 +138,19 @@ fun DetailsScreen(
             }
         }
     } else if (state is CommandUiState.Error) {
-        if (state.code == HttpURLConnection.HTTP_NOT_FOUND) viewModel.startActivity(LocalContext.current)
-        else {
+        val context = LocalContext.current
+        if (state.code == HttpURLConnection.HTTP_NOT_FOUND) {
+            val showDialog = remember { mutableStateOf(true) }
+            DialogWithMsg(
+                onConfirmation = {
+                    viewModel.startActivity(context)
+                    showDialog.value = false
+                },
+                viewModel = viewModel,
+                ups = Popup("Your session expired. Please login again","message"),
+                showDialog = showDialog
+            )
+        } else {
         }
     } else if (state is CommandUiState.Loading){
         LoaderScreen()

@@ -95,6 +95,7 @@ open class LoginViewModel : ViewModel() {
                     if (response.isSuccessful) {
                         val jsonRes = response.body()
                         shellState = ShellUiState.Success(jsonRes?.jsonResponse)
+                        SharedPref.setHomeInfo("${jsonRes?.jsonResponse?.env?.value},${jsonRes?.jsonResponse?.appName?.value},${jsonRes?.jsonResponse?.facilityName?.value}")
                         sendCommand(id, "${email.value.trim()}\t${password.value.trim()}\n")
                     } else {
                         shellState = ShellUiState.Error

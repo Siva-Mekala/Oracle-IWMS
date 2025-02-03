@@ -1,6 +1,7 @@
 package com.plcoding.oraclewms.home
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -250,25 +251,25 @@ class LandingActivity : ComponentActivity() {
     fun DrawerContentComponent(
         viewModel: LandingViewModel
     ) {
+        val names: List<String>? = SharedPref.getHomeInfo()?.split(",")
         Column (modifier = Modifier.padding(start = 5.dp, end = 5.dp)){
-            var item = viewModel.cmdState
             var info = arrayListOf<HomeInfo>()
             info.add(
                 HomeInfo(
                     "Env",
-                    if (item is CommandUiState.Success) item.response?.env?.value else ""
+                    names?.get(0)
                 )
             )
             info.add(
                 HomeInfo(
                     "Company",
-                    if (item is CommandUiState.Success) item.response?.appName?.value else ""
+                    names?.get(1)
                 )
             )
             info.add(
                 HomeInfo(
                     "Facility",
-                    if (item is CommandUiState.Success) item.response?.facilityName?.value else ""
+                    names?.get(2)
                 )
             )
             Row {
@@ -336,7 +337,6 @@ class LandingActivity : ComponentActivity() {
         onClick: () -> Unit
     ) {
         Row (modifier = Modifier.height(55.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically){
             response?.controls?.let {
                 if (it.toString().contains("Ctrl-W"))
@@ -353,7 +353,7 @@ class LandingActivity : ComponentActivity() {
                                 Utils.getControlCharacterValueOptimized("Ctrl-W")
                             )
                         }
-                    }) {
+                    }, modifier = Modifier.weight(1f)) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Localized description",
@@ -369,7 +369,7 @@ class LandingActivity : ComponentActivity() {
                             Utils.deviceUUID(),
                             Utils.getControlCharacterValueOptimized("Ctrl-U")
                         )
-                    }) {
+                    }, modifier = Modifier.weight(1f)) {
                         Icon(
                             painter = painterResource(R.drawable.double_up_icon),
                             contentDescription = "Localized description",
@@ -384,7 +384,7 @@ class LandingActivity : ComponentActivity() {
                             Utils.deviceUUID(),
                             Utils.getControlCharacterValueOptimized("Ctrl-D")
                         )
-                    }) {
+                    }, modifier = Modifier.weight(1f)) {
                         Icon(
                             painter = painterResource(R.drawable.double_down_icon),
                             contentDescription = "Localized description",
@@ -393,7 +393,7 @@ class LandingActivity : ComponentActivity() {
                                 .padding(5.dp)
                         )
                     }
-                IconButton(onClick = { onClick() }) {
+                IconButton(onClick = { onClick() }, modifier = Modifier.weight(1f)) {
                     Icon(
                         Icons.Filled.MoreHoriz,
                         contentDescription = "More options",
@@ -426,7 +426,7 @@ class LandingActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        "Welcome IMWS",
+                        "Welcome to IMWS",
                         Modifier.padding(5.dp),
                         fontSize = 20.sp,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))

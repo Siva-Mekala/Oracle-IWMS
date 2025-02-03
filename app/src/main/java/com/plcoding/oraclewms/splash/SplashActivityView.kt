@@ -38,6 +38,7 @@ import com.google.gson.Gson
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.home.LandingActivity
+import com.plcoding.oraclewms.login.LoginActivity
 import com.plcoding.oraclewms.termsAndConditions.TermsAndConditionsView
 
 class SplashActivityView : ComponentActivity() {
@@ -64,7 +65,9 @@ class SplashActivityView : ComponentActivity() {
         startActivity(
             Intent(
                 this,
-                if (SharedPref.isUserLoggedIn()) LandingActivity::class.java else TermsAndConditionsView::class.java
+                if (SharedPref.isUserLoggedIn()) LandingActivity::class.java
+                else if(!SharedPref.isSeenTc()) TermsAndConditionsView::class.java
+                else LoginActivity::class.java
             )
         )
         finish()
@@ -82,11 +85,6 @@ class SplashActivityView : ComponentActivity() {
             ).show()
             finish()
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-
     }
 
     fun checkPermission(context: Context, permission: String): Boolean {
