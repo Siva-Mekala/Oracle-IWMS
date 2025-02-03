@@ -1,8 +1,5 @@
 package com.plcoding.oraclewms.landing
 
-import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -57,8 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.google.android.gms.common.moduleinstall.ModuleInstall
-import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
@@ -98,7 +94,7 @@ fun DetailsScreen(
                 "${item?.optionNumber}\n"
             )
         }
-    ListScreen(context, modifier, viewModel, item?.optionName)
+    ListScreen(scanner, modifier, viewModel, item?.optionName)
     if (state is CommandUiState.Success) {
         state.response?.formFields.let {
         }
@@ -302,7 +298,7 @@ fun ListScreen(
                 }
             }
             items(item.size) { x ->
-                ListItem(item = item.get(x), context, viewModel)
+                ListItem(item = item.get(x), scanner, viewModel)
             }
         }
     }
