@@ -60,13 +60,13 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "${it.get(index).optionNumber}",
+                            text = "${it.get(index).optionNumber}.",
                             color = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier
-                                .background(
-                                    color = Color(0xffD3D3D3),
-                                    shape = CircleShape
-                                )
+//                                .background(
+//                                    color = Color(0xffD3D3D3),
+//                                    shape = CircleShape
+//                                )
                                 .padding(5.dp),
                             fontFamily = FontFamily(
                                 Font(
