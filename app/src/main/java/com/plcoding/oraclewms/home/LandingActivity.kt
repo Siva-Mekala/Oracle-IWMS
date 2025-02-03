@@ -390,7 +390,7 @@ class LandingActivity : ComponentActivity() {
                             painter = painterResource(R.drawable.double_down_icon),
                             contentDescription = "Localized description",
                             Modifier
-                                .size(30.dp)
+                                .size(35.dp)
                                 .padding(5.dp)
                         )
                     }

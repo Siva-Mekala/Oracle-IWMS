@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">iWMS</string>
+    <string name="app_name">iMWS</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_login_view">LoginActivityView</string>
     <string name="title_activity_start_fragment">StartFragment</string>

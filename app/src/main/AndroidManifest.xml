@@ -4,12 +4,17 @@
     package="com.plcoding.oraclewms">
 
     <!-- Permissions -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Consider removing CHANGE_NETWORK_STATE if not strictly necessary -->
     <uses-permission
         android:name="android.permission.CHANGE_NETWORK_STATE"
         tools:node="remove" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:name=".WareHouseApp"
@@ -50,7 +55,7 @@
         <!-- Metadata -->
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"
-            android:value="barcode_ui" />
+            android:value="barcode" />
     </application>
 
 </manifest>
