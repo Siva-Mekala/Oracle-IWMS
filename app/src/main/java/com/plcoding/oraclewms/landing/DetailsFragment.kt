@@ -90,6 +90,7 @@ fun DetailsScreen(
     }
 
     val context = LocalContext.current
+    val scanner = GmsBarcodeScanning.getClient(context)
     if (state is CommandUiState.Success && state.response?.menuItems?.isEmpty() == false)
         LaunchedEffect(true) {
             viewModel.sendCommand(
@@ -274,7 +275,7 @@ fun WareHouseTextField(viewModel: LoginViewModel, onChange: (String) -> Unit) {
 
 @Composable
 fun ListScreen(
-    context: Context,
+   scanner: GmsBarcodeScanner,
     modifier: Modifier,
     viewModel: LandingViewModel,
     optionName: String?
@@ -307,25 +308,10 @@ fun ListScreen(
     }
 }
 
-fun startScanning(context: Context, textObj: MutableState<String?>) {
-    GmsBarcodeScanning.getClient(context)
-        .startScan()
-        .addOnSuccessListener { barcode ->
-            println("barcode")
-            textObj.value = barcode.rawValue
-        }
-        .addOnCanceledListener {
-            println("barcode1")
-        }
-        .addOnFailureListener { e ->
-            println("barcode2")
-            println(e.printStackTrace())
-            e.printStackTrace()
-        }
-}
+
 
 @Composable
-fun ListItem(item: FormField, context: Context, viewModel: LandingViewModel) {
+fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingViewModel) {
     Log.d("DetailsFragment", "ListItem: ${item.cursor} ${item.form_key}")
     val textObj = rememberSaveable {
         mutableStateOf(
@@ -361,29 +347,38 @@ fun ListItem(item: FormField, context: Context, viewModel: LandingViewModel) {
                         .clickable {
                             if (item.cursor)
 
-
-                                ModuleInstall
-                                    .getClient(context)
-                                    .installModules(
-                                        ModuleInstallRequest
-                                            .newBuilder()
-                                            .addApi(GmsBarcodeScanning.getClient(context))
-                                            .build()
-                                    )
-                                    .addOnSuccessListener { response ->
-                                        if (response.areModulesAlreadyInstalled()) {
-                                            // Module already installed, proceed with scanning
-                                            startScanning(context, textObj)
-                                        } else {
-                                            // Module was just installed, wait briefly then scan
-                                            Handler(Looper.getMainLooper()).postDelayed({
-                                                startScanning(context, textObj)
-                                            }, 1000)
-                                        }
+                                scanner
+                                    .startScan()
+                                    .addOnSuccessListener { barcode ->
+                                        println("barcode")
+                                        textObj.value = barcode.rawValue
+                                    }
+                                    .addOnCanceledListener {
+                                        println("barcode1")
                                     }
                                     .addOnFailureListener { e ->
-                                        // Handle installation failure
+                                        println("barcode2")
+                                        println(e.printStackTrace())
+                                        e.printStackTrace()
                                     }
+
+//                            ModuleInstall.getClient(context).installModules(ModuleInstallRequest.newBuilder()
+//                                .addApi(GmsBarcodeScanning.getClient(context))
+//                                .build())
+//                                .addOnSuccessListener { response ->
+//                                    if (response.areModulesAlreadyInstalled()) {
+//                                        // Module already installed, proceed with scanning
+//                                        startScanning(context,textObj)
+//                                    } else {
+//                                        // Module was just installed, wait briefly then scan
+//                                        Handler(Looper.getMainLooper()).postDelayed({
+//                                            startScanning(context,textObj)
+//                                        }, 1000)
+//                                    }
+//                                }
+//                                .addOnFailureListener { e ->
+//                                    // Handle installation failure
+//                                }
                         }
                         .padding(5.dp)
                 )
