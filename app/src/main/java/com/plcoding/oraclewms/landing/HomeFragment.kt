@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -59,7 +60,7 @@ fun HomeScreen(
                                 Text(
                                     text = "${res.menuItems.get(it).optionNumber}",
                                     color = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier.background(color = Color(0xffD3D3D3), shape = CircleShape).padding(5.dp),
+                                    modifier = Modifier.padding(5.dp).width(20.dp).height(20.dp),
                                     fontFamily = FontFamily(
                                         Font(
                                             R.font.spacegrotesk_medium
