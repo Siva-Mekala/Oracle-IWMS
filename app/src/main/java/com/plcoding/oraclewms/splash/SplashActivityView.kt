@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -73,24 +75,7 @@ class SplashActivityView : ComponentActivity() {
         finish()
     }
 
-    private val requestPermissionLauncher = registerForActivityResult(
-        RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-        } else {
-            Toast.makeText(
-                this,
-                "Please provide " +
-                        "notification permission to get started",
-                Toast.LENGTH_LONG
-            ).show()
-            finish()
-        }
-    }
 
-    fun checkPermission(context: Context, permission: String): Boolean {
-        return ActivityCompat.checkSelfPermission(context, permission) == PERMISSION_GRANTED
-    }
 
     @Composable
     fun SplashScreen(
@@ -126,17 +111,15 @@ class SplashActivityView : ComponentActivity() {
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    Brush.linearGradient(
-                        listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary)
-                    )
+                    if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(R.color.primary_imws)
                 )
         ) {
             Text(
                 modifier = Modifier
                     .scale(scale.value)
-                    .padding(top = 15.dp, bottom = 10.dp), text = "iMWS",
+                    .padding(top = 15.dp, bottom = 10.dp), text = "Xpress WMS",
                 style = TextStyle(
-                    fontFamily = FontFamily(Font(R.font.jersey_normal)),
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_bold)),
                     fontSize = 50.sp,
                     lineHeight = 50.sp
                 ), color = MaterialTheme.colorScheme.onPrimary

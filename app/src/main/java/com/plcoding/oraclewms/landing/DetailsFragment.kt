@@ -1,14 +1,29 @@
 package com.plcoding.oraclewms.landing
 
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.*
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,7 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -44,7 +59,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -52,8 +69,14 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.isGranted
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.plcoding.focusfun.landing.LandingViewModel
@@ -68,7 +91,13 @@ import com.plcoding.oraclewms.login.LoginViewModel
 import java.net.HttpURLConnection
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.plcoding.oraclewms.SharedPref
+import java.util.concurrent.Executors
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun DetailsScreen(
     modifier: Modifier,
@@ -84,9 +113,9 @@ fun DetailsScreen(
             Utils.getControlCharacterValueOptimized("Ctrl-W")
         )
     }
-
     val context = LocalContext.current
     val scanner = GmsBarcodeScanning.getClient(context)
+
     if (state is CommandUiState.Success && state.response?.menuItems?.isEmpty() == false)
         LaunchedEffect(true) {
             viewModel.sendCommand(
@@ -153,7 +182,9 @@ fun DetailsScreen(
 
     }
 }
-
+fun checkPermission(context: Context, permission: String): Boolean {
+    return ActivityCompat.checkSelfPermission(context, permission) == PERMISSION_GRANTED
+}
 @Composable
 fun DialogWithMsg(
     onDismissRequest: () -> Unit,
@@ -210,7 +241,7 @@ fun DialogWithMsg(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 if (error) TextButton(
                     onClick = {
-                        onConfirmation(text.value)
+                       onDismissRequest()
                         showDialog.value = false
                     }
                 ) {
@@ -227,7 +258,7 @@ fun DialogWithMsg(
                     }
                 ) {
                     Text(
-                        "Accept",
+                        if (error)"Accept" else "Ok",
                         fontSize = 15.sp,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
 
@@ -270,6 +301,7 @@ fun WareHouseTextField(viewModel: LoginViewModel, onChange: (String) -> Unit) {
     )
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ListScreen(
    scanner: GmsBarcodeScanner,
@@ -277,38 +309,48 @@ fun ListScreen(
     viewModel: LandingViewModel,
     optionName: String?
 ) {
-    viewModel.formItems.let { item ->
-        LazyColumn(
-            modifier,
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            contentPadding = PaddingValues(start = 5.dp, end = 5.dp)
-        ) {
-            item {
-                Column {
-                    HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
-                    Text(
-                        text = optionName ?: "iMWS",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp),
-                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                        fontSize = 15.sp,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                    HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
+    val permissionState = rememberPermissionState(
+        Manifest.permission.CAMERA
+    )
+    Box {
+        viewModel.formItems.let { item ->
+            LazyColumn(
+                modifier.background(color = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws)),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(start = 5.dp, end = 5.dp),
+
+            ) {
+                item {
+                    Column {
+                        HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws))
+                        Text(
+                            text = if (optionName.isNullOrEmpty()) if(SharedPref.getScreenName().toString().isEmpty())  "Xpress WMS" else SharedPref.getScreenName().toString() else optionName,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                            fontSize = 15.sp,
+                            color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(R.color.secondary_imws)
+                        )
+                        HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
+                    }
                 }
-            }
-            items(item.size) { x ->
-                ListItem(item = item.get(x), scanner, viewModel)
+                items(item.size) { x ->
+                    ListItem(item = item.get(x), scanner, viewModel, permissionState)
+                }
             }
         }
     }
 }
 
-
-
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingViewModel) {
+fun ListItem(
+    item: FormField,
+    scanner: GmsBarcodeScanner,
+    viewModel: LandingViewModel,
+    permissionState: PermissionState
+) {
     Log.d("DetailsFragment", "ListItem: ${item.cursor} ${item.form_key}")
     val textObj = rememberSaveable {
         mutableStateOf(
@@ -321,10 +363,24 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
             }
         )
     }
+    var resultText by remember { mutableStateOf("No result yet") }
+
+    val launcher = rememberLauncherForActivityResult (
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            val returnedString = data?.getStringExtra("returned_string") // Get the returned string
+            if (returnedString != null) {
+                textObj.value = returnedString // Update the result text
+            }
+        }
+    }
     val showDate = rememberSaveable { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val context = LocalContext.current
     TextField(
         label = {
             Text(
@@ -343,21 +399,30 @@ fun ListItem(item: FormField, scanner: GmsBarcodeScanner, viewModel: LandingView
                         .size(40.dp)
                         .clickable {
                             if (item.cursor)
+                                if (permissionState.status.isGranted) {
+                                    val intent = Intent(context, BarCodeActivity::class.java) // Replace SecondActivity
+                                    launcher.launch(intent)
+//                                    scanner
+//                                        .startScan()
+//                                        .addOnSuccessListener { barcode ->
+//                                            println("barcode")
+//                                            textObj.value = barcode.rawValue
+//                                        }
+//                                        .addOnCanceledListener {
+//                                            println("barcode1")
+//                                        }
+//                                        .addOnFailureListener { e ->
+//                                            println("barcode2")
+//                                            println(e.printStackTrace())
+//                                            e.printStackTrace()
+//                                        }
+                                } else {
+                                    if (permissionState.status.shouldShowRationale)
+                                    else {
+                                        permissionState.launchPermissionRequest()
+                                    }
+                                }
 
-                                scanner
-                                    .startScan()
-                                    .addOnSuccessListener { barcode ->
-                                        println("barcode")
-                                        textObj.value = barcode.rawValue
-                                    }
-                                    .addOnCanceledListener {
-                                        println("barcode1")
-                                    }
-                                    .addOnFailureListener { e ->
-                                        println("barcode2")
-                                        println(e.printStackTrace())
-                                        e.printStackTrace()
-                                    }
 
 //                            ModuleInstall.getClient(context).installModules(ModuleInstallRequest.newBuilder()
 //                                .addApi(GmsBarcodeScanning.getClient(context))

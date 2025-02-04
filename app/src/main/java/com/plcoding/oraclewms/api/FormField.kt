@@ -10,4 +10,8 @@ data class FormField(
     var line_number: Int? = null,
     var cursor: Boolean = false,
     var formatters: Formatters? = null
-) : Serializable
+) : Serializable{
+    override fun toString(): String {
+        return form_key.toString()
+    }
+}

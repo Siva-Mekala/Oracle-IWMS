@@ -12,7 +12,7 @@ public class ScreenName implements Serializable {
     private int lineNumber;
     @SerializedName("value")
     @Expose
-    private String value = "iMWS";
+    private String value = "Xpress WMS";
 
     public int getLineNumber() {
         return lineNumber;

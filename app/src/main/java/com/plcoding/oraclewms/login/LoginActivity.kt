@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -54,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -113,11 +116,12 @@ class LoginActivity : ComponentActivity() {
             object : TypeToken<ArrayList<String?>?>() {}.type
         )
         val showDialog = remember { mutableStateOf(true) }
-        Box(contentAlignment = Alignment.Center) {
+        Box(contentAlignment = Alignment.Center, modifier =  modifier.background(if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(R.color.primary_imws))
+        ) {
             Column {
                 Text(
-                    "iMWS", fontFamily = FontFamily(Font(R.font.jersey_normal)),
-                    style = TextStyle(color = MaterialTheme.colorScheme.primary, fontSize = 50.sp),
+                    "Xpress WMS", fontFamily = FontFamily(Font(R.font.spacegrotesk_bold)),
+                    style = TextStyle(color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white), fontSize = 30.sp),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                 )
@@ -125,7 +129,7 @@ class LoginActivity : ComponentActivity() {
                 Card(
                     elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
                     modifier = Modifier.padding(15.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary)
+                    colors = CardDefaults.cardColors(if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws))
                 ) {
                     Column {
                         Text(
@@ -248,11 +252,12 @@ class LoginActivity : ComponentActivity() {
                     modifier = Modifier
                         .padding(15.dp)
                         .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws))
+
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
 
-                        Button(
+                        Button(colors = ButtonDefaults.buttonColors(containerColor = if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(R.color.primary_imws)),
                             onClick = {
                                 viewModel.startShell(
                                     Utils.deviceUUID(),
@@ -276,33 +281,50 @@ class LoginActivity : ComponentActivity() {
         }
         if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading) LoaderScreen()
         else if (cmdState is CommandUiState.Success) {
-            cmdState.response?.let {
-                it.popups.let { ups ->
-                    if (ups == null || ups.isEmpty()) {
-                        SharedPref.setUserLoggedIn(true)
-                        val intent = Intent(this, LandingActivity::class.java)
-                        var bundle = Bundle()
-                        bundle.putSerializable("response", it)
-                        intent.putExtras(bundle)
-                        startActivity(intent)
-                        finish()
-                    } else {
-                        if (showDialog.value) DialogWithMsg(
-                            {
-                                finish()
-                            },
-                            {
-                                showDialog.value = false
-                                if (ups[0].content.equals("Invalid Login")) { finish() }
-                                else viewModel.sendCommand(Utils.deviceUUID(), "\u0001")
-                            },
-                            viewModel,
-                            ups[0],
-                            showDialog,
-                            !ups[0].content.equals("Invalid Login")
-                        )
-                    }
+            println(cmdState)
+            cmdState.response?.let { res->
+                res.formFields.let{
+                  if(it.isNullOrEmpty()){
+                      res.popups.let { ups ->
+                          if (ups == null || ups.isEmpty()) {
+                              println(ups)
+                              SharedPref.setUserLoggedIn(true)
+                              val intent = Intent(this, LandingActivity::class.java)
+                              var bundle = Bundle()
+                              bundle.putSerializable("response", it)
+                              intent.putExtras(bundle)
+                              startActivity(intent)
+                              finish()
+                          } else {
+                              println("ups")
+                              println(ups.isEmpty())
+                              println(showDialog)
+                              if (showDialog.value) DialogWithMsg(
+                                  {
+                                      viewModel.sendCommand(Utils.deviceUUID(), Utils.getControlCharacterValueOptimized("Ctrl-W"))
+                                      showDialog.value = false
+                                  },
+                                  {
+                                      showDialog.value = false
+                                      if (ups[0].content.equals("Invalid Login")) {
+                                          showDialog.value = false
+                                      }
+                                      else viewModel.sendCommand(Utils.deviceUUID(), Utils.getControlCharacterValueOptimized("Ctrl-A"))
+                                  },
+                                  viewModel,
+                                  ups[0],
+                                  showDialog,
+                                  !ups[0].content.equals("Invalid Login")
+                              )
+                          }
+                      }
+                  }else{
+                      if(it.toString().contains("Pswd")){
+                           showDialog.value = true;
+                      }
+                  }
                 }
+
             }
         }
     }
