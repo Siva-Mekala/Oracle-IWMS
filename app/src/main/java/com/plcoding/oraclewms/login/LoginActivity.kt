@@ -120,7 +120,7 @@ class LoginActivity : ComponentActivity() {
         ) {
             Column {
                 Text(
-                    "Xpress WMS", fontFamily = FontFamily(Font(R.font.spacegrotesk_bold)),
+                    "Xpress WMS", fontFamily = FontFamily(Font(R.font.jersey_normal)),
                     style = TextStyle(color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white), fontSize = 30.sp),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -129,7 +129,7 @@ class LoginActivity : ComponentActivity() {
                 Card(
                     elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
                     modifier = Modifier.padding(15.dp),
-                    colors = CardDefaults.cardColors(if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws))
+                    colors = CardDefaults.cardColors(if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white))
                 ) {
                     Column {
                         Text(
@@ -252,7 +252,7 @@ class LoginActivity : ComponentActivity() {
                     modifier = Modifier
                         .padding(15.dp)
                         .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws))
+                    colors = CardDefaults.cardColors(if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white))
 
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {

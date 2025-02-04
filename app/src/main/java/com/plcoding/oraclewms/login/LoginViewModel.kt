@@ -57,7 +57,7 @@ open class LoginViewModel : ViewModel() {
         val obj = JsonObject()
         obj.addProperty("sessionId", id)
         obj.addProperty("command", cmd)
-        obj.addProperty("wait_time",1500)
+        obj.addProperty("wait_time",2000)
         cmdState = CommandUiState.Loading
         loader = CommandUiState.Loading
         BaseApiInterface.create()

@@ -46,12 +46,12 @@ fun HomeScreen(
 ) {
     Log.d("HomeScreen", "Inside composable")
     viewModel.menuItems.let {
-        LazyColumn(modifier.background(color = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws))) {
+        LazyColumn(modifier.background(color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white))) {
             items(it.size) { index ->
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(color = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws))
+                        .background(color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white))
                         .clickable {
                             onItemClick(it.get(index))
                             navController.navigate("Rewards")

@@ -315,14 +315,14 @@ fun ListScreen(
     Box {
         viewModel.formItems.let { item ->
             LazyColumn(
-                modifier.background(color = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws)),
+                modifier.background(color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white)),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(start = 5.dp, end = 5.dp),
 
             ) {
                 item {
                     Column {
-                        HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws))
+                        HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white))
                         Text(
                             text = if (optionName.isNullOrEmpty()) if(SharedPref.getScreenName().toString().isEmpty())  "Xpress WMS" else SharedPref.getScreenName().toString() else optionName,
                             modifier = Modifier

@@ -119,7 +119,7 @@ class SplashActivityView : ComponentActivity() {
                     .scale(scale.value)
                     .padding(top = 15.dp, bottom = 10.dp), text = "Xpress WMS",
                 style = TextStyle(
-                    fontFamily = FontFamily(Font(R.font.spacegrotesk_bold)),
+                    fontFamily = FontFamily(Font(R.font.jersey_normal)),
                     fontSize = 50.sp,
                     lineHeight = 50.sp
                 ), color = MaterialTheme.colorScheme.onPrimary
