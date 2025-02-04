@@ -57,6 +57,7 @@ open class LoginViewModel : ViewModel() {
         val obj = JsonObject()
         obj.addProperty("sessionId", id)
         obj.addProperty("command", cmd)
+        obj.addProperty("wait_time",1500)
         cmdState = CommandUiState.Loading
         loader = CommandUiState.Loading
         BaseApiInterface.create()
@@ -123,7 +124,11 @@ open class LoginViewModel : ViewModel() {
                         SharedPref.setHomeInfo("${jsonRes?.jsonResponse?.env?.value},${jsonRes?.jsonResponse?.appName?.value},${jsonRes?.jsonResponse?.facilityName?.value}")
                         sendCommand(id, "${email.value.trim()}\t${password.value.trim()}\n")
                     } else {
+
                         shellState = ShellUiState.Error
+                        if(response.code() == HttpURLConnection.HTTP_BAD_REQUEST){
+                            sendCommand(id, "${email.value.trim()}\t${password.value.trim()}\n")
+                        }
                     }
                 }
 

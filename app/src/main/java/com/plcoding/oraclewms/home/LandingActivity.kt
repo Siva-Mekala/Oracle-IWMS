@@ -1,11 +1,16 @@
 package com.plcoding.oraclewms.home
 
+import android.content.Context
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,14 +48,17 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -73,6 +81,25 @@ import kotlinx.coroutines.launch
 
 class LandingActivity : ComponentActivity() {
     private val TAG = LandingActivity::class.java.simpleName
+    val requestPermissionLauncher = registerForActivityResult(
+        RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+
+        } else {
+            Toast.makeText(
+                this,
+                "Please provide " +
+                        "notification permission to get started",
+                Toast.LENGTH_LONG
+            ).show()
+            finish()
+        }
+    }
+
+    fun checkPermission(context: Context, permission: String): Boolean {
+        return ActivityCompat.checkSelfPermission(context, permission) == PERMISSION_GRANTED
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        var items = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
@@ -88,6 +115,11 @@ class LandingActivity : ComponentActivity() {
             }
         }
         enableEdgeToEdge()
+        if (!checkPermission(this, android.Manifest.permission.CAMERA)){
+            requestPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+        }
+
+
     }
 
     @Composable
@@ -124,7 +156,7 @@ class LandingActivity : ComponentActivity() {
         Scaffold(modifier = modifier
             .statusBarsPadding()
             .navigationBarsPadding(),
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            containerColor = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(R.color.secondary_imws),
             topBar = {
                 DashBoardToolBar(viewModel, modifier)
             },
@@ -151,6 +183,7 @@ class LandingActivity : ComponentActivity() {
                             viewModel.cmdState
                         ) {
                             clickPosition = it
+                            SharedPref.setScreenName(it.optionName)
                         }
                     }
                     composable("Rewards") {
@@ -402,7 +435,7 @@ class LandingActivity : ComponentActivity() {
                         contentDescription = "More options",
                         Modifier
                             .size(35.dp)
-                            .padding(5.dp)
+                            .padding(5.dp),
                     )
                 }
             }
@@ -412,7 +445,7 @@ class LandingActivity : ComponentActivity() {
     @Composable
     fun DashBoardToolBar(viewModel: LandingViewModel, modifier: Modifier) {
         TopAppBar(
-            backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+            backgroundColor = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp)
@@ -421,7 +454,7 @@ class LandingActivity : ComponentActivity() {
                 shape = RoundedCornerShape(5.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                colors = CardDefaults.cardColors(containerColor = if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(R.color.primary_imws)),
                 border = CardDefaults.outlinedCardBorder(true)
             ) {
                 Row(
@@ -432,7 +465,8 @@ class LandingActivity : ComponentActivity() {
                         "Welcome to IMWS",
                         Modifier.padding(5.dp),
                         fontSize = 20.sp,
-                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
+                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Image(

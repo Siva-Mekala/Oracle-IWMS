@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +19,8 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -30,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -109,7 +113,7 @@ class TermsAndConditionsView : ComponentActivity() {
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_regular)),
                     fontSize = 20.sp,
                     lineHeight = 20.sp
-                ), color = MaterialTheme.colorScheme.primary
+                ), color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(R.color.secondary_imws)
             )
             Text(
                 modifier = Modifier
@@ -121,18 +125,18 @@ class TermsAndConditionsView : ComponentActivity() {
                     fontSize = 15.sp,
                     lineHeight = 20.sp
                 ),
-                color = MaterialTheme.colorScheme.secondary
+                color = if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(R.color.primary_imws)
             )
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Button(onClick = {
+                Button(colors = ButtonDefaults.buttonColors(containerColor = if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(R.color.primary_imws)), onClick = {
 
                     onDecline()
 
-                }, modifier = Modifier.padding(10.dp)) {
+                }, modifier = Modifier.padding(10.dp).background(Color.Transparent)) {
                     Text("Decline")
                 }
-                Button(onClick = {
+                Button(colors = ButtonDefaults.buttonColors(containerColor = if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(R.color.primary_imws)),onClick = {
 
                     onNavigate()
 

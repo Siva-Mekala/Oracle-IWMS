@@ -3,6 +3,7 @@ package com.plcoding.focusfun.landing
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -44,12 +46,12 @@ fun HomeScreen(
 ) {
     Log.d("HomeScreen", "Inside composable")
     viewModel.menuItems.let {
-        LazyColumn(modifier.background(color = Color.White)) {
+        LazyColumn(modifier.background(color = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws))) {
             items(it.size) { index ->
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(color = Color.White)
+                        .background(color = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws))
                         .clickable {
                             onItemClick(it.get(index))
                             navController.navigate("Rewards")
@@ -57,7 +59,7 @@ fun HomeScreen(
                 ) {
                     Row(
                         modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             text = "${it.get(index).optionNumber}.",

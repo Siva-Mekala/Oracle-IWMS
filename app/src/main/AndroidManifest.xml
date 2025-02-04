@@ -2,15 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.plcoding.oraclewms">
-
     <!-- Permissions -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Consider removing CHANGE_NETWORK_STATE if not strictly necessary -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- Consider removing CHANGE_NETWORK_STATE if not strictly necessary -->
     <uses-permission
         android:name="android.permission.CHANGE_NETWORK_STATE"
         tools:node="remove" />
@@ -25,6 +23,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ComposeTimer"
         android:usesCleartextTraffic="true">
+        <activity
+            android:name=".landing.BarCodeActivity"
+            android:exported="false"
+            android:label="@string/title_activity_bar_code"
+            android:theme="@style/Theme.ComposeTimer" />
         <!-- Activities -->
         <activity
             android:name=".login.LoginActivity"
@@ -48,14 +51,10 @@
             android:theme="@style/Theme.ComposeTimer">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Metadata -->
-        <meta-data
-            android:name="com.google.mlkit.vision.DEPENDENCIES"
-            android:value="barcode" />
     </application>
 
 </manifest>

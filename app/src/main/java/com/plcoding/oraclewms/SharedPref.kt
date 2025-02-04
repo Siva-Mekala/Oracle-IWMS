@@ -13,9 +13,19 @@ object SharedPref {
     private const val ENV_RESPONSE = "ENV_RESPONSE"
     private const val KEY_FIRSTTIME_TC = "KEY_FIRSTTIME_TC"
     private const val KEY_HOME_INFO = "KEY_HOME_INFO"
+    private const val KEY_SCREEN_NAME = "KEY_SCREEN_NAME"
 
     private lateinit var sharedPref: SharedPreferences
     private lateinit var context: Context
+
+    fun setScreenName(screenName: String) {
+        val editor: SharedPreferences.Editor = sharedPref.edit()
+        editor.putString(KEY_SCREEN_NAME, screenName)
+        editor.commit()
+    }
+    fun getScreenName(): String? {
+        return sharedPref.getString(KEY_SCREEN_NAME, null)
+    }
 
     fun setEnvResponse(env: String) {
         val editor: SharedPreferences.Editor = sharedPref.edit()
@@ -100,6 +110,7 @@ object SharedPref {
             remove(KEY_ENV)
             remove(KEY_RESPONSE)
             remove(KEY_HOME_INFO)
+            remove(KEY_SCREEN_NAME)
             ///remove(ENV_RESPONSE)
             apply()
         }
