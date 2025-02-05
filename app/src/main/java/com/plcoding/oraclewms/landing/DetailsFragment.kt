@@ -4,16 +4,12 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -23,7 +19,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -59,7 +54,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -69,16 +63,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanner
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.Utils
@@ -93,11 +83,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.plcoding.oraclewms.SharedPref
-import java.util.concurrent.Executors
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun DetailsScreen(
     modifier: Modifier,
@@ -121,7 +107,7 @@ fun DetailsScreen(
                 "${item?.optionNumber}\n"
             )
         }
-    ListScreen(modifier, viewModel, item?.optionName)
+    ListScreen(modifier, viewModel, item?.optionName, state)
     if (state is CommandUiState.Success) {
         state.response?.formFields.let {
         }
@@ -231,7 +217,7 @@ fun DialogWithMsg(
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                 )
-                WareHouseTextField(viewModel) {
+                WareHouseTextField(viewModel, ups) {
                     text.value = it
                 }
             }
@@ -268,11 +254,10 @@ fun DialogWithMsg(
 }
 
 @Composable
-fun WareHouseTextField(viewModel: LoginViewModel, onChange: (String) -> Unit) {
-    val textObj = rememberSaveable {
-        mutableStateOf(
-            ""
-        )
+fun WareHouseTextField(viewModel: LoginViewModel, up: Popup, onChange: (String) -> Unit) {
+    val showDate = rememberSaveable { mutableStateOf(false) }
+    val textObj = rememberSaveable (up) {
+        mutableStateOf(up.fieldList?.first()?.form_value?.trim()?:"")
     }
     val focusRequester = remember { FocusRequester() }
     TextField(
@@ -281,6 +266,21 @@ fun WareHouseTextField(viewModel: LoginViewModel, onChange: (String) -> Unit) {
         onValueChange = {
             onChange(it)
             textObj.value = it
+        },
+        trailingIcon = {
+            up.fieldList?.first()?.field_formatters.let {
+                if (it?.formatDate == true){
+                    Icon(
+                        Icons.Outlined.DateRange,
+                        null,
+                        modifier = Modifier
+                            .clickable {
+                                showDate.value = true
+                            }
+                            .padding(5.dp)
+                    )
+                }
+            }
         },
         modifier = Modifier
             .fillMaxWidth()
@@ -297,6 +297,20 @@ fun WareHouseTextField(viewModel: LoginViewModel, onChange: (String) -> Unit) {
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
     )
+    if (showDate.value) DatePickerModal({
+        textObj.value = it.let {
+            if (it == null) ""
+            else {
+                val calendar: Calendar = Calendar.getInstance()
+                calendar.setTimeInMillis(it)
+                val dateFormat = SimpleDateFormat("YYMMdd")
+                dateFormat.format(calendar.time)
+            }
+        }
+        onChange(textObj.value)
+    }, {
+        showDate.value = false
+    })
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -304,7 +318,8 @@ fun WareHouseTextField(viewModel: LoginViewModel, onChange: (String) -> Unit) {
 fun ListScreen(
     modifier: Modifier,
     viewModel: LandingViewModel,
-    optionName: String?
+    optionName: String?,
+    state: CommandUiState
 ) {
     val permissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -321,7 +336,7 @@ fun ListScreen(
                     Column {
                         HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white))
                         Text(
-                            text = if (optionName.isNullOrEmpty()) if(SharedPref.getScreenName().toString().isEmpty())  "Xpress WMS" else SharedPref.getScreenName().toString() else optionName,
+                            text = if (state is CommandUiState.Success) state.response?.screenName?.value.let { if (it.isNullOrEmpty()) "" else it } else "",
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(10.dp),
@@ -347,8 +362,7 @@ fun ListItem(
     viewModel: LandingViewModel,
     permissionState: PermissionState
 ) {
-    Log.d("DetailsFragment", "ListItem: ${item.cursor} ${item.form_key}")
-    val textObj = remember {
+    val textObj = remember(item) {
         mutableStateOf(
             item.form_value?.trim()
         )
@@ -391,45 +405,12 @@ fun ListItem(
                                 if (permissionState.status.isGranted) {
                                     val intent = Intent(context, BarCodeActivity::class.java) // Replace SecondActivity
                                     launcher.launch(intent)
-//                                    scanner
-//                                        .startScan()
-//                                        .addOnSuccessListener { barcode ->
-//                                            println("barcode")
-//                                            textObj.value = barcode.rawValue
-//                                        }
-//                                        .addOnCanceledListener {
-//                                            println("barcode1")
-//                                        }
-//                                        .addOnFailureListener { e ->
-//                                            println("barcode2")
-//                                            println(e.printStackTrace())
-//                                            e.printStackTrace()
-//                                        }
                                 } else {
                                     if (permissionState.status.shouldShowRationale)
                                     else {
                                         permissionState.launchPermissionRequest()
                                     }
                                 }
-
-
-//                            ModuleInstall.getClient(context).installModules(ModuleInstallRequest.newBuilder()
-//                                .addApi(GmsBarcodeScanning.getClient(context))
-//                                .build())
-//                                .addOnSuccessListener { response ->
-//                                    if (response.areModulesAlreadyInstalled()) {
-//                                        // Module already installed, proceed with scanning
-//                                        startScanning(context,textObj)
-//                                    } else {
-//                                        // Module was just installed, wait briefly then scan
-//                                        Handler(Looper.getMainLooper()).postDelayed({
-//                                            startScanning(context,textObj)
-//                                        }, 1000)
-//                                    }
-//                                }
-//                                .addOnFailureListener { e ->
-//                                    // Handle installation failure
-//                                }
                         }
                         .padding(5.dp)
                 )
@@ -446,7 +427,7 @@ fun ListItem(
         },
         enabled = item.cursor,
         singleLine = true,
-        onValueChange = {textObj.value = it },
+        onValueChange = { textObj.value = it },
         modifier = if (item.cursor) Modifier
             .fillMaxWidth()
             .padding(start = 5.dp, end = 5.dp)
@@ -480,7 +461,7 @@ fun ListItem(
             else {
                 val calendar: Calendar = Calendar.getInstance()
                 calendar.setTimeInMillis(it)
-                val dateFormat = SimpleDateFormat("dd/MM/YYYY")
+                val dateFormat = SimpleDateFormat("YYMMdd")
                 dateFormat.format(calendar.time)
             }
         }

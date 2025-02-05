@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class Popup implements Serializable {
 
@@ -13,6 +14,9 @@ public class Popup implements Serializable {
     @SerializedName("type")
     @Expose
     private String type;
+    @SerializedName("form_fields")
+    @Expose
+    private List<FormField> fieldList;
 
     public Popup(String content, String type) {
         this.content = content;
@@ -35,4 +39,11 @@ public class Popup implements Serializable {
         this.type = type;
     }
 
+    public List<FormField> getFieldList() {
+        return fieldList;
+    }
+
+    public void setFieldList(List<FormField> fieldList) {
+        this.fieldList = fieldList;
+    }
 }
