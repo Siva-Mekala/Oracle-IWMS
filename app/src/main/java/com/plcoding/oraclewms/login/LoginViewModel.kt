@@ -27,8 +27,6 @@ open class LoginViewModel : ViewModel() {
 
     open var TAG = LoginActivity::class.java.simpleName
 
-    var loader: CommandUiState by mutableStateOf(CommandUiState.Empty)
-
     var cmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
         private set
 
@@ -59,7 +57,6 @@ open class LoginViewModel : ViewModel() {
         obj.addProperty("command", cmd)
         obj.addProperty("wait_time",2000)
         cmdState = CommandUiState.Loading
-        loader = CommandUiState.Loading
         BaseApiInterface.create()
             .sendCommand(
                 BuildConfig.SEND_COMMAND,
@@ -74,24 +71,17 @@ open class LoginViewModel : ViewModel() {
                         val gson = Gson()
                         SharedPref.setResponse(gson.toJson(jsonRes?.jsonResponse))
                         SharedPref.setHomeInfo("${jsonRes?.jsonResponse?.env?.value},${jsonRes?.jsonResponse?.appName?.value},${jsonRes?.jsonResponse?.facilityName?.value}")
+                        formItems.clear()
                         menuItems.clear()
                         jsonRes?.jsonResponse?.let {
                             menuItems.addAll(it.menuItems)
-                        }
-                        formItems.clear()
-                        jsonRes?.jsonResponse?.let {
                             formItems.addAll(it.formFields)
                         }
                         cmdState = CommandUiState.Success(jsonRes?.jsonResponse)
-                        loader = CommandUiState.Success(null)
-                    } else {
-                        loader = CommandUiState.Error(response.code())
-                        cmdState = CommandUiState.Error(response.code())
-                    }
+                    } else cmdState = CommandUiState.Error(response.code())
                 }
 
                 override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
-                    loader = CommandUiState.Error(HttpURLConnection.HTTP_INTERNAL_ERROR)
                     cmdState = CommandUiState.Error(HttpURLConnection.HTTP_INTERNAL_ERROR)
                 }
             })

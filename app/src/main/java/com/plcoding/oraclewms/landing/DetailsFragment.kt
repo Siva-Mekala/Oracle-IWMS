@@ -114,8 +114,6 @@ fun DetailsScreen(
         )
     }
     val context = LocalContext.current
-    val scanner = GmsBarcodeScanning.getClient(context)
-
     if (state is CommandUiState.Success && state.response?.menuItems?.isEmpty() == false)
         LaunchedEffect(true) {
             viewModel.sendCommand(
@@ -123,7 +121,7 @@ fun DetailsScreen(
                 "${item?.optionNumber}\n"
             )
         }
-    ListScreen(scanner, modifier, viewModel, item?.optionName)
+    ListScreen(modifier, viewModel, item?.optionName)
     if (state is CommandUiState.Success) {
         state.response?.formFields.let {
         }
@@ -304,7 +302,6 @@ fun WareHouseTextField(viewModel: LoginViewModel, onChange: (String) -> Unit) {
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ListScreen(
-   scanner: GmsBarcodeScanner,
     modifier: Modifier,
     viewModel: LandingViewModel,
     optionName: String?
@@ -336,7 +333,7 @@ fun ListScreen(
                     }
                 }
                 items(item.size) { x ->
-                    ListItem(item = item.get(x), scanner, viewModel, permissionState)
+                    ListItem(item = item.get(x), viewModel, permissionState)
                 }
             }
         }
@@ -347,23 +344,15 @@ fun ListScreen(
 @Composable
 fun ListItem(
     item: FormField,
-    scanner: GmsBarcodeScanner,
     viewModel: LandingViewModel,
     permissionState: PermissionState
 ) {
     Log.d("DetailsFragment", "ListItem: ${item.cursor} ${item.form_key}")
-    val textObj = rememberSaveable {
+    val textObj = remember {
         mutableStateOf(
-            item.form_value?.trim().let {
-                if (it?.contains("<UL>", true) == true) {
-                    it.replace("<UL>", "", true)
-                } else {
-                    it
-                }
-            }
+            item.form_value?.trim()
         )
     }
-    var resultText by remember { mutableStateOf("No result yet") }
 
     val launcher = rememberLauncherForActivityResult (
         ActivityResultContracts.StartActivityForResult()
@@ -457,7 +446,7 @@ fun ListItem(
         },
         enabled = item.cursor,
         singleLine = true,
-        onValueChange = { textObj.value = it },
+        onValueChange = {textObj.value = it },
         modifier = if (item.cursor) Modifier
             .fillMaxWidth()
             .padding(start = 5.dp, end = 5.dp)
