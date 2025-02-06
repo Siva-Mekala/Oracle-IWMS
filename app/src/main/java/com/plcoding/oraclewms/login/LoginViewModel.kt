@@ -55,7 +55,7 @@ open class LoginViewModel : ViewModel() {
         val obj = JsonObject()
         obj.addProperty("sessionId", id)
         obj.addProperty("command", cmd)
-        obj.addProperty("wait_time",2000)
+        obj.addProperty("wait_time", 2000)
         cmdState = CommandUiState.Loading
         BaseApiInterface.create()
             .sendCommand(
@@ -116,7 +116,7 @@ open class LoginViewModel : ViewModel() {
                     } else {
 
                         shellState = ShellUiState.Error
-                        if(response.code() == HttpURLConnection.HTTP_BAD_REQUEST){
+                        if (response.code() == HttpURLConnection.HTTP_BAD_REQUEST) {
                             sendCommand(id, "${email.value.trim()}\t${password.value.trim()}\n")
                         }
                     }

@@ -5,11 +5,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -45,7 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.*
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -69,6 +67,8 @@ import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.Utils
@@ -81,8 +81,6 @@ import com.plcoding.oraclewms.login.LoginViewModel
 import java.net.HttpURLConnection
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import com.google.accompanist.permissions.rememberPermissionState
-import com.google.accompanist.permissions.shouldShowRationale
 
 @Composable
 fun DetailsScreen(
@@ -99,7 +97,6 @@ fun DetailsScreen(
             Utils.getControlCharacterValueOptimized("Ctrl-W")
         )
     }
-    val context = LocalContext.current
     if (state is CommandUiState.Success && state.response?.menuItems?.isEmpty() == false)
         LaunchedEffect(true) {
             viewModel.sendCommand(
@@ -117,7 +114,8 @@ fun DetailsScreen(
                 } else {
                     val showDialog = remember { mutableStateOf(true) }
                     if (showDialog.value) {
-                        DialogWithMsg( {},
+                        DialogWithMsg(
+                            {},
                             onConfirmation = {
                                 if (ups.isNotEmpty()) {
                                     val firstUp = ups.first()
@@ -148,7 +146,8 @@ fun DetailsScreen(
         val context = LocalContext.current
         if (state.code == HttpURLConnection.HTTP_NOT_FOUND) {
             val showDialog = remember { mutableStateOf(true) }
-            DialogWithMsg({},
+            DialogWithMsg(
+                {},
                 onConfirmation = {
                     viewModel.startActivity(context)
                     showDialog.value = false
@@ -166,9 +165,7 @@ fun DetailsScreen(
 
     }
 }
-fun checkPermission(context: Context, permission: String): Boolean {
-    return ActivityCompat.checkSelfPermission(context, permission) == PERMISSION_GRANTED
-}
+
 @Composable
 fun DialogWithMsg(
     onDismissRequest: () -> Unit,
@@ -225,7 +222,7 @@ fun DialogWithMsg(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 if (error) TextButton(
                     onClick = {
-                       onDismissRequest()
+                        onDismissRequest()
                         showDialog.value = false
                     }
                 ) {
@@ -242,7 +239,7 @@ fun DialogWithMsg(
                     }
                 ) {
                     Text(
-                        if (error)"Accept" else "Ok",
+                        if (error) "Accept" else "Ok",
                         fontSize = 15.sp,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
 
@@ -256,8 +253,8 @@ fun DialogWithMsg(
 @Composable
 fun WareHouseTextField(viewModel: LoginViewModel, up: Popup, onChange: (String) -> Unit) {
     val showDate = rememberSaveable { mutableStateOf(false) }
-    val textObj = rememberSaveable (up) {
-        mutableStateOf(up.fieldList?.first()?.form_value?.trim()?:"")
+    val textObj = rememberSaveable(up) {
+        mutableStateOf(up.fieldList?.first()?.form_value?.trim() ?: "")
     }
     val focusRequester = remember { FocusRequester() }
     TextField(
@@ -269,7 +266,7 @@ fun WareHouseTextField(viewModel: LoginViewModel, up: Popup, onChange: (String) 
         },
         trailingIcon = {
             up.fieldList?.first()?.field_formatters.let {
-                if (it?.formatDate == true){
+                if (it?.formatDate == true) {
                     Icon(
                         Icons.Outlined.DateRange,
                         null,
@@ -327,14 +324,24 @@ fun ListScreen(
     Box {
         viewModel.formItems.let { item ->
             LazyColumn(
-                modifier.background(color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white)),
+                modifier.background(
+                    color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                        R.color.white
+                    )
+                ),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(start = 5.dp, end = 5.dp),
 
-            ) {
+                ) {
                 item {
                     Column {
-                        HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white))
+                        HorizontalDivider(
+                            Modifier.alpha(0.4f),
+                            2.dp,
+                            color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                                R.color.white
+                            )
+                        )
                         Text(
                             text = if (state is CommandUiState.Success) state.response?.screenName?.value.let { if (it.isNullOrEmpty()) "" else it } else "",
                             modifier = Modifier
@@ -342,7 +349,9 @@ fun ListScreen(
                                 .padding(10.dp),
                             fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
                             fontSize = 15.sp,
-                            color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(R.color.secondary_imws)
+                            color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
+                                R.color.secondary_imws
+                            )
                         )
                         HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
                     }
@@ -368,7 +377,7 @@ fun ListItem(
         )
     }
 
-    val launcher = rememberLauncherForActivityResult (
+    val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -403,7 +412,10 @@ fun ListItem(
                         .clickable {
                             if (item.cursor)
                                 if (permissionState.status.isGranted) {
-                                    val intent = Intent(context, BarCodeActivity::class.java) // Replace SecondActivity
+                                    val intent = Intent(
+                                        context,
+                                        BarCodeActivity::class.java
+                                    )
                                     launcher.launch(intent)
                                 } else {
                                     if (permissionState.status.shouldShowRationale)

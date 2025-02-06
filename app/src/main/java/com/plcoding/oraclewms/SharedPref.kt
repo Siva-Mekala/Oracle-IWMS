@@ -23,6 +23,7 @@ object SharedPref {
         editor.putString(KEY_SCREEN_NAME, screenName)
         editor.commit()
     }
+
     fun getScreenName(): String? {
         return sharedPref.getString(KEY_SCREEN_NAME, null)
     }

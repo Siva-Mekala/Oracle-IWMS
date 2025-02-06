@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -46,12 +45,22 @@ fun HomeScreen(
 ) {
     Log.d("HomeScreen", "Inside composable")
     viewModel.menuItems.let {
-        LazyColumn(modifier.background(color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white))) {
+        LazyColumn(
+            modifier.background(
+                color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                    R.color.white
+                )
+            )
+        ) {
             items(it.size) { index ->
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white))
+                        .background(
+                            color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                                R.color.white
+                            )
+                        )
                         .clickable {
                             onItemClick(it.get(index))
                             navController.navigate("Rewards")
@@ -92,7 +101,8 @@ fun HomeScreen(
                     HorizontalDivider(
                         Modifier
                             .fillMaxWidth()
-                            .alpha(0.4f), 2.dp, Color.Gray)
+                            .alpha(0.4f), 2.dp, Color.Gray
+                    )
                 }
             }
         }
@@ -107,7 +117,8 @@ fun HomeScreen(
         val context = LocalContext.current
         if (state.code == HttpURLConnection.HTTP_NOT_FOUND) {
             val showDialog = remember { mutableStateOf(true) }
-            DialogWithMsg({},
+            DialogWithMsg(
+                {},
                 onConfirmation = {
                     viewModel.startActivity(context)
                     showDialog.value = false

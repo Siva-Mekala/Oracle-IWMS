@@ -48,7 +48,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
@@ -100,6 +99,7 @@ class LandingActivity : ComponentActivity() {
     fun checkPermission(context: Context, permission: String): Boolean {
         return ActivityCompat.checkSelfPermission(context, permission) == PERMISSION_GRANTED
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        var items = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
@@ -115,7 +115,7 @@ class LandingActivity : ComponentActivity() {
             }
         }
         enableEdgeToEdge()
-        if (!checkPermission(this, android.Manifest.permission.CAMERA)){
+        if (!checkPermission(this, android.Manifest.permission.CAMERA)) {
             requestPermissionLauncher.launch(android.Manifest.permission.CAMERA)
         }
 
@@ -156,7 +156,9 @@ class LandingActivity : ComponentActivity() {
         Scaffold(modifier = modifier
             .statusBarsPadding()
             .navigationBarsPadding(),
-            containerColor = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(R.color.secondary_imws),
+            containerColor = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
+                R.color.secondary_imws
+            ),
             topBar = {
                 DashBoardToolBar(viewModel, modifier)
             },
@@ -445,7 +447,9 @@ class LandingActivity : ComponentActivity() {
     @Composable
     fun DashBoardToolBar(viewModel: LandingViewModel, modifier: Modifier) {
         TopAppBar(
-            backgroundColor = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(R.color.terinary_imws),
+            backgroundColor = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(
+                R.color.terinary_imws
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp)
@@ -454,7 +458,11 @@ class LandingActivity : ComponentActivity() {
                 shape = RoundedCornerShape(5.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(R.color.primary_imws)),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isSystemInDarkTheme()) colorResource(
+                        R.color.primary_dark_imws
+                    ) else colorResource(R.color.primary_imws)
+                ),
                 border = CardDefaults.outlinedCardBorder(true)
             ) {
                 Row(

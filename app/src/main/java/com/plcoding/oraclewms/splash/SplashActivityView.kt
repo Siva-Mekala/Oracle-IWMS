@@ -1,14 +1,10 @@
 package com.plcoding.oraclewms.splash
 
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -25,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -33,7 +28,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.AppTheme
 import com.google.gson.Gson
@@ -76,7 +70,6 @@ class SplashActivityView : ComponentActivity() {
     }
 
 
-
     @Composable
     fun SplashScreen(
         viewModel: SplashViewModel,
@@ -111,7 +104,9 @@ class SplashActivityView : ComponentActivity() {
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(R.color.primary_imws)
+                    if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(
+                        R.color.primary_imws
+                    )
                 )
         ) {
             Text(

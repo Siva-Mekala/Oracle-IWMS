@@ -37,6 +37,11 @@ interface BaseApiInterface {
         @Body request: JsonObject
     ): Call<ApiResponse>
 
+    @GET
+    fun fetchUserInfo(
+        @Url url: String,
+        @Body request: JsonObject
+    ): Call<JsonObject>
 
     @GET
     fun environments(

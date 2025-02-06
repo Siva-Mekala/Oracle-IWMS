@@ -1,7 +1,5 @@
 package com.plcoding.oraclewms.login
 
-import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -21,13 +19,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
-import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -116,12 +112,22 @@ class LoginActivity : ComponentActivity() {
             object : TypeToken<ArrayList<String?>?>() {}.type
         )
         val showDialog = remember { mutableStateOf(true) }
-        Box(contentAlignment = Alignment.Center, modifier =  modifier.background(if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(R.color.primary_imws))
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier.background(
+                if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(
+                    R.color.primary_imws
+                )
+            )
         ) {
             Column {
                 Text(
                     "Xpress WMS", fontFamily = FontFamily(Font(R.font.jersey_normal)),
-                    style = TextStyle(color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white), fontSize = 30.sp),
+                    style = TextStyle(
+                        color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                            R.color.white
+                        ), fontSize = 30.sp
+                    ),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                 )
@@ -129,7 +135,11 @@ class LoginActivity : ComponentActivity() {
                 Card(
                     elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
                     modifier = Modifier.padding(15.dp),
-                    colors = CardDefaults.cardColors(if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white))
+                    colors = CardDefaults.cardColors(
+                        if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                            R.color.white
+                        )
+                    )
                 ) {
                     Column {
                         Text(
@@ -177,7 +187,8 @@ class LoginActivity : ComponentActivity() {
                                 onSelectionChanged = {
                                     environment = it
                                     checkState.value = false
-                                }, Modifier.fillMaxWidth())
+                                }, Modifier.fillMaxWidth()
+                            )
                         }
                         OutlinedTextField(
                             label = {
@@ -252,12 +263,21 @@ class LoginActivity : ComponentActivity() {
                     modifier = Modifier
                         .padding(15.dp)
                         .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(R.color.white))
+                    colors = CardDefaults.cardColors(
+                        if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                            R.color.white
+                        )
+                    )
 
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
 
-                        Button(colors = ButtonDefaults.buttonColors(containerColor = if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(R.color.primary_imws)),
+                        Button(
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isSystemInDarkTheme()) colorResource(
+                                    R.color.primary_dark_imws
+                                ) else colorResource(R.color.primary_imws)
+                            ),
                             onClick = {
                                 viewModel.startShell(
                                     Utils.deviceUUID(),
@@ -282,47 +302,52 @@ class LoginActivity : ComponentActivity() {
         if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading) LoaderScreen()
         else if (cmdState is CommandUiState.Success) {
             println(cmdState)
-            cmdState.response?.let { res->
-                res.formFields.let{
-                  if(it.isNullOrEmpty()){
-                      res.popups.let { ups ->
-                          if (ups == null || ups.isEmpty()) {
-                              println(ups)
-                              SharedPref.setUserLoggedIn(true)
-                              val intent = Intent(this, LandingActivity::class.java)
-                              var bundle = Bundle()
-                              bundle.putSerializable("response", it)
-                              intent.putExtras(bundle)
-                              startActivity(intent)
-                              finish()
-                          } else {
-                              println("ups")
-                              println(ups.isEmpty())
-                              println(showDialog)
-                              if (showDialog.value) DialogWithMsg(
-                                  {
-                                      viewModel.sendCommand(Utils.deviceUUID(), Utils.getControlCharacterValueOptimized("Ctrl-W"))
-                                      showDialog.value = false
-                                  },
-                                  {
-                                      showDialog.value = false
-                                      if (ups[0].content.equals("Invalid Login")) {
-                                          showDialog.value = false
-                                      }
-                                      else viewModel.sendCommand(Utils.deviceUUID(), Utils.getControlCharacterValueOptimized("Ctrl-A"))
-                                  },
-                                  viewModel,
-                                  ups[0],
-                                  showDialog,
-                                  !ups[0].content.equals("Invalid Login")
-                              )
-                          }
-                      }
-                  }else{
-                      if(it.toString().contains("Pswd")){
-                           showDialog.value = true;
-                      }
-                  }
+            cmdState.response?.let { res ->
+                res.formFields.let {
+                    if (it.isNullOrEmpty()) {
+                        res.popups.let { ups ->
+                            if (ups == null || ups.isEmpty()) {
+                                println(ups)
+                                SharedPref.setUserLoggedIn(true)
+                                val intent = Intent(this, LandingActivity::class.java)
+                                var bundle = Bundle()
+                                bundle.putSerializable("response", it)
+                                intent.putExtras(bundle)
+                                startActivity(intent)
+                                finish()
+                            } else {
+                                println("ups")
+                                println(ups.isEmpty())
+                                println(showDialog)
+                                if (showDialog.value) DialogWithMsg(
+                                    {
+                                        viewModel.sendCommand(
+                                            Utils.deviceUUID(),
+                                            Utils.getControlCharacterValueOptimized("Ctrl-W")
+                                        )
+                                        showDialog.value = false
+                                    },
+                                    {
+                                        showDialog.value = false
+                                        if (ups[0].content.equals("Invalid Login")) {
+                                            showDialog.value = false
+                                        } else viewModel.sendCommand(
+                                            Utils.deviceUUID(),
+                                            Utils.getControlCharacterValueOptimized("Ctrl-A")
+                                        )
+                                    },
+                                    viewModel,
+                                    ups[0],
+                                    showDialog,
+                                    !ups[0].content.equals("Invalid Login")
+                                )
+                            }
+                        }
+                    } else {
+                        if (it.toString().contains("Pswd")) {
+                            showDialog.value = true;
+                        }
+                    }
                 }
 
             }
@@ -427,7 +452,7 @@ class LoginActivity : ComponentActivity() {
             onDismissRequest = {
                 expanded = false
                 onSelectionChanged(selected)
-                               },
+            },
             modifier = modifier  // delete this modifier and use .wrapContentWidth() if you would like to wrap the dropdown menu around the content
         ) {
             list.forEach { listEntry ->
