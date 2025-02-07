@@ -33,6 +33,7 @@ import com.example.compose.AppTheme
 import com.google.gson.Gson
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
+import com.plcoding.oraclewms.api.Dev
 import com.plcoding.oraclewms.home.LandingActivity
 import com.plcoding.oraclewms.login.LoginActivity
 import com.plcoding.oraclewms.termsAndConditions.TermsAndConditionsView
@@ -53,7 +54,7 @@ class SplashActivityView : ComponentActivity() {
         }
     }
 
-    private fun startActivity(envApiResponse: List<String>?) {
+    private fun startActivity(envApiResponse: Map<String, Dev>?) {
         if (envApiResponse != null) {
             val gson = Gson()
             SharedPref.setEnvResponse(gson.toJson(envApiResponse))
@@ -69,12 +70,11 @@ class SplashActivityView : ComponentActivity() {
         finish()
     }
 
-
     @Composable
     fun SplashScreen(
         viewModel: SplashViewModel,
         envState: EnvironmentsUiState,
-        onNavigate: (response: List<String>?) -> Unit = {}
+        onNavigate: (response: Map<String, Dev>?) -> Unit = {}
     ) {
         val scale = remember {
             Animatable(1f)

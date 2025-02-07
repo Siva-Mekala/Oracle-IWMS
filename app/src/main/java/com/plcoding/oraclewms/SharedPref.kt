@@ -3,6 +3,7 @@ package com.plcoding.oraclewms
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import kotlinx.coroutines.flow.flow
 
 object SharedPref {
     private const val SHARED_FILE_NAME = "fun_focus_shared_pref"
@@ -14,6 +15,8 @@ object SharedPref {
     private const val KEY_FIRSTTIME_TC = "KEY_FIRSTTIME_TC"
     private const val KEY_HOME_INFO = "KEY_HOME_INFO"
     private const val KEY_SCREEN_NAME = "KEY_SCREEN_NAME"
+    private const val KEY_USER_NAME = "KEY_USER_NAME"
+    private const val KEY_DATE_FORMATE = "KEY_DATE_FORMATE"
 
     private lateinit var sharedPref: SharedPreferences
     private lateinit var context: Context
@@ -74,6 +77,26 @@ object SharedPref {
         return sharedPref.getString(KEY_RESPONSE, null)
     }
 
+    fun setUserName(name: String) {
+        val editor: SharedPreferences.Editor = sharedPref.edit()
+        editor.putString(KEY_USER_NAME, name)
+        editor.commit()
+    }
+
+    fun getUserName(): kotlinx.coroutines.flow.Flow<String?> {
+        return flow { sharedPref.getString(KEY_USER_NAME, null)  }
+    }
+
+    fun setDateFormat(format: String) {
+        val editor: SharedPreferences.Editor = sharedPref.edit()
+        editor.putString(KEY_DATE_FORMATE, format)
+        editor.commit()
+    }
+
+    fun getDateFormat(): String? {
+        return sharedPref.getString(KEY_DATE_FORMATE, null)
+    }
+
     fun setHomeInfo(info: String) {
         val editor: SharedPreferences.Editor = sharedPref.edit()
         editor.putString(KEY_HOME_INFO, info)
@@ -112,6 +135,8 @@ object SharedPref {
             remove(KEY_RESPONSE)
             remove(KEY_HOME_INFO)
             remove(KEY_SCREEN_NAME)
+            remove(KEY_USER_NAME)
+            remove(KEY_DATE_FORMATE)
             ///remove(ENV_RESPONSE)
             apply()
         }

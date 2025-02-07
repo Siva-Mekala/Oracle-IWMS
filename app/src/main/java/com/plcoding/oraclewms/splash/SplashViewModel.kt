@@ -29,7 +29,7 @@ open class SplashViewModel : ViewModel() {
                     response: Response<Map<String, Dev>>
                 ) {
                     if (response.isSuccessful) {
-                        getEnvState = EnvironmentsUiState.Success(response.body()?.keys?.toList())
+                        getEnvState = EnvironmentsUiState.Success(response.body())
                     } else {
                         getEnvState = EnvironmentsUiState.Error
                     }

@@ -71,6 +71,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
+import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.MenuItem
@@ -300,7 +301,7 @@ fun WareHouseTextField(viewModel: LoginViewModel, up: Popup, onChange: (String) 
             else {
                 val calendar: Calendar = Calendar.getInstance()
                 calendar.setTimeInMillis(it)
-                val dateFormat = SimpleDateFormat("YYMMdd")
+                val dateFormat = SimpleDateFormat(SharedPref.getDateFormat())
                 dateFormat.format(calendar.time)
             }
         }
@@ -451,7 +452,7 @@ fun ListItem(
             onNext = {
                 textObj.value?.let {
                     viewModel.sendCommand(
-                        Utils.deviceUUID(), it + "\t"
+                        Utils.deviceUUID(), if(item.form_value?.trim().equals(it)) "\t" else  it + "\t"
                     )
                 }
                 keyboardController?.hide()
@@ -473,7 +474,7 @@ fun ListItem(
             else {
                 val calendar: Calendar = Calendar.getInstance()
                 calendar.setTimeInMillis(it)
-                val dateFormat = SimpleDateFormat("YYMMdd")
+                val dateFormat = SimpleDateFormat(SharedPref.getDateFormat())
                 dateFormat.format(calendar.time)
             }
         }

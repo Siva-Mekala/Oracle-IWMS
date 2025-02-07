@@ -40,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -455,6 +456,7 @@ class LandingActivity : ComponentActivity() {
 
     @Composable
     fun DashBoardToolBar(viewModel: LandingViewModel, modifier: Modifier) {
+        val name by SharedPref.getUserName().collectAsState("to Xpress MWS")
         TopAppBar(
             backgroundColor = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(
                 R.color.terinary_imws
@@ -479,7 +481,7 @@ class LandingActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        "Welcome to IMWS",
+                        "Welcome ${name}",
                         Modifier.padding(5.dp),
                         fontSize = 20.sp,
                         fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),

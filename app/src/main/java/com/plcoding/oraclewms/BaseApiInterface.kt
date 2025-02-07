@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.Dev
+import com.plcoding.oraclewms.api.UserResponse
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
@@ -12,6 +13,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Url
 import java.util.concurrent.Executors
@@ -40,8 +42,8 @@ interface BaseApiInterface {
     @GET
     fun fetchUserInfo(
         @Url url: String,
-        @Body request: JsonObject
-    ): Call<JsonObject>
+        @Header("Authorization") auth : String
+    ): Call<UserResponse>
 
     @GET
     fun environments(

@@ -74,6 +74,7 @@ import com.google.gson.reflect.TypeToken
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
+import com.plcoding.oraclewms.api.Dev
 import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.home.LandingActivity
 import com.plcoding.oraclewms.landing.DialogWithMsg
@@ -106,12 +107,12 @@ class LoginActivity : ComponentActivity() {
     ) {
         var email = rememberSaveable { mutableStateOf("") }
         var password = rememberSaveable { mutableStateOf("") }
-        var environment by rememberSaveable { mutableStateOf("dev") }
+        var environment = rememberSaveable { mutableStateOf("dev") }
         var passwordVisible by remember { mutableStateOf(false) }
         val checkState = remember { mutableStateOf(false) }
-        val envs: ArrayList<String> = Gson().fromJson(
+        val envs: Map<String, Dev> = Gson().fromJson(
             SharedPref.getEnvResponse(),
-            object : TypeToken<ArrayList<String?>?>() {}.type
+            object : TypeToken<Map<String, Dev>?>() {}.type
         )
         val showDialog = remember { mutableStateOf(false) }
         LaunchedEffect(true) {
@@ -166,7 +167,7 @@ class LoginActivity : ComponentActivity() {
                                         fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                                     )
                                 },
-                                value = environment,
+                                value = environment.value,
                                 trailingIcon = {
                                     Icon(
                                         Icons.Outlined.ArrowDropDown,
@@ -188,9 +189,9 @@ class LoginActivity : ComponentActivity() {
                                     unfocusedIndicatorColor = Color.Transparent,
                                 )
                             )
-                            if (checkState.value) SpinnerSample(envs, envs.get(0),
+                            if (checkState.value) SpinnerSample(envs.keys.toList(), envs.keys.toList().first(),
                                 onSelectionChanged = {
-                                    environment = it
+                                    environment.value = it
                                     checkState.value = false
                                 }, Modifier.fillMaxWidth()
                             )
@@ -286,7 +287,7 @@ class LoginActivity : ComponentActivity() {
                             onClick = {
                                 viewModel.startShell(
                                     Utils.deviceUUID(),
-                                    environment,
+                                    environment.value,
                                     email,
                                     password
                                 )
@@ -304,7 +305,7 @@ class LoginActivity : ComponentActivity() {
                 }
             }
         }
-        handleResponse(shellState, cmdState, showDialog) { up->
+        handleResponse(password, email, envs, environment, viewModel, shellState, cmdState, showDialog) { up->
             if (showDialog.value) DialogWithMsg(
                 {
                     viewModel.sendCommand(
@@ -334,6 +335,11 @@ class LoginActivity : ComponentActivity() {
 
     @Composable
     fun handleResponse(
+        password: MutableState<String>,
+        email: MutableState<String>,
+        envs: Map<String, Dev>,
+        selectedEnv: MutableState<String>,
+        viewModel: LoginViewModel,
         shellState: ShellUiState,
         cmdState: CommandUiState,
         showDialog: MutableState<Boolean>, onCallBack : @Composable (Popup) -> Unit) {
@@ -344,9 +350,11 @@ class LoginActivity : ComponentActivity() {
                     if (it.isNullOrEmpty()) {
                         res.popups.let { ups ->
                             if (ups == null || ups.isEmpty()) {
+                                viewModel.fetchUserDetails(envs.get(selectedEnv.value), cmdState.response.env, email, false, password)
+                                viewModel.fetchUserDetails(envs.get(selectedEnv.value), cmdState.response.env, email, true, password)
                                 SharedPref.setUserLoggedIn(true)
                                 val intent = Intent(this, LandingActivity::class.java)
-                                var bundle = Bundle()
+                                val bundle = Bundle()
                                 bundle.putSerializable("response", res)
                                 intent.putExtras(bundle)
                                 startActivity(intent)
