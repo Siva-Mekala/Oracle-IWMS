@@ -253,9 +253,18 @@ class LandingActivity : ComponentActivity() {
                                 }
                             if (it.value.contains("Ctrl-X")) {
                                 if (navController.currentDestination?.route == "Home") {
-                                    viewModel.endShell(
+//                                    viewModel.endShell(
+//                                        Utils.deviceUUID(),
+//                                        this@LandingActivity,
+//                                        "LandingActivity"
+//                                    )
+                                    viewModel.sendCommand(
                                         Utils.deviceUUID(),
-                                        this@LandingActivity
+                                        Utils.getControlCharacterValueOptimized(
+                                            it.value.split(
+                                                ":"
+                                            )[0]
+                                        )
                                     )
                                 } else {
                                     viewModel.sendCommand(
@@ -380,9 +389,9 @@ class LandingActivity : ComponentActivity() {
                 if (it.toString().contains("Ctrl-W"))
                     IconButton(onClick = {
                         if (navController.currentDestination?.route == "Home") {
-                            viewModel.endShell(
+                            viewModel.sendCommand(
                                 Utils.deviceUUID(),
-                                this@LandingActivity
+                                Utils.getControlCharacterValueOptimized("Ctrl-W")
                             )
                         } else {
                             navController.popBackStack()
@@ -486,7 +495,7 @@ class LandingActivity : ComponentActivity() {
                                     Utils.deviceUUID(),
                                     Utils.getControlCharacterValueOptimized("Ctrl-W")
                                 )
-                                viewModel.endShell(Utils.deviceUUID(), this@LandingActivity)
+                                ///viewModel.endShell(Utils.deviceUUID(), this@LandingActivity)
                             }
                             .padding(10.dp)
                             .size(width = 20.dp, height = 20.dp),

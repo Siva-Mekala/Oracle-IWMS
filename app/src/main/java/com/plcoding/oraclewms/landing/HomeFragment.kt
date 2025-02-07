@@ -74,10 +74,6 @@ fun HomeScreen(
                             text = "${it.get(index).optionNumber}.",
                             color = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier
-//                                .background(
-//                                    color = Color(0xffD3D3D3),
-//                                    shape = CircleShape
-//                                )
                                 .padding(5.dp),
                             fontFamily = FontFamily(
                                 Font(
@@ -108,9 +104,15 @@ fun HomeScreen(
         }
     }
     if (state is CommandUiState.Success) {
+        val context = LocalContext.current
         state.response?.let { res ->
-            if (res.menuItems.isEmpty()) navController.navigate("Rewards")
-            else {
+            if (res.menuItems.isEmpty()) {
+                res.formFields.let {
+                    if (it.toString().contains("Pswd")){
+                        viewModel.startActivity(context)
+                    } else navController.navigate("Rewards")
+                }
+            } else {
             }
         }
     } else if (state is CommandUiState.Error) {

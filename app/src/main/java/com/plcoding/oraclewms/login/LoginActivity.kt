@@ -42,6 +42,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,6 +74,7 @@ import com.google.gson.reflect.TypeToken
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
+import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.home.LandingActivity
 import com.plcoding.oraclewms.landing.DialogWithMsg
 
@@ -111,7 +113,10 @@ class LoginActivity : ComponentActivity() {
             SharedPref.getEnvResponse(),
             object : TypeToken<ArrayList<String?>?>() {}.type
         )
-        val showDialog = remember { mutableStateOf(true) }
+        val showDialog = remember { mutableStateOf(false) }
+        LaunchedEffect(true) {
+            viewModel.endShell(Utils.deviceUUID(), this@LoginActivity, "LoginActivity")
+        }
         Box(
             contentAlignment = Alignment.Center,
             modifier = modifier.background(
@@ -299,57 +304,69 @@ class LoginActivity : ComponentActivity() {
                 }
             }
         }
+        handleResponse(shellState, cmdState, showDialog) { up->
+            if (showDialog.value) DialogWithMsg(
+                {
+                    viewModel.sendCommand(
+                        Utils.deviceUUID(),
+                        Utils.getControlCharacterValueOptimized("Ctrl-W")
+                    )
+                    showDialog.value = false
+                },
+                {
+                    showDialog.value = false
+                    if (up.content.contains("Invalid Login", true)) viewModel.sendCommand(
+                        Utils.deviceUUID(),
+                        Utils.getControlCharacterValueOptimized("Ctrl-X")
+                    )
+                    else viewModel.sendCommand(
+                        Utils.deviceUUID(),
+                        Utils.getControlCharacterValueOptimized("Ctrl-A")
+                    )
+                },
+                viewModel,
+                up,
+                showDialog,
+                !up.content.contains("Invalid Login", true)
+            )
+        }
+    }
+
+    @Composable
+    fun handleResponse(
+        shellState: ShellUiState,
+        cmdState: CommandUiState,
+        showDialog: MutableState<Boolean>, onCallBack : @Composable (Popup) -> Unit) {
         if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading) LoaderScreen()
         else if (cmdState is CommandUiState.Success) {
-            println(cmdState)
             cmdState.response?.let { res ->
                 res.formFields.let {
                     if (it.isNullOrEmpty()) {
                         res.popups.let { ups ->
                             if (ups == null || ups.isEmpty()) {
-                                println(ups)
                                 SharedPref.setUserLoggedIn(true)
                                 val intent = Intent(this, LandingActivity::class.java)
                                 var bundle = Bundle()
-                                bundle.putSerializable("response", it)
+                                bundle.putSerializable("response", res)
                                 intent.putExtras(bundle)
                                 startActivity(intent)
                                 finish()
                             } else {
-                                println("ups")
-                                println(ups.isEmpty())
-                                println(showDialog)
-                                if (showDialog.value) DialogWithMsg(
-                                    {
-                                        viewModel.sendCommand(
-                                            Utils.deviceUUID(),
-                                            Utils.getControlCharacterValueOptimized("Ctrl-W")
-                                        )
-                                        showDialog.value = false
-                                    },
-                                    {
-                                        showDialog.value = false
-                                        if (ups[0].content.equals("Invalid Login")) {
-                                            showDialog.value = false
-                                        } else viewModel.sendCommand(
-                                            Utils.deviceUUID(),
-                                            Utils.getControlCharacterValueOptimized("Ctrl-A")
-                                        )
-                                    },
-                                    viewModel,
-                                    ups[0],
-                                    showDialog,
-                                    !ups[0].content.equals("Invalid Login")
-                                )
+                                showDialog.value = true
+                                onCallBack(ups.first())
                             }
                         }
-                    } else {
-                        if (it.toString().contains("Pswd")) {
-                            showDialog.value = true;
+                    } else if (it.toString().contains("Pswd")){
+                        res.popups.let { ups ->
+                            if (ups == null || ups.isEmpty()) {
+                                showDialog.value = false
+                            } else {
+                            showDialog.value = true
+                            onCallBack(ups.first())
+                                }
                         }
                     }
                 }
-
             }
         }
     }

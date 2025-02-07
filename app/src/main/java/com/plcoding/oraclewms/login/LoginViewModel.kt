@@ -130,7 +130,8 @@ open class LoginViewModel : ViewModel() {
 
     fun endShell(
         id: String,
-        context: Context
+        context: Context,
+        from: String
     ) {
         Log.d(TAG, "Inside endShell")
         val obj = JsonObject()
@@ -145,11 +146,11 @@ open class LoginViewModel : ViewModel() {
                     call: Call<JsonObject>,
                     response: Response<JsonObject>
                 ) {
-                    startActivity(context)
+                    //startActivity(context)
                 }
 
                 override fun onFailure(call: Call<JsonObject>, t: Throwable) {
-                    startActivity(context)
+                    ///startActivity(context)
                 }
             })
     }
