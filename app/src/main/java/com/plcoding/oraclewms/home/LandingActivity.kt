@@ -42,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -50,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -73,6 +75,7 @@ import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
+import com.plcoding.oraclewms.WareHouseApp
 import com.plcoding.oraclewms.api.JSONResponse
 import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.landing.DetailsScreen
@@ -456,7 +459,9 @@ class LandingActivity : ComponentActivity() {
 
     @Composable
     fun DashBoardToolBar(viewModel: LandingViewModel, modifier: Modifier) {
-        val name by SharedPref.getUserName().collectAsState("to Xpress MWS")
+        val context = LocalContext.current
+        val app = context.applicationContext as WareHouseApp
+        val name: String by app.userName.observeAsState("to Xpress MWS")
         TopAppBar(
             backgroundColor = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(
                 R.color.terinary_imws

@@ -3,7 +3,6 @@ package com.plcoding.oraclewms
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import kotlinx.coroutines.flow.flow
 
 object SharedPref {
     private const val SHARED_FILE_NAME = "fun_focus_shared_pref"
@@ -78,13 +77,15 @@ object SharedPref {
     }
 
     fun setUserName(name: String) {
+        val app = context.applicationContext as WareHouseApp
+        app.setName(name)
         val editor: SharedPreferences.Editor = sharedPref.edit()
         editor.putString(KEY_USER_NAME, name)
         editor.commit()
     }
 
-    fun getUserName(): kotlinx.coroutines.flow.Flow<String?> {
-        return flow { sharedPref.getString(KEY_USER_NAME, null)  }
+    fun getUserName(): String? {
+        return sharedPref.getString(KEY_USER_NAME, null)
     }
 
     fun setDateFormat(format: String) {
