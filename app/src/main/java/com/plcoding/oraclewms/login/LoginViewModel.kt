@@ -187,7 +187,7 @@ open class LoginViewModel : ViewModel() {
                             Log.d(TAG, "result "+it.toString())
                             if (name) {
                                 SharedPref.setUserName(it.first().auth_user_id__first_name)
-                            } else SharedPref.setDateFormat(it.first().date_format_id__description)
+                            } else SharedPref.setDateFormat(it.first().date_format_id__description.replace("DD", "dd"))
                         }
                     }
                 }
