@@ -461,7 +461,7 @@ class LandingActivity : ComponentActivity() {
     fun DashBoardToolBar(viewModel: LandingViewModel, modifier: Modifier) {
         val context = LocalContext.current
         val app = context.applicationContext as WareHouseApp
-        val name: String by app.userName.observeAsState("to Xpress MWS")
+        val name: String by app.userName.observeAsState("")
         TopAppBar(
             backgroundColor = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(
                 R.color.terinary_imws

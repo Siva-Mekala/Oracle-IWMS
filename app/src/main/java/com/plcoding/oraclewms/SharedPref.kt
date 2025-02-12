@@ -85,7 +85,7 @@ object SharedPref {
     }
 
     fun getUserName(): String? {
-        return sharedPref.getString(KEY_USER_NAME, null)
+        return sharedPref.getString(KEY_USER_NAME, "")
     }
 
     fun setDateFormat(format: String) {

@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 class WareHouseApp : Application() {
 
     // Declare your LiveData variable here
-    private val _userName = MutableLiveData<String>()
+    private val _userName = MutableLiveData("")
     val userName: LiveData<String> = _userName
 
     override fun onCreate() {
