@@ -236,9 +236,9 @@ fun DialogWithMsg(
                 TextButton(
                     onClick = {
                         onConfirmation(if (ups.fieldList?.first()?.field_formatters?.formatDate == true) {
-                            val userFormat = SimpleDateFormat("dd/MM/YYYY")
+                            val userFormat = SimpleDateFormat("dd/MM/yyyy")
                             val calendar: Calendar = Calendar.getInstance()
-                            calendar.setTimeInMillis(userFormat.parse(text.value).time)
+                            calendar.time = userFormat.parse(text.value)
                             val dateFormat = SimpleDateFormat(SharedPref.getDateFormat())
                             dateFormat.format(calendar.time)
                         } else text.value)
@@ -307,7 +307,7 @@ fun WareHouseTextField(viewModel: LoginViewModel, up: Popup, onChange: (String) 
             else {
                 val calendar: Calendar = Calendar.getInstance()
                 calendar.setTimeInMillis(it)
-                val dateFormat = SimpleDateFormat("dd/MM/YYYY")
+                val dateFormat = SimpleDateFormat("dd/MM/yyyy")
                 dateFormat.format(calendar.time)
             }
         }
@@ -480,7 +480,7 @@ fun ListItem(
             else {
                 val calendar: Calendar = Calendar.getInstance()
                 calendar.setTimeInMillis(it)
-                val dateFormat = SimpleDateFormat("dd/MM/YYYY")
+                val dateFormat = SimpleDateFormat("dd/MM/yyyy")
                 dateFormat.format(calendar.time)
             }
         }
