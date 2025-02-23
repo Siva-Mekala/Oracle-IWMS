@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.AppTheme
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.api.Dev
@@ -57,7 +58,7 @@ class SplashActivityView : ComponentActivity() {
     private fun startActivity(envApiResponse: ArrayList<Dev>?) {
         if (envApiResponse != null) {
             val gson = Gson()
-            SharedPref.setEnvResponse(gson.toJson(envApiResponse))
+            SharedPref.setEnvResponse(gson.toJson(envApiResponse, object : TypeToken<ArrayList<Dev>>() {}.type))
         }
         startActivity(
             Intent(

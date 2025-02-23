@@ -110,9 +110,9 @@ class LoginActivity : ComponentActivity() {
         var environment = rememberSaveable { mutableStateOf("dev") }
         var passwordVisible by remember { mutableStateOf(false) }
         val checkState = remember { mutableStateOf(false) }
-        val envs: Map<String, Dev> = Gson().fromJson(
+        val envs: ArrayList<Dev> = Gson().fromJson(
             SharedPref.getEnvResponse(),
-            object : TypeToken<Map<String, Dev>?>() {}.type
+            object : TypeToken<ArrayList<Dev>>() {}.type
         )
         val showDialog = remember { mutableStateOf(false) }
         LaunchedEffect(true) {
@@ -189,9 +189,9 @@ class LoginActivity : ComponentActivity() {
                                     unfocusedIndicatorColor = Color.Transparent,
                                 )
                             )
-                            if (checkState.value) SpinnerSample(envs.keys.toList(), envs.keys.toList().first(),
+                            if (checkState.value) SpinnerSample(envs, envs.first(),
                                 onSelectionChanged = {
-                                    environment.value = it
+                                    environment.value = it.name
                                     checkState.value = false
                                 }, Modifier.fillMaxWidth()
                             )
@@ -337,7 +337,7 @@ class LoginActivity : ComponentActivity() {
     fun handleResponse(
         password: MutableState<String>,
         email: MutableState<String>,
-        envs: Map<String, Dev>,
+        envs: List<Dev>,
         selectedEnv: MutableState<String>,
         viewModel: LoginViewModel,
         shellState: ShellUiState,
@@ -350,8 +350,11 @@ class LoginActivity : ComponentActivity() {
                     if (it.isNullOrEmpty()) {
                         res.popups.let { ups ->
                             if (ups == null || ups.isEmpty()) {
-                                viewModel.fetchUserDetails(envs.get(selectedEnv.value), cmdState.response.env, email, false, password)
-                                viewModel.fetchUserDetails(envs.get(selectedEnv.value), cmdState.response.env, email, true, password)
+                                val dev = Dev()
+                                dev.name = selectedEnv.value
+                                val index = envs.indexOf(dev)
+                                viewModel.fetchUserDetails(envs.get(index), cmdState.response.env, email, false, password)
+                                viewModel.fetchUserDetails(envs.get(index), cmdState.response.env, email, true, password)
                                 SharedPref.setUserLoggedIn(true)
                                 val intent = Intent(this, LandingActivity::class.java)
                                 val bundle = Bundle()
@@ -464,9 +467,9 @@ class LoginActivity : ComponentActivity() {
 
     @Composable
     fun SpinnerSample(
-        list: List<String>,
-        preselected: String,
-        onSelectionChanged: (myData: String) -> Unit,
+        list: List<Dev>,
+        preselected: Dev,
+        onSelectionChanged: (myData: Dev) -> Unit,
         modifier: Modifier
     ) {
         var selected by rememberSaveable { mutableStateOf(preselected) }
@@ -489,7 +492,7 @@ class LoginActivity : ComponentActivity() {
                     },
                     content = {
                         Text(
-                            text = listEntry,
+                            text = listEntry.name,
                             fontFamily = FontFamily(Font(R.font.spacegrotesk_light)),
                             fontSize = 15.sp,
                             modifier = Modifier

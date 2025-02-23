@@ -232,7 +232,7 @@ class LandingActivity : ComponentActivity() {
             sheetState = sheetState
         ) {
             response?.controls?.forEach {
-                if (it.value.contains("Ctrl-W") || it.value.contains("Ctrl-D") || it.value.contains(
+                if (it.value.contains("Ctrl-X") || it.value.contains("Ctrl-D") || it.value.contains(
                         "Ctrl-U"
                     )
                 ) return@forEach
@@ -390,18 +390,18 @@ class LandingActivity : ComponentActivity() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             response?.controls?.let {
-                if (it.toString().contains("Ctrl-W"))
+                if (it.toString().contains("Ctrl-X"))
                     IconButton(onClick = {
                         if (navController.currentDestination?.route == "Home") {
                             viewModel.sendCommand(
                                 Utils.deviceUUID(),
-                                Utils.getControlCharacterValueOptimized("Ctrl-W")
+                                Utils.getControlCharacterValueOptimized("Ctrl-X")
                             )
                         } else {
                             navController.popBackStack()
                             viewModel.sendCommand(
                                 Utils.deviceUUID(),
-                                Utils.getControlCharacterValueOptimized("Ctrl-W")
+                                Utils.getControlCharacterValueOptimized("Ctrl-X")
                             )
                         }
                     }, modifier = Modifier.weight(1f)) {
@@ -500,7 +500,7 @@ class LandingActivity : ComponentActivity() {
                             .clickable {
                                 viewModel.sendCommand(
                                     Utils.deviceUUID(),
-                                    Utils.getControlCharacterValueOptimized("Ctrl-W")
+                                    Utils.getControlCharacterValueOptimized("Ctrl-X")
                                 )
                                 ///viewModel.endShell(Utils.deviceUUID(), this@LandingActivity)
                             }

@@ -1,9 +1,12 @@
 package com.plcoding.oraclewms.api;
 
+import androidx.annotation.Nullable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Dev implements Serializable {
     @SerializedName("description")
@@ -38,5 +41,18 @@ public class Dev implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Dev dev = (Dev) o;
+        return Objects.equals(name, dev.name);
     }
 }
