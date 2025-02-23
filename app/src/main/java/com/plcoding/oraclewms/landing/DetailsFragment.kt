@@ -28,6 +28,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AddCard
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
@@ -410,7 +411,7 @@ fun ListItem(
         },
         value = textObj.value ?: "",
         trailingIcon = {
-            if (item.formatters?.format_barcode == true)
+            if (item.formatters?.format_barcode == true){
                 Icon(
                     painter = painterResource(R.drawable.scan),
                     null,
@@ -433,16 +434,27 @@ fun ListItem(
                         }
                         .padding(5.dp)
                 )
-            else if (item.formatters?.format_date == true)
-                if (item.cursor) Icon(
-                    Icons.Outlined.DateRange,
-                    null,
-                    modifier = Modifier
-                        .clickable {
-                            showDate.value = true
-                        }
-                        .padding(5.dp)
-                )
+            } else if (item.formatters?.format_date == true){
+                if (item.cursor){
+                    Icon(
+                        Icons.Outlined.DateRange,
+                        null,
+                        modifier = Modifier
+                            .clickable {
+                                showDate.value = true
+                            }
+                            .padding(5.dp))
+                }
+            } else if (item.formatters?.format_label == true)
+                    if (item.cursor) Icon(
+                        painter = painterResource(R.drawable.scan),
+                        null,
+                        modifier = Modifier
+                            .clickable {
+                                showDate.value = true
+                            }
+                            .padding(5.dp)
+                    )
         },
         enabled = item.cursor,
         singleLine = true,
