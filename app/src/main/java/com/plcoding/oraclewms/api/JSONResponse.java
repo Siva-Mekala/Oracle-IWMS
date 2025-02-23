@@ -25,7 +25,7 @@ public class JSONResponse implements Serializable {
     private ArrayList<Control> controls;
     @SerializedName("text")
     @Expose
-    private ArrayList<Text> text;
+    private ArrayList<FormField> text;
     @SerializedName("form_fields")
     @Expose
     private ArrayList<FormField> formFields;
@@ -71,11 +71,11 @@ public class JSONResponse implements Serializable {
         this.controls = controls;
     }
 
-    public ArrayList<Text> getText() {
+    public ArrayList<FormField> getText() {
         return text;
     }
 
-    public void setText(ArrayList<Text> text) {
+    public void setText(ArrayList<FormField> text) {
         this.text = text;
     }
 

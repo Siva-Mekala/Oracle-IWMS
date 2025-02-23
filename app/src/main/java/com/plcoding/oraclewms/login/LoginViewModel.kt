@@ -46,9 +46,13 @@ open class LoginViewModel : ViewModel() {
             res.response?.menuItems?.let {
                 menuItems.addAll(it)
             }
+            res.response?.text?.let {
+                formItems.addAll(it)
+            }
             res.response?.formFields?.let {
                 formItems.addAll(it)
             }
+            formItems.sortBy { it.line_number }
         }
     }
 
@@ -80,7 +84,9 @@ open class LoginViewModel : ViewModel() {
                         menuItems.clear()
                         jsonRes?.jsonResponse?.let {
                             menuItems.addAll(it.menuItems)
+                            formItems.addAll(it.text)
                             formItems.addAll(it.formFields)
+                            formItems.sortBy { it.line_number }
                         }
                         cmdState = CommandUiState.Success(jsonRes?.jsonResponse)
                     } else cmdState = CommandUiState.Error(response.code())

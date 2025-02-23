@@ -363,8 +363,21 @@ fun ListScreen(
                         HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
                     }
                 }
-                items(item.size) { x ->
-                    ListItem(item = item.get(x), viewModel, permissionState)
+                items(item.size) {
+                    if (item.get(it).type.equals("form_field")) ListItem(item = item.get(it), viewModel, permissionState)
+                    else {
+                        Text(
+                            text = item.get(it).value.toString(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                            fontSize = 15.sp,
+                            color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
+                                R.color.secondary_imws
+                            )
+                        )
+                    }
                 }
             }
         }
