@@ -12,6 +12,9 @@ public class Dev implements Serializable {
     @SerializedName("host")
     @Expose
     private String host;
+    @SerializedName("name")
+    @Expose
+    private String name;
 
     public String getDescription() {
         return description;
@@ -27,5 +30,13 @@ public class Dev implements Serializable {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

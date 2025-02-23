@@ -48,7 +48,7 @@ interface BaseApiInterface {
     @GET
     fun environments(
         @Url url: String
-    ): Call<Map<String, Dev>>
+    ): Call<ArrayList<Dev>>
 
     companion object {
 
