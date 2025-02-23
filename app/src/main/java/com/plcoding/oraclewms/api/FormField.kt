@@ -1,6 +1,7 @@
 package com.plcoding.oraclewms.api
 
 import java.io.Serializable
+import java.util.Objects
 
 data class FormField(
     var type: String? = null,
@@ -14,5 +15,16 @@ data class FormField(
 ) : Serializable {
     override fun toString(): String {
         return form_key.toString()
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hashCode(form_key)
+    }
+
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || javaClass != o.javaClass) return false
+        val form = o as FormField
+        return form_key.equals(form.form_key)
     }
 }

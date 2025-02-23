@@ -16,6 +16,9 @@ object SharedPref {
     private const val KEY_SCREEN_NAME = "KEY_SCREEN_NAME"
     private const val KEY_USER_NAME = "KEY_USER_NAME"
     private const val KEY_DATE_FORMATE = "KEY_DATE_FORMATE"
+    private const val KEY_LOGGED_IN = "LOGGED_IN"
+    private const val KEY_LOGGED_PWD = "LOGGED_PWD"
+    private const val KEY_ENV_VALUE = "ENV_VALUE"
 
     private lateinit var sharedPref: SharedPreferences
     private lateinit var context: Context
@@ -98,6 +101,36 @@ object SharedPref {
         return sharedPref.getString(KEY_DATE_FORMATE, null)
     }
 
+    fun setLoggedIn(user: String) {
+        val editor: SharedPreferences.Editor = sharedPref.edit()
+        editor.putString(KEY_LOGGED_IN, user)
+        editor.commit()
+    }
+
+    fun getLoggedIn(): String? {
+        return sharedPref.getString(KEY_LOGGED_IN, null)
+    }
+
+    fun setLoggedInPwd(pwd: String) {
+        val editor: SharedPreferences.Editor = sharedPref.edit()
+        editor.putString(KEY_LOGGED_PWD, pwd)
+        editor.commit()
+    }
+
+    fun getLoggedPwd(): String? {
+        return sharedPref.getString(KEY_LOGGED_PWD, null)
+    }
+
+    fun setEnvValue(value: String) {
+        val editor: SharedPreferences.Editor = sharedPref.edit()
+        editor.putString(KEY_ENV_VALUE, value)
+        editor.commit()
+    }
+
+    fun getEnvValue(): String? {
+        return sharedPref.getString(KEY_ENV_VALUE, null)
+    }
+
     fun setHomeInfo(info: String) {
         val editor: SharedPreferences.Editor = sharedPref.edit()
         editor.putString(KEY_HOME_INFO, info)
@@ -138,6 +171,9 @@ object SharedPref {
             remove(KEY_SCREEN_NAME)
             remove(KEY_USER_NAME)
             remove(KEY_DATE_FORMATE)
+            remove(KEY_LOGGED_PWD)
+            remove(KEY_LOGGED_IN)
+            remove(KEY_ENV_VALUE)
             ///remove(ENV_RESPONSE)
             apply()
         }

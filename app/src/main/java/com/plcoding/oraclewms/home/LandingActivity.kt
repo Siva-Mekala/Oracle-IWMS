@@ -232,7 +232,7 @@ class LandingActivity : ComponentActivity() {
             sheetState = sheetState
         ) {
             response?.controls?.forEach {
-                if (it.value.contains("Ctrl-W") || it.value.contains("Ctrl-D") || it.value.contains(
+                if (it.value.contains("Ctrl-X") || it.value.contains("Ctrl-D") || it.value.contains(
                         "Ctrl-U"
                     )
                 ) return@forEach
@@ -255,7 +255,7 @@ class LandingActivity : ComponentActivity() {
                                         showBottomSheet = false
                                     }
                                 }
-                            if (it.value.contains("Ctrl-X")) {
+                            if (it.value.contains("Ctrl-W")) {
                                 if (navController.currentDestination?.route == "Home") {
 //                                    viewModel.endShell(
 //                                        Utils.deviceUUID(),

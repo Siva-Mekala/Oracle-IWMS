@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.Dev
+import com.plcoding.oraclewms.api.LabelResponse
 import com.plcoding.oraclewms.api.UserResponse
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -49,6 +50,12 @@ interface BaseApiInterface {
     fun environments(
         @Url url: String
     ): Call<ArrayList<Dev>>
+
+    @POST
+    fun fetchLabel(
+        @Url url: String,
+        @Body request: JsonObject
+    ): Call<LabelResponse>
 
     companion object {
 

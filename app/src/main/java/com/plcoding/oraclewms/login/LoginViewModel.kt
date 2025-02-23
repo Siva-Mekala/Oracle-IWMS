@@ -20,6 +20,7 @@ import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.Dev
 import com.plcoding.oraclewms.api.Env
 import com.plcoding.oraclewms.api.FormField
+import com.plcoding.oraclewms.api.LabelResponse
 import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.api.UserResponse
 import com.plcoding.oraclewms.home.LandingActivity
@@ -50,7 +51,7 @@ open class LoginViewModel : ViewModel() {
 
             res.response?.formFields?.let {
                 items.addAll(it)
-                res.response.text?.let {
+                if(it.isNotEmpty()) res.response.text?.let {
                     items.addAll(it)
                 }
             }
@@ -95,7 +96,7 @@ open class LoginViewModel : ViewModel() {
                             menuItems.addAll(it.menuItems)
                             it.formFields?.let { form ->
                                 items.addAll(form)
-                                it.text?.let {
+                                if(form.isNotEmpty()) it.text?.let {
                                     items.addAll(it)
                                 }
                             }
@@ -189,16 +190,17 @@ open class LoginViewModel : ViewModel() {
     //'https://tb2.wms.ocs.oraclecloud.com:443/flow_test/wms/lgfapi/v10/entity/user/?auth_user_id__username=jpmars1&null=null&values_list=date_format_id__description'
     fun fetchUserDetails(
         dev: Dev?,
-        env: Env,
-        email: MutableState<String>,
-        name: Boolean,
-        password: MutableState<String>
+        env: String?,
+        email: String?,
+        name: Int,
+        password: String?,
+        url : String
     ) {
         Log.d(TAG, "Inside fetchUserDetails")
-        val credentials = "${email.value}:${password.value}"
+        val credentials = "${email}:${password}"
         BaseApiInterface.create()
             .fetchUserInfo(
-                "https://${dev?.host}:443/${env.value}/wms/lgfapi/v10/entity/user/?auth_user_id__username=${email.value}&&values_list=${if(!name) "date_format_id__description" else "auth_user_id__first_name"}",
+                "https://${dev?.host}:443/${env}/wms/lgfapi/v10/entity/$url",
                 "Basic "+Base64.encodeToString(credentials.toByteArray(), Base64.NO_WRAP)
             ).enqueue(object : Callback<UserResponse> {
                 override fun onResponse(
@@ -211,15 +213,40 @@ open class LoginViewModel : ViewModel() {
                         jsonRes?.results.let {
                             if (it.isNullOrEmpty()) return@let
                             Log.d(TAG, "result "+it.toString())
-                            if (name) {
+                            if (name == 2) {
                                 SharedPref.setUserName(it.first().auth_user_id__first_name)
-                            } else SharedPref.setDateFormat(it.first().date_format_id__description.replace("DD", "dd"))
+                            } else if (name == 1) SharedPref.setDateFormat(it.first().date_format_id__description.replace("DD", "dd"))
+                            else {
+                                fetchLabel(it.first().company_id__code)
+                            }
                         }
                     }
                 }
 
                 override fun onFailure(call: Call<UserResponse>, t: Throwable) {
                     Log.d(TAG, "Inside onFailure")
+                }
+            })
+    }
+
+    fun fetchLabel(str: String?){
+        Log.d(TAG, "Inside fetchLabel")
+        val obj = JsonObject()
+        obj.addProperty("client", str)
+
+        BaseApiInterface.create()
+            .fetchLabel(
+                BuildConfig.LABEL,
+                obj
+            ).enqueue(object : Callback<LabelResponse> {
+                override fun onResponse(
+                    call: Call<LabelResponse>,
+                    response: Response<LabelResponse>
+                ) {
+
+                }
+
+                override fun onFailure(call: Call<LabelResponse>, t: Throwable) {
                 }
             })
     }

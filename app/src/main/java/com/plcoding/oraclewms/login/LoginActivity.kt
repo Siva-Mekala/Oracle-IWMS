@@ -353,8 +353,14 @@ class LoginActivity : ComponentActivity() {
                                 val dev = Dev()
                                 dev.name = selectedEnv.value
                                 val index = envs.indexOf(dev)
-                                viewModel.fetchUserDetails(envs.get(index), cmdState.response.env, email, false, password)
-                                viewModel.fetchUserDetails(envs.get(index), cmdState.response.env, email, true, password)
+                                SharedPref.setLoggedIn(email.value)
+                                SharedPref.setLoggedInPwd(password.value)
+                                SharedPref.setEnv(Gson().toJson(envs.get(index)))
+                                SharedPref.setEnvValue(cmdState.response.env.value)
+                                viewModel.fetchUserDetails(envs.get(index), cmdState.response.env.value, email.value, 1, password.value,
+                                    "user/?auth_user_id__username=${email.value}&&values_list=date_format_id__description")
+                                viewModel.fetchUserDetails(envs.get(index), cmdState.response.env.value, email.value, 2, password.value,
+                                    "user/?auth_user_id__username=${email.value}&&values_list=auth_user_id__first_name")
                                 SharedPref.setUserLoggedIn(true)
                                 val intent = Intent(this, LandingActivity::class.java)
                                 val bundle = Bundle()

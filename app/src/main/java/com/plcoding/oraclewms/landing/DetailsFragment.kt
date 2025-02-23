@@ -2,9 +2,7 @@ package com.plcoding.oraclewms.landing
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -47,6 +45,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
@@ -64,17 +63,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.google.gson.Gson
 import com.plcoding.focusfun.landing.LandingViewModel
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
+import com.plcoding.oraclewms.api.Dev
 import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.api.Popup
@@ -367,7 +367,7 @@ fun ListScreen(
                     }
                 }
                 items(item.size) {
-                    if (item.get(it).type.equals("form_field")) ListItem(item = item.get(it), viewModel, permissionState)
+                    if (item.get(it).type.equals("form_field")) ListItem(item = item.get(it), viewModel, permissionState, item)
                     else {
                         Text(
                             text = item.get(it).value.toString(),
@@ -392,12 +392,17 @@ fun ListScreen(
 fun ListItem(
     item: FormField,
     viewModel: LandingViewModel,
-    permissionState: PermissionState
+    permissionState: PermissionState,
+    item1: SnapshotStateList<FormField>
 ) {
     val textObj = remember(item) {
         mutableStateOf(
             item.form_value?.trim()
         )
+    }
+
+    val showLoader = remember {
+        mutableStateOf(false)
     }
 
     val launcher = rememberLauncherForActivityResult(
@@ -450,23 +455,36 @@ fun ListItem(
                         .padding(5.dp)
                 )
             } else if (item.formatters?.format_date == true){
-                if (item.cursor){
                     Icon(
                         Icons.Outlined.DateRange,
                         null,
                         modifier = Modifier
+                            .size(40.dp)
                             .clickable {
+                                if (item.cursor)
                                 showDate.value = true
                             }
                             .padding(5.dp))
-                }
             } else if (item.formatters?.format_label == true)
-                    if (item.cursor) Icon(
-                        painter = painterResource(R.drawable.scan),
+                    Icon(
+                        Icons.Outlined.AddCard,
                         null,
                         modifier = Modifier
+                            .size(40.dp)
                             .clickable {
-                                showDate.value = true
+                                if (item.cursor) {
+                                    showLoader.value = true
+                                    val dev =
+                                        Gson().fromJson(SharedPref.getEnv(), Dev::class.java)
+                                    val form = FormField()
+                                    form.form_key = "Shipment"
+                                    val index = item1.indexOf(form)
+                                    if (index > -1)
+                                    viewModel.fetchUserDetails(
+                                        dev, SharedPref.getEnvValue(), SharedPref.getLoggedIn(), 2, SharedPref.getLoggedPwd(),
+                                        "ib_shipment/?shipment_nbr=${item1.get(index).form_value}&values_list=company_id__code"
+                                    )
+                                }
                             }
                             .padding(5.dp)
                     )
@@ -501,6 +519,7 @@ fun ListItem(
     if (item.cursor) LaunchedEffect(true) {
         focusRequester.requestFocus()
     }
+    if (showLoader.value) LoaderScreen()
     if (showDate.value) DatePickerModal({
         textObj.value = it.let {
             if (it == null) ""
