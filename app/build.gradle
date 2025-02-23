@@ -53,7 +53,7 @@ android {
     buildTypes {
 
         release {
-            def baseUrl = "http://64.23.189.32:3000/"
+            def baseUrl = "http://170.64.223.178:3000/"
             buildConfigField("String", "BASE_URL", "\"${baseUrl}\"")
             buildConfigField("String", "START_SHELL", "\"${baseUrl}start-shell\"")
             buildConfigField("String", "END_SHELL", "\"${baseUrl}end-shell\"")
@@ -62,7 +62,7 @@ android {
         }
 
         debug {
-            def baseUrl = "http://64.23.189.32:3000/"
+            def baseUrl = "http://170.64.223.178:3000/"
             buildConfigField("String", "BASE_URL", "\"${baseUrl}\"")
             buildConfigField("String", "START_SHELL", "\"${baseUrl}start-shell\"")
             buildConfigField("String", "END_SHELL", "\"${baseUrl}end-shell\"")

@@ -54,7 +54,7 @@ class SplashActivityView : ComponentActivity() {
         }
     }
 
-    private fun startActivity(envApiResponse: Map<String, Dev>?) {
+    private fun startActivity(envApiResponse: ArrayList<Dev>?) {
         if (envApiResponse != null) {
             val gson = Gson()
             SharedPref.setEnvResponse(gson.toJson(envApiResponse))
@@ -74,7 +74,7 @@ class SplashActivityView : ComponentActivity() {
     fun SplashScreen(
         viewModel: SplashViewModel,
         envState: EnvironmentsUiState,
-        onNavigate: (response: Map<String, Dev>?) -> Unit = {}
+        onNavigate: (response: ArrayList<Dev>?) -> Unit = {}
     ) {
         val scale = remember {
             Animatable(1f)

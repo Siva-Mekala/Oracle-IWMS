@@ -23,10 +23,10 @@ open class SplashViewModel : ViewModel() {
         BaseApiInterface.create()
             .environments(
                 BuildConfig.ENVIRONMENTS,
-            ).enqueue(object : Callback<Map<String, Dev>> {
+            ).enqueue(object : Callback<ArrayList<Dev>> {
                 override fun onResponse(
-                    call: Call<Map<String, Dev>>,
-                    response: Response<Map<String, Dev>>
+                    call: Call<ArrayList<Dev>>,
+                    response: Response<ArrayList<Dev>>
                 ) {
                     if (response.isSuccessful) {
                         getEnvState = EnvironmentsUiState.Success(response.body())
@@ -35,7 +35,7 @@ open class SplashViewModel : ViewModel() {
                     }
                 }
 
-                override fun onFailure(call: Call<Map<String, Dev>>, t: Throwable) {
+                override fun onFailure(call: Call<ArrayList<Dev>>, t: Throwable) {
                     getEnvState = EnvironmentsUiState.Error
                 }
             })
