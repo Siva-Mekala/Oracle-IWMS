@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -91,11 +92,12 @@ fun DetailsScreen(
     state: CommandUiState,
     item: MenuItem?
 ) {
+    Log.d("DetailsFragment", "Inside composable")
     BackHandler {
         navController.popBackStack()
         viewModel.sendCommand(
             Utils.deviceUUID(),
-            Utils.getControlCharacterValueOptimized("Ctrl-W")
+            Utils.getControlCharacterValueOptimized("Ctrl-X")
         )
     }
     if (state is CommandUiState.Success && state.response?.menuItems?.isEmpty() == false)

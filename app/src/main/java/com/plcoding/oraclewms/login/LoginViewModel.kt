@@ -30,7 +30,7 @@ import java.net.HttpURLConnection
 
 open class LoginViewModel : ViewModel() {
 
-    open var TAG = LoginActivity::class.java.simpleName
+    open var TAG = LoginViewModel::class.java.simpleName
 
     var cmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
         private set
@@ -43,16 +43,24 @@ open class LoginViewModel : ViewModel() {
         if (res is CommandUiState.Success) {
             formItems.clear()
             menuItems.clear()
+            val items = ArrayList<FormField>()
             res.response?.menuItems?.let {
                 menuItems.addAll(it)
             }
-            res.response?.text?.let {
-                formItems.addAll(it)
-            }
+
             res.response?.formFields?.let {
-                formItems.addAll(it)
+                items.addAll(it)
+                res.response.text?.let {
+                    items.addAll(it)
+                }
             }
-            formItems.sortBy { it.line_number }
+            if (items.isNotEmpty()) {
+                items.sortBy { it.line_number }
+                val index = items.indexOfFirst { it.type.equals("form_field") }
+                formItems.addAll(
+                if (index > -1) items.subList(index, items.size)
+                else items)
+            }
         }
     }
 
@@ -82,11 +90,23 @@ open class LoginViewModel : ViewModel() {
                         SharedPref.setHomeInfo("${jsonRes?.jsonResponse?.env?.value},${jsonRes?.jsonResponse?.appName?.value},${jsonRes?.jsonResponse?.facilityName?.value}")
                         formItems.clear()
                         menuItems.clear()
+                        val items = arrayListOf<FormField>()
                         jsonRes?.jsonResponse?.let {
                             menuItems.addAll(it.menuItems)
-                            formItems.addAll(it.text)
-                            formItems.addAll(it.formFields)
-                            formItems.sortBy { it.line_number }
+                            it.formFields?.let { form ->
+                                items.addAll(form)
+                                it.text?.let {
+                                    items.addAll(it)
+                                }
+                            }
+                            if (items.isNotEmpty()) {
+                                items.sortBy { it.line_number }
+                                val index = items.indexOfFirst { it.type.equals("form_field") }
+                                formItems.addAll(
+                                    if (index > -1) items.subList(index, items.size)
+                                    else items
+                                )
+                            }
                         }
                         cmdState = CommandUiState.Success(jsonRes?.jsonResponse)
                     } else cmdState = CommandUiState.Error(response.code())
