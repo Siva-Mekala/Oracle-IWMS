@@ -429,6 +429,22 @@ class LandingActivity : ComponentActivity() {
                                 .padding(5.dp)
                         )
                     }
+                else{
+                    IconButton(onClick = {
+                        viewModel.sendCommand(
+                            Utils.deviceUUID(),
+                            "\u001bOA"
+                        )
+                    }, modifier = Modifier.weight(1f)) {
+                        Icon(
+                            painter = painterResource(R.drawable.double_up_icon),
+                            contentDescription = "Localized description",
+                            Modifier
+                                .size(35.dp)
+                                .padding(5.dp)
+                        )
+                    }
+                }
                 if (it.toString().contains("Ctrl-D"))
                     IconButton(onClick = {
                         viewModel.sendCommand(
@@ -444,6 +460,22 @@ class LandingActivity : ComponentActivity() {
                                 .padding(5.dp)
                         )
                     }
+                else
+                    IconButton(onClick = {
+                        viewModel.sendCommand(
+                            Utils.deviceUUID(),
+                            "\u001bOB"
+                        )
+                    }, modifier = Modifier.weight(1f)) {
+                        Icon(
+                            painter = painterResource(R.drawable.double_down_icon),
+                            contentDescription = "Localized description",
+                            Modifier
+                                .size(35.dp)
+                                .padding(5.dp)
+                        )
+                    }
+
                 IconButton(onClick = { onClick() }, modifier = Modifier.weight(1f)) {
                     Icon(
                         Icons.Filled.MoreHoriz,
