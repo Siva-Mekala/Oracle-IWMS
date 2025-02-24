@@ -2,7 +2,6 @@ package com.plcoding.oraclewms.login
 
 import android.content.Context
 import android.content.Intent
-import android.net.Credentials
 import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.MutableState
@@ -18,7 +17,6 @@ import com.plcoding.oraclewms.BuildConfig
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.Dev
-import com.plcoding.oraclewms.api.Env
 import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.LabelResponse
 import com.plcoding.oraclewms.api.MenuItem
@@ -36,8 +34,14 @@ open class LoginViewModel : ViewModel() {
     var cmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
         private set
 
+    var loader: Boolean by mutableStateOf(false)
+        private set
+
     var menuItems = arrayListOf<MenuItem>().toMutableStateList()
     var formItems = arrayListOf<FormField>().toMutableStateList()
+
+    var shipment: String by mutableStateOf("")
+        private set
 
     fun setState(res: CommandUiState) {
         cmdState = res
@@ -68,12 +72,15 @@ open class LoginViewModel : ViewModel() {
     var shellState: ShellUiState by mutableStateOf(ShellUiState.Empty)
         private set
 
-    fun sendCommand(id: String, cmd: String) {
+    fun sendCommand(id: String, cmd: String, formKey: String? = null) {
         Log.d(TAG, "Inside sendCommand")
         val obj = JsonObject()
         obj.addProperty("sessionId", id)
         obj.addProperty("command", cmd)
         obj.addProperty("wait_time", 2000)
+        formKey?.let {
+            if (it.equals("Shipment")) shipment = cmd.trim()
+        }
         cmdState = CommandUiState.Loading
         BaseApiInterface.create()
             .sendCommand(
@@ -194,10 +201,12 @@ open class LoginViewModel : ViewModel() {
         email: String?,
         name: Int,
         password: String?,
-        url : String
+        url : String,
+        formKey: String? = null
     ) {
         Log.d(TAG, "Inside fetchUserDetails")
         val credentials = "${email}:${password}"
+        loader = true
         BaseApiInterface.create()
             .fetchUserInfo(
                 "https://${dev?.host}:443/${env}/wms/lgfapi/v10/entity/$url",
@@ -217,20 +226,23 @@ open class LoginViewModel : ViewModel() {
                                 SharedPref.setUserName(it.first().auth_user_id__first_name)
                             } else if (name == 1) SharedPref.setDateFormat(it.first().date_format_id__description.replace("DD", "dd"))
                             else {
-//                                fetchLabel(it.first().company_id__code)
-                                fetchLabel("MARS")
+                                formKey?.let { key->
+                                    fetchLabel(it.first().company_id__code, key)
+                                }
                             }
                         }
-                    }
+                    } else
+                        loader = false
                 }
 
                 override fun onFailure(call: Call<UserResponse>, t: Throwable) {
+                    loader = false
                     Log.d(TAG, "Inside onFailure")
                 }
             })
     }
 
-    fun fetchLabel(str: String?){
+    fun fetchLabel(str: String?, formKey: String?){
         Log.d(TAG, "Inside fetchLabel")
         val obj = JsonObject()
         obj.addProperty("client", str)
@@ -244,10 +256,24 @@ open class LoginViewModel : ViewModel() {
                     call: Call<LabelResponse>,
                     response: Response<LabelResponse>
                 ) {
-                  Log.d("labelres",response.toString())
+                  Log.d("label :",response.toString())
+                    if (response.isSuccessful){
+                        if (cmdState is CommandUiState.Success){
+                            val form = FormField()
+                            form.form_key = formKey
+                            (cmdState as CommandUiState.Success).response?.formFields?.let {
+                                val index = it.indexOf(form)
+                                if (index > -1){
+                                    it[index].form_value = response.body()?.label
+                                }
+                            }
+                        }
+                    }
+                  loader = false
                 }
 
                 override fun onFailure(call: Call<LabelResponse>, t: Throwable) {
+                    loader = false
                 }
             })
     }

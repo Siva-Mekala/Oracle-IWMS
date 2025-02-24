@@ -108,7 +108,7 @@ fun DetailsScreen(
                 "${item?.optionNumber}\n"
             )
         }
-    ListScreen(modifier, viewModel, item?.optionName, state)
+    ListScreen(modifier, viewModel, item?.optionName, state, viewModel.loader)
     if (state is CommandUiState.Success) {
         state.response?.formFields.let {
         }
@@ -326,7 +326,8 @@ fun ListScreen(
     modifier: Modifier,
     viewModel: LandingViewModel,
     optionName: String?,
-    state: CommandUiState
+    state: CommandUiState,
+    loader: Boolean
 ) {
     val permissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -384,6 +385,7 @@ fun ListScreen(
                 }
             }
         }
+        if (loader) LoaderScreen()
     }
 }
 
@@ -395,14 +397,10 @@ fun ListItem(
     permissionState: PermissionState,
     item1: SnapshotStateList<FormField>
 ) {
-    val textObj = remember(item) {
+    val textObj = remember(item.form_value) {
         mutableStateOf(
             item.form_value?.trim()
         )
-    }
-
-    val showLoader = remember {
-        mutableStateOf(false)
     }
 
     val launcher = rememberLauncherForActivityResult(
@@ -473,17 +471,11 @@ fun ListItem(
                             .size(40.dp)
                             .clickable {
                                 if (item.cursor) {
-                                    showLoader.value = true
                                     val dev =
                                         Gson().fromJson(SharedPref.getEnv(), Dev::class.java)
-                                    val form = FormField()
-                                    form.form_key = "Shipment"
-                                    val index = item1.indexOf(form)
-                                    println("test"+item1.get(index))
-                                    if (index > -1)
                                     viewModel.fetchUserDetails(
                                         dev, SharedPref.getEnvValue(), SharedPref.getLoggedIn(), 3, SharedPref.getLoggedPwd(),
-                                        "ib_shipment/?shipment_nbr=${item1.get(index).form_value}&values_list=company_id__code"
+                                        "ib_shipment/?shipment_nbr=${viewModel.shipment}&values_list=company_id__code", item.form_key
                                     )
                                 }
                             }
@@ -504,7 +496,7 @@ fun ListItem(
             onNext = {
                 textObj.value?.let {
                     viewModel.sendCommand(
-                        Utils.deviceUUID(), if(item.form_value?.trim().equals(it)) "\t" else  it + "\t"
+                        Utils.deviceUUID(), if(item.form_value?.trim().equals(it)) "\t" else  it + "\t", item.form_key
                     )
                 }
                 keyboardController?.hide()
@@ -520,7 +512,6 @@ fun ListItem(
     if (item.cursor) LaunchedEffect(true) {
         focusRequester.requestFocus()
     }
-    if (showLoader.value) LoaderScreen()
     if (showDate.value) DatePickerModal({
         textObj.value = it.let {
             if (it == null) ""
