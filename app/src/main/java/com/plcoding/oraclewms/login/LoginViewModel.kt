@@ -217,7 +217,8 @@ open class LoginViewModel : ViewModel() {
                                 SharedPref.setUserName(it.first().auth_user_id__first_name)
                             } else if (name == 1) SharedPref.setDateFormat(it.first().date_format_id__description.replace("DD", "dd"))
                             else {
-                                fetchLabel(it.first().company_id__code)
+//                                fetchLabel(it.first().company_id__code)
+                                fetchLabel("MARS")
                             }
                         }
                     }
@@ -243,7 +244,7 @@ open class LoginViewModel : ViewModel() {
                     call: Call<LabelResponse>,
                     response: Response<LabelResponse>
                 ) {
-
+                  Log.d("labelres",response.toString())
                 }
 
                 override fun onFailure(call: Call<LabelResponse>, t: Throwable) {
