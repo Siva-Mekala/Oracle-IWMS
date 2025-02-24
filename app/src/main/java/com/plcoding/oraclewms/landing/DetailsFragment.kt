@@ -479,9 +479,10 @@ fun ListItem(
                                     val form = FormField()
                                     form.form_key = "Shipment"
                                     val index = item1.indexOf(form)
+                                    println("test"+item1.get(index))
                                     if (index > -1)
                                     viewModel.fetchUserDetails(
-                                        dev, SharedPref.getEnvValue(), SharedPref.getLoggedIn(), 2, SharedPref.getLoggedPwd(),
+                                        dev, SharedPref.getEnvValue(), SharedPref.getLoggedIn(), 3, SharedPref.getLoggedPwd(),
                                         "ib_shipment/?shipment_nbr=${item1.get(index).form_value}&values_list=company_id__code"
                                     )
                                 }
