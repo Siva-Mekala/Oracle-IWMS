@@ -170,6 +170,7 @@ fun DetailsScreen(
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun DialogWithMsg(
     onDismissRequest: () -> Unit,
@@ -184,6 +185,9 @@ fun DialogWithMsg(
             ""
         )
     }
+    val permissionState = rememberPermissionState(
+        Manifest.permission.CAMERA
+    )
     Dialog(onDismissRequest = { }) {
         Card(
             modifier = Modifier
@@ -218,7 +222,7 @@ fun DialogWithMsg(
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                 )
-                WareHouseTextField(viewModel, ups) {
+                WareHouseTextField(viewModel, ups, permissionState) {
                     text.value = it
                 }
             }
@@ -260,12 +264,29 @@ fun DialogWithMsg(
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun WareHouseTextField(viewModel: LoginViewModel, up: Popup, onChange: (String) -> Unit) {
+fun WareHouseTextField(viewModel: LoginViewModel, up: Popup,
+                       permissionState: PermissionState,
+                       onChange: (String) -> Unit) {
     val showDate = rememberSaveable { mutableStateOf(false) }
     val textObj = rememberSaveable(up) {
         mutableStateOf(up.fieldList?.first()?.form_value?.trim() ?: "")
     }
+
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            val returnedString = data?.getStringExtra("returned_string") // Get the returned string
+            if (returnedString != null) {
+                textObj.value = returnedString // Update the result text
+            }
+        }
+    }
+    val context = LocalContext.current
+
     val focusRequester = remember { FocusRequester() }
     TextField(
         value = textObj.value,
@@ -276,16 +297,41 @@ fun WareHouseTextField(viewModel: LoginViewModel, up: Popup, onChange: (String) 
         },
         trailingIcon = {
             up.fieldList?.first()?.field_formatters.let {
-                if (it?.formatDate == true) {
-                    Icon(
-                        Icons.Outlined.DateRange,
-                        null,
-                        modifier = Modifier
-                            .clickable {
-                                showDate.value = true
-                            }
-                            .padding(5.dp)
-                    )
+                Row {
+                    if (it?.formatDate == true) {
+                        Icon(
+                            Icons.Outlined.DateRange,
+                            null,
+                            modifier = Modifier
+                                .clickable {
+                                    showDate.value = true
+                                }
+                                .padding(5.dp)
+                        )
+                    }
+                    if (it?.format_barcode == true){
+                        Icon(
+                            painter = painterResource(R.drawable.scan),
+                            null,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clickable {
+                                    if (permissionState.status.isGranted) {
+                                        val intent = Intent(
+                                            context,
+                                            BarCodeActivity::class.java
+                                        )
+                                        launcher.launch(intent)
+                                    } else {
+                                        if (permissionState.status.shouldShowRationale)
+                                        else {
+                                            permissionState.launchPermissionRequest()
+                                        }
+                                    }
+                                }
+                                .padding(5.dp)
+                        )
+                    }
                 }
             }
         },
