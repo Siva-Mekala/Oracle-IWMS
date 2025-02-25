@@ -134,7 +134,8 @@ class LandingActivity : ComponentActivity() {
         DashboardActivityScreen(
             modifier,
             viewModel,
-            navController
+            navController,
+            this
         )
     }
 
@@ -153,7 +154,8 @@ class LandingActivity : ComponentActivity() {
     fun DashboardActivityScreen(
         modifier: Modifier = Modifier,
         viewModel: LandingViewModel,
-        navController: NavHostController
+        navController: NavHostController,
+        context: Context
     ) {
         var showBottomSheet by remember { mutableStateOf(false) }
         var clickPosition by remember { mutableStateOf<MenuItem?>(null) }
@@ -164,7 +166,7 @@ class LandingActivity : ComponentActivity() {
                 R.color.secondary_imws
             ),
             topBar = {
-                DashBoardToolBar(viewModel, modifier)
+                DashBoardToolBar(viewModel, modifier,context)
             },
             bottomBar = {
                 bottomAppBar(
@@ -437,7 +439,7 @@ class LandingActivity : ComponentActivity() {
                         )
                     }, modifier = Modifier.weight(1f)) {
                         Icon(
-                            painter = painterResource(R.drawable.double_up_icon),
+                            painter = painterResource(R.drawable.up),
                             contentDescription = "Localized description",
                             Modifier
                                 .size(35.dp)
@@ -468,7 +470,7 @@ class LandingActivity : ComponentActivity() {
                         )
                     }, modifier = Modifier.weight(1f)) {
                         Icon(
-                            painter = painterResource(R.drawable.double_down_icon),
+                            painter = painterResource(R.drawable.down),
                             contentDescription = "Localized description",
                             Modifier
                                 .size(35.dp)
@@ -490,7 +492,7 @@ class LandingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun DashBoardToolBar(viewModel: LandingViewModel, modifier: Modifier) {
+    fun DashBoardToolBar(viewModel: LandingViewModel, modifier: Modifier,context1: Context) {
         val context = LocalContext.current
         val app = context.applicationContext as WareHouseApp
         val name: String by app.userName.observeAsState("")
@@ -534,7 +536,7 @@ class LandingActivity : ComponentActivity() {
                                     Utils.deviceUUID(),
                                     Utils.getControlCharacterValueOptimized("Ctrl-W")
                                 )
-                                ///viewModel.endShell(Utils.deviceUUID(), this@LandingActivity)
+                                viewModel.endShell(Utils.deviceUUID(), context1,"logout")
                             }
                             .padding(10.dp)
                             .size(width = 20.dp, height = 20.dp),
