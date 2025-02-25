@@ -79,8 +79,13 @@ open class LoginViewModel : ViewModel() {
         obj.addProperty("command", cmd)
         obj.addProperty("wait_time", 2000)
         formKey?.let {
-            if (it.equals("Shipment")) shipment = cmd.trim()
+            if (it.equals("Shipment")){
+                shipment = cmd.trim()
+                SharedPref.setShipmentID(shipment)
+            }
+
         }
+
         cmdState = CommandUiState.Loading
         BaseApiInterface.create()
             .sendCommand(

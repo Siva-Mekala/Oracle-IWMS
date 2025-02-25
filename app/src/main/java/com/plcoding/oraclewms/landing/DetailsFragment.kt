@@ -428,31 +428,34 @@ fun ListItem(
             )
         },
         value = textObj.value ?: "",
+
         trailingIcon = {
-            if (item.formatters?.format_barcode == true){
-                Icon(
-                    painter = painterResource(R.drawable.scan),
-                    null,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clickable {
-                            if (item.cursor)
-                                if (permissionState.status.isGranted) {
-                                    val intent = Intent(
-                                        context,
-                                        BarCodeActivity::class.java
-                                    )
-                                    launcher.launch(intent)
-                                } else {
-                                    if (permissionState.status.shouldShowRationale)
-                                    else {
-                                        permissionState.launchPermissionRequest()
+            Row {
+                if (item.formatters?.format_barcode == true){
+                    Icon(
+                        painter = painterResource(R.drawable.scan),
+                        null,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clickable {
+                                if (item.cursor)
+                                    if (permissionState.status.isGranted) {
+                                        val intent = Intent(
+                                            context,
+                                            BarCodeActivity::class.java
+                                        )
+                                        launcher.launch(intent)
+                                    } else {
+                                        if (permissionState.status.shouldShowRationale)
+                                        else {
+                                            permissionState.launchPermissionRequest()
+                                        }
                                     }
-                                }
-                        }
-                        .padding(5.dp)
-                )
-            } else if (item.formatters?.format_date == true){
+                            }
+                            .padding(5.dp)
+                    )
+                }
+                if (item.formatters?.format_date == true){
                     Icon(
                         Icons.Outlined.DateRange,
                         null,
@@ -460,10 +463,11 @@ fun ListItem(
                             .size(40.dp)
                             .clickable {
                                 if (item.cursor)
-                                showDate.value = true
+                                    showDate.value = true
                             }
                             .padding(5.dp))
-            } else if (item.formatters?.format_label == true)
+                }
+                if (item.formatters?.format_label == true)
                     Icon(
                         Icons.Outlined.AddCard,
                         null,
@@ -473,14 +477,19 @@ fun ListItem(
                                 if (item.cursor) {
                                     val dev =
                                         Gson().fromJson(SharedPref.getEnv(), Dev::class.java)
-                                    viewModel.fetchUserDetails(
-                                        dev, SharedPref.getEnvValue(), SharedPref.getLoggedIn(), 3, SharedPref.getLoggedPwd(),
-                                        "ib_shipment/?shipment_nbr=${viewModel.shipment}&values_list=company_id__code", item.form_key
-                                    )
+                                    if(!SharedPref.getShipmentID().isNullOrEmpty()){
+                                        viewModel.fetchUserDetails(
+                                            dev, SharedPref.getEnvValue(), SharedPref.getLoggedIn(), 3, SharedPref.getLoggedPwd(),
+                                            "ib_shipment/?shipment_nbr=${SharedPref.getShipmentID()}&values_list=company_id__code", item.form_key
+                                        )
+                                    }
+
                                 }
                             }
                             .padding(5.dp)
                     )
+            }
+
         },
         enabled = item.cursor,
         singleLine = true,
