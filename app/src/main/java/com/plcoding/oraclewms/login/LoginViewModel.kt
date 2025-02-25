@@ -63,8 +63,8 @@ open class LoginViewModel : ViewModel() {
                 items.sortBy { it.line_number }
                 val index = items.indexOfFirst { it.type.equals("form_field") }
                 formItems.addAll(
-                if (index > -1) items.subList(index, items.size)
-                else items)
+                    if (index > -1) items.subList(index, items.size)
+                    else items)
             }
         }
     }
@@ -83,6 +83,7 @@ open class LoginViewModel : ViewModel() {
                 shipment = cmd.trim()
                 SharedPref.setShipmentID(shipment)
             }
+
 
         }
 
@@ -190,11 +191,14 @@ open class LoginViewModel : ViewModel() {
                     call: Call<JsonObject>,
                     response: Response<JsonObject>
                 ) {
-                    //startActivity(context)
+                    if(response.isSuccessful){
+                        startActivity(context)
+                    }
+
                 }
 
                 override fun onFailure(call: Call<JsonObject>, t: Throwable) {
-                    ///startActivity(context)
+//                    startActivity(context)
                 }
             })
     }
@@ -232,6 +236,7 @@ open class LoginViewModel : ViewModel() {
                             } else if (name == 1) SharedPref.setDateFormat(it.first().date_format_id__description.replace("DD", "dd"))
                             else {
                                 formKey?.let { key->
+
                                     fetchLabel(it.first().company_id__code, key)
                                 }
                             }
@@ -261,7 +266,7 @@ open class LoginViewModel : ViewModel() {
                     call: Call<LabelResponse>,
                     response: Response<LabelResponse>
                 ) {
-                  Log.d("label :",response.toString())
+                    Log.d("label :",response.toString())
                     if (response.isSuccessful){
                         if (cmdState is CommandUiState.Success){
                             val form = FormField()
@@ -275,7 +280,7 @@ open class LoginViewModel : ViewModel() {
                             }
                         }
                     }
-                  loader = false
+                    loader = false
                 }
 
                 override fun onFailure(call: Call<LabelResponse>, t: Throwable) {
