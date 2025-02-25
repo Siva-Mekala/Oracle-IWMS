@@ -532,7 +532,7 @@ class LandingActivity : ComponentActivity() {
                             .clickable {
                                 viewModel.sendCommand(
                                     Utils.deviceUUID(),
-                                    Utils.getControlCharacterValueOptimized("Ctrl-X")
+                                    Utils.getControlCharacterValueOptimized("Ctrl-W")
                                 )
                                 ///viewModel.endShell(Utils.deviceUUID(), this@LandingActivity)
                             }
