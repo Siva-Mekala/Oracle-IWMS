@@ -269,6 +269,7 @@ open class LoginViewModel : ViewModel() {
                             (cmdState as CommandUiState.Success).response?.formFields?.let {
                                 val index = it.indexOf(form)
                                 if (index > -1){
+                                    it[index].flag = false
                                     it[index].form_value = response.body()?.label
                                 }
                             }

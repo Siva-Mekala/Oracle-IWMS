@@ -368,7 +368,7 @@ fun ListScreen(
                     }
                 }
                 items(item.size) {
-                    if (item.get(it).type.equals("form_field")) ListItem(item = item.get(it), viewModel, permissionState, item)
+                    if (item.get(it).type.equals("form_field")) ListItem(item = item.get(it), viewModel, permissionState)
                     else {
                         Text(
                             text = item.get(it).value.toString(),
@@ -395,7 +395,6 @@ fun ListItem(
     item: FormField,
     viewModel: LandingViewModel,
     permissionState: PermissionState,
-    item1: SnapshotStateList<FormField>
 ) {
     val textObj = remember(item.form_value) {
         mutableStateOf(
@@ -505,7 +504,7 @@ fun ListItem(
             onNext = {
                 textObj.value?.let {
                     viewModel.sendCommand(
-                        Utils.deviceUUID(), if(item.form_value?.trim().equals(it)) "\t" else  it + "\t", item.form_key
+                        Utils.deviceUUID(), if(item.form_value?.trim().equals(it) && item.flag == true) "\t" else  it + "\t", item.form_key
                     )
                 }
                 keyboardController?.hide()
