@@ -3,8 +3,8 @@ plugins {
     id 'kotlin-android'
     id 'androidx.navigation.safeargs'
     id 'org.jetbrains.kotlin.plugin.compose'
-    //id 'com.google.gms.google-services'
-    //id 'com.google.firebase.crashlytics'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 def retrofit_version = "2.9.0"
 android {
@@ -141,4 +141,7 @@ dependencies {
 //    implementation 'com.google.firebase:firebase-crashlytics-ktx'
 //    implementation 'com.google.firebase:firebase-analytics-ktx'
 //    implementation 'com.google.firebase:firebase-config-ktx'
+
+    implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
+    implementation("com.google.firebase:firebase-analytics")
 }
