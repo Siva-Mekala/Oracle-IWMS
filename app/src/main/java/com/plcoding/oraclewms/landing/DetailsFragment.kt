@@ -46,6 +46,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
@@ -91,7 +92,7 @@ fun DetailsScreen(
     navController: NavController,
     viewModel: LandingViewModel,
     state: CommandUiState,
-    item: MenuItem?
+    item: FormField?
 ) {
     Log.d("DetailsFragment", "Inside composable")
     BackHandler {
@@ -101,14 +102,14 @@ fun DetailsScreen(
             Utils.getControlCharacterValueOptimized("Ctrl-X")
         )
     }
-    if (state is CommandUiState.Success && state.response?.menuItems?.isEmpty() == false)
+    if (state is CommandUiState.Success && state.response?.formFields?.isEmpty() == true)
         LaunchedEffect(true) {
             viewModel.sendCommand(
                 Utils.deviceUUID(),
-                "${item?.optionNumber}\n"
+                "${item?.option_number}\n"
             )
         }
-    ListScreen(modifier, viewModel, item?.optionName, state, viewModel.loader)
+    ListScreen(modifier, viewModel, item?.option_name, state, viewModel.loader)
     if (state is CommandUiState.Success) {
         state.response?.formFields.let {
         }
@@ -281,6 +282,7 @@ fun WareHouseTextField(viewModel: LoginViewModel, up: Popup,
             val data = result.data
             val returnedString = data?.getStringExtra("returned_string") // Get the returned string
             if (returnedString != null) {
+                onChange(returnedString)
                 textObj.value = returnedString // Update the result text
             }
         }
@@ -379,58 +381,114 @@ fun ListScreen(
         Manifest.permission.CAMERA
     )
     Box {
-        viewModel.formItems.let { item ->
-            LazyColumn(
-                modifier.background(
-                    color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
-                        R.color.white
-                    )
-                ),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(start = 5.dp, end = 5.dp),
 
-                ) {
-                item {
-                    Column {
-                        HorizontalDivider(
-                            Modifier.alpha(0.4f),
-                            2.dp,
-                            color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
-                                R.color.white
-                            )
+            viewModel.formItems.let { item ->
+                LazyColumn(
+                    modifier.background(
+                        color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                            R.color.white
                         )
-                        Text(
-                            text = if (state is CommandUiState.Success) state.response?.screenName?.value.let { if (it.isNullOrEmpty()) "" else it } else "",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp),
-                            fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                            fontSize = 15.sp,
-                            color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
-                                R.color.secondary_imws
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(start = 5.dp, end = 5.dp),
+
+                    ) {
+                    item {
+                        Column {
+                            HorizontalDivider(
+                                Modifier.alpha(0.4f),
+                                2.dp,
+                                color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                                    R.color.white
+                                )
                             )
-                        )
-                        HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
+                            Text(
+                                text = if (state is CommandUiState.Success) state.response?.screenName?.value.let { if (it.isNullOrEmpty()) "" else it } else "",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                                fontSize = 15.sp,
+                                color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
+                                    R.color.secondary_imws
+                                )
+                            )
+                            HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
+                        }
                     }
-                }
-                items(item.size) {
-                    if (item.get(it).type.equals("form_field")) ListItem(item = item.get(it), viewModel, permissionState)
-                    else {
-                        Text(
-                            text = item.get(it).value.toString(),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp),
-                            fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                            fontSize = 15.sp,
-                            color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
-                                R.color.secondary_imws
+                    items(item.size) {
+                        if (item.get(it).type.equals("form_field")) ListItem(item = item.get(it), viewModel, permissionState)
+                        else if(item.get(it).type.equals("menu_item")){
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                                            R.color.white
+                                        )
+                                    )
+                                    .clickable {
+                                        viewModel.sendCommand(
+                                            Utils.deviceUUID(),
+                                            "${item?.get(it)?.option_number}\n"
+                                        )
+                                    }, verticalArrangement = Arrangement.Center
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = "${item.get(it).option_number}.",
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        modifier = Modifier
+                                            .padding(5.dp),
+                                        fontFamily = FontFamily(
+                                            Font(
+                                                R.font.spacegrotesk_medium
+                                            )
+                                        ),
+                                        fontSize = 15.sp
+                                    )
+                                    Text(
+                                        text = "${item.get(it).option_name}",
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                                        fontFamily = FontFamily(
+                                            Font(
+                                                R.font.spacegrotesk_medium
+                                            )
+                                        ),
+                                        fontSize = 15.sp
+                                    )
+                                }
+                                HorizontalDivider(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .alpha(0.4f), 2.dp, Color.Gray
+                                )
+                            }
+                        }
+                        else {
+                            Text(
+                                text = item.get(it).value.toString(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                                fontSize = 15.sp,
+                                color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
+                                    R.color.secondary_imws
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
-        }
+
+
+
+
         if (loader) LoaderScreen()
     }
 }
