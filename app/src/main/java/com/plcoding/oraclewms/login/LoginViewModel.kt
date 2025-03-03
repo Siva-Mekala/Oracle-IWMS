@@ -37,7 +37,7 @@ open class LoginViewModel : ViewModel() {
     var loader: Boolean by mutableStateOf(false)
         private set
 
-    var menuItems = arrayListOf<MenuItem>().toMutableStateList()
+    var menuItems = arrayListOf<FormField>().toMutableStateList()
     var formItems = arrayListOf<FormField>().toMutableStateList()
 
     var shipment: String by mutableStateOf("")
@@ -58,6 +58,7 @@ open class LoginViewModel : ViewModel() {
                 if(it.isNotEmpty()) res.response.text?.let {
                     items.addAll(it)
                 }
+
             }
             if (items.isNotEmpty()) {
                 items.sortBy { it.line_number }
@@ -65,6 +66,11 @@ open class LoginViewModel : ViewModel() {
                 formItems.addAll(
                     if (index > -1) items.subList(index, items.size)
                     else items)
+                res.response?.menuItems?.let {
+                    formItems.addAll(
+                        it
+                    )
+                }
             }
         }
     }
@@ -111,7 +117,12 @@ open class LoginViewModel : ViewModel() {
                                 items.addAll(form)
                                 if(form.isNotEmpty()) it.text?.let {
                                     items.addAll(it)
+
                                 }
+
+
+
+
                             }
                             if (items.isNotEmpty()) {
                                 items.sortBy { it.line_number }
@@ -120,6 +131,10 @@ open class LoginViewModel : ViewModel() {
                                     if (index > -1) items.subList(index, items.size)
                                     else items
                                 )
+                               formItems.addAll(
+                                   it.menuItems
+                               )
+
                             }
                         }
                         cmdState = CommandUiState.Success(jsonRes?.jsonResponse)

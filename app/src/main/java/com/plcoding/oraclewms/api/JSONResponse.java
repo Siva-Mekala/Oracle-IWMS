@@ -31,7 +31,7 @@ public class JSONResponse implements Serializable {
     private ArrayList<FormField> formFields;
     @SerializedName("menu_items")
     @Expose
-    private ArrayList<MenuItem> menuItems;
+    private ArrayList<FormField> menuItems;
     @SerializedName("popups")
     @Expose
     private ArrayList<Popup> popups;
@@ -87,11 +87,11 @@ public class JSONResponse implements Serializable {
         this.formFields = formFields;
     }
 
-    public ArrayList<MenuItem> getMenuItems() {
+    public ArrayList<FormField> getMenuItems() {
         return menuItems;
     }
 
-    public void setMenuItems(ArrayList<MenuItem> menuItems) {
+    public void setMenuItems(ArrayList<FormField> menuItems) {
         this.menuItems = menuItems;
     }
 

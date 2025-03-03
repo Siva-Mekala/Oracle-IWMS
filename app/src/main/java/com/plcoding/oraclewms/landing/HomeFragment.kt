@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.plcoding.oraclewms.R
+import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.landing.DialogWithMsg
@@ -41,7 +42,7 @@ fun HomeScreen(
     navController: NavController,
     viewModel: LandingViewModel,
     state: CommandUiState,
-    onItemClick: (MenuItem) -> (Unit)
+    onItemClick: (FormField) -> (Unit)
 ) {
     Log.d("HomeScreen", "Inside composable")
     viewModel.menuItems.let {
@@ -71,7 +72,7 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = "${it.get(index).optionNumber}.",
+                            text = "${it.get(index).option_number}.",
                             color = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier
                                 .padding(5.dp),
@@ -83,7 +84,7 @@ fun HomeScreen(
                             fontSize = 15.sp
                         )
                         Text(
-                            text = "${it.get(index).optionName}",
+                            text = "${it.get(index).option_name}",
                             color = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.padding(start = 10.dp, end = 10.dp),
                             fontFamily = FontFamily(

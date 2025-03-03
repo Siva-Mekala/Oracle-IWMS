@@ -76,8 +76,8 @@ import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.WareHouseApp
+import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.JSONResponse
-import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.landing.DetailsScreen
 import com.plcoding.oraclewms.login.CommandUiState
 import kotlinx.coroutines.launch
@@ -158,7 +158,7 @@ class LandingActivity : ComponentActivity() {
         context: Context
     ) {
         var showBottomSheet by remember { mutableStateOf(false) }
-        var clickPosition by remember { mutableStateOf<MenuItem?>(null) }
+        var clickPosition by remember { mutableStateOf<FormField?>(null) }
         Scaffold(modifier = modifier
             .statusBarsPadding()
             .navigationBarsPadding(),
@@ -191,7 +191,7 @@ class LandingActivity : ComponentActivity() {
                             viewModel.cmdState
                         ) {
                             clickPosition = it
-                            SharedPref.setScreenName(it.optionName)
+                            SharedPref.setScreenName(it.option_name)
                         }
                     }
                     composable("Rewards") {

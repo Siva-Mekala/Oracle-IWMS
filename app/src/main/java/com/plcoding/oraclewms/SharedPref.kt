@@ -24,7 +24,7 @@ object SharedPref {
     private lateinit var sharedPref: SharedPreferences
     private lateinit var context: Context
 
-    fun setScreenName(screenName: String) {
+    fun setScreenName(screenName: String?) {
         val editor: SharedPreferences.Editor = sharedPref.edit()
         editor.putString(KEY_SCREEN_NAME, screenName)
         editor.commit()
