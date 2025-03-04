@@ -45,7 +45,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -77,7 +76,6 @@ import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.api.Dev
 import com.plcoding.oraclewms.api.FormField
-import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.login.CommandUiState
 import com.plcoding.oraclewms.login.LoaderScreen
@@ -92,7 +90,7 @@ fun DetailsScreen(
     navController: NavController,
     viewModel: LandingViewModel,
     state: CommandUiState,
-    item: FormField?
+    optionNumber: Int?
 ) {
     Log.d("DetailsFragment", "Inside composable")
     BackHandler {
@@ -106,10 +104,10 @@ fun DetailsScreen(
         LaunchedEffect(true) {
             viewModel.sendCommand(
                 Utils.deviceUUID(),
-                "${item?.option_number}\n"
+                "${optionNumber}\n"
             )
         }
-    ListScreen(modifier, viewModel, item?.option_name, state, viewModel.loader)
+    ListScreen(modifier, viewModel, state, viewModel.loader)
     if (state is CommandUiState.Success) {
         state.response?.formFields.let {
         }
@@ -243,13 +241,15 @@ fun DialogWithMsg(
                 }
                 TextButton(
                     onClick = {
-                        onConfirmation(if (ups.fieldList?.first()?.field_formatters?.formatDate == true) {
-                            val userFormat = SimpleDateFormat("dd/MM/yyyy")
-                            val calendar: Calendar = Calendar.getInstance()
-                            calendar.time = userFormat.parse(text.value)
-                            val dateFormat = SimpleDateFormat(SharedPref.getDateFormat())
-                            dateFormat.format(calendar.time)
-                        } else text.value)
+                        onConfirmation(
+                            if (ups.fieldList?.first()?.field_formatters?.formatDate == true) {
+                                val userFormat = SimpleDateFormat("dd/MM/yyyy")
+                                val calendar: Calendar = Calendar.getInstance()
+                                calendar.time = userFormat.parse(text.value)
+                                val dateFormat = SimpleDateFormat(SharedPref.getDateFormat())
+                                dateFormat.format(calendar.time)
+                            } else text.value
+                        )
                         showDialog.value = false
                     }
                 ) {
@@ -267,9 +267,11 @@ fun DialogWithMsg(
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun WareHouseTextField(viewModel: LoginViewModel, up: Popup,
-                       permissionState: PermissionState,
-                       onChange: (String) -> Unit) {
+fun WareHouseTextField(
+    viewModel: LoginViewModel, up: Popup,
+    permissionState: PermissionState,
+    onChange: (String) -> Unit
+) {
     val showDate = rememberSaveable { mutableStateOf(false) }
     val textObj = rememberSaveable(up) {
         mutableStateOf(up.fieldList?.first()?.form_value?.trim() ?: "")
@@ -311,7 +313,7 @@ fun WareHouseTextField(viewModel: LoginViewModel, up: Popup,
                                 .padding(5.dp)
                         )
                     }
-                    if (it?.format_barcode == true){
+                    if (it?.format_barcode == true) {
                         Icon(
                             painter = painterResource(R.drawable.scan),
                             null,
@@ -373,7 +375,6 @@ fun WareHouseTextField(viewModel: LoginViewModel, up: Popup,
 fun ListScreen(
     modifier: Modifier,
     viewModel: LandingViewModel,
-    optionName: String?,
     state: CommandUiState,
     loader: Boolean
 ) {
@@ -381,114 +382,112 @@ fun ListScreen(
         Manifest.permission.CAMERA
     )
     Box {
+        viewModel.formItems.let { item ->
+            LazyColumn(
+                modifier.background(
+                    color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                        R.color.white
+                    )
+                ),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(start = 5.dp, end = 5.dp),
 
-            viewModel.formItems.let { item ->
-                LazyColumn(
-                    modifier.background(
-                        color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
-                            R.color.white
+                ) {
+                item {
+                    Column {
+                        HorizontalDivider(
+                            Modifier.alpha(0.4f),
+                            2.dp,
+                            color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                                R.color.white
+                            )
                         )
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(start = 5.dp, end = 5.dp),
-
-                    ) {
-                    item {
-                        Column {
-                            HorizontalDivider(
-                                Modifier.alpha(0.4f),
-                                2.dp,
-                                color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
-                                    R.color.white
-                                )
+                        Text(
+                            text = if (state is CommandUiState.Success) state.response?.screenName?.value.let { if (it.isNullOrEmpty()) "" else it } else "",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                            fontSize = 15.sp,
+                            color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
+                                R.color.secondary_imws
                             )
-                            Text(
-                                text = if (state is CommandUiState.Success) state.response?.screenName?.value.let { if (it.isNullOrEmpty()) "" else it } else "",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(10.dp),
-                                fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                                fontSize = 15.sp,
-                                color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
-                                    R.color.secondary_imws
-                                )
-                            )
-                            HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
-                        }
+                        )
+                        HorizontalDivider(Modifier.alpha(0.4f), 2.dp, color = Color.Gray)
                     }
-                    items(item.size) {
-                        if (item.get(it).type.equals("form_field")) ListItem(item = item.get(it), viewModel, permissionState)
-                        else if(item.get(it).type.equals("menu_item")){
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
-                                            R.color.white
-                                        )
+                }
+                items(item.size) {
+                    if (item.get(it).type.equals("form_field")) ListItem(
+                        item = item.get(it),
+                        viewModel,
+                        permissionState
+                    )
+                    else if (item.get(it).type.equals("menu_item")) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
+                                        R.color.white
                                     )
-                                    .clickable {
-                                        viewModel.sendCommand(
-                                            Utils.deviceUUID(),
-                                            "${item?.get(it)?.option_number}\n"
-                                        )
-                                    }, verticalArrangement = Arrangement.Center
+                                )
+                                .clickable {
+                                    viewModel.sendCommand(
+                                        Utils.deviceUUID(),
+                                        "${item.get(it).option_number}\n"
+                                    )
+                                }, verticalArrangement = Arrangement.Center
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = "${item.get(it).option_number}.",
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        modifier = Modifier
-                                            .padding(5.dp),
-                                        fontFamily = FontFamily(
-                                            Font(
-                                                R.font.spacegrotesk_medium
-                                            )
-                                        ),
-                                        fontSize = 15.sp
-                                    )
-                                    Text(
-                                        text = "${item.get(it).option_name}",
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        modifier = Modifier.padding(start = 10.dp, end = 10.dp),
-                                        fontFamily = FontFamily(
-                                            Font(
-                                                R.font.spacegrotesk_medium
-                                            )
-                                        ),
-                                        fontSize = 15.sp
-                                    )
-                                }
-                                HorizontalDivider(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .alpha(0.4f), 2.dp, Color.Gray
+                                Text(
+                                    text = "${item.get(it).option_number}.",
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier
+                                        .padding(5.dp),
+                                    fontFamily = FontFamily(
+                                        Font(
+                                            R.font.spacegrotesk_medium
+                                        )
+                                    ),
+                                    fontSize = 15.sp
+                                )
+                                Text(
+                                    text = "${item.get(it).option_name}",
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                                    fontFamily = FontFamily(
+                                        Font(
+                                            R.font.spacegrotesk_medium
+                                        )
+                                    ),
+                                    fontSize = 15.sp
                                 )
                             }
-                        }
-                        else {
-                            Text(
-                                text = item.get(it).value.toString(),
-                                modifier = Modifier
+                            HorizontalDivider(
+                                Modifier
                                     .fillMaxWidth()
-                                    .padding(10.dp),
-                                fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                                fontSize = 15.sp,
-                                color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
-                                    R.color.secondary_imws
-                                )
+                                    .alpha(0.4f), 2.dp, Color.Gray
                             )
                         }
+                    } else {
+                        Text(
+                            text = item.get(it).value.toString(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                            fontSize = 15.sp,
+                            color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
+                                R.color.secondary_imws
+                            )
+                        )
                     }
                 }
             }
-
-
-
-
+        }
         if (loader) LoaderScreen()
     }
 }
@@ -534,7 +533,7 @@ fun ListItem(
 
         trailingIcon = {
             Row {
-                if (item.formatters?.format_barcode == true){
+                if (item.formatters?.format_barcode == true) {
                     Icon(
                         painter = painterResource(R.drawable.scan),
                         null,
@@ -558,7 +557,7 @@ fun ListItem(
                             .padding(5.dp)
                     )
                 }
-                if (item.formatters?.format_date == true){
+                if (item.formatters?.format_date == true) {
                     Icon(
                         Icons.Outlined.DateRange,
                         null,
@@ -580,10 +579,15 @@ fun ListItem(
                                 if (item.cursor) {
                                     val dev =
                                         Gson().fromJson(SharedPref.getEnv(), Dev::class.java)
-                                    if(!SharedPref.getShipmentID().isNullOrEmpty()){
+                                    if (!SharedPref.getShipmentID().isNullOrEmpty()) {
                                         viewModel.fetchUserDetails(
-                                            dev, SharedPref.getEnvValue(), SharedPref.getLoggedIn(), 3, SharedPref.getLoggedPwd(),
-                                            "ib_shipment/?shipment_nbr=${SharedPref.getShipmentID()}&values_list=company_id__code", item.form_key
+                                            dev,
+                                            SharedPref.getEnvValue(),
+                                            SharedPref.getLoggedIn(),
+                                            3,
+                                            SharedPref.getLoggedPwd(),
+                                            "ib_shipment/?shipment_nbr=${SharedPref.getShipmentID()}&values_list=company_id__code",
+                                            item.form_key
                                         )
                                     }
 
@@ -608,7 +612,11 @@ fun ListItem(
             onNext = {
                 textObj.value?.let {
                     viewModel.sendCommand(
-                        Utils.deviceUUID(), if(item.form_value?.trim().equals(it) && item.flag == true) "\t" else  it + "\t", item.form_key
+                        Utils.deviceUUID(),
+                        if (item.form_value?.trim()
+                                .equals(it) && item.flag == true
+                        ) "\t" else it + "\t",
+                        item.form_key
                     )
                 }
                 keyboardController?.hide()

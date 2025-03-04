@@ -44,14 +44,17 @@ object SharedPref {
     fun getEnvResponse(): String? {
         return sharedPref.getString(ENV_RESPONSE, null)
     }
-  fun setShipmentID(id: String) {
+
+    fun setShipmentID(id: String) {
         val editor: SharedPreferences.Editor = sharedPref.edit()
         editor.putString(KEY_SHIPMENT_ID, id)
         editor.commit()
-  }
+    }
+
     fun getShipmentID(): String? {
         return sharedPref.getString(KEY_SHIPMENT_ID, null)
     }
+
     fun initSharedPref(lcontext: Context) {
         context = lcontext
         sharedPref = context.getSharedPreferences(SHARED_FILE_NAME, Context.MODE_PRIVATE)

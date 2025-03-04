@@ -17,7 +17,7 @@ class WareHouseApp : Application() {
         _userName.value = SharedPref.getUserName()
     }
 
-    fun setName(name: String){
+    fun setName(name: String) {
         _userName.postValue(name)
     }
 }

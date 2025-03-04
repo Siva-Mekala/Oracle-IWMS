@@ -43,7 +43,7 @@ interface BaseApiInterface {
     @GET
     fun fetchUserInfo(
         @Url url: String,
-        @Header("Authorization") auth : String
+        @Header("Authorization") auth: String
     ): Call<UserResponse>
 
     @GET
