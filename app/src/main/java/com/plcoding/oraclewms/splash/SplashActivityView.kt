@@ -58,7 +58,12 @@ class SplashActivityView : ComponentActivity() {
     private fun startActivity(envApiResponse: ArrayList<Dev>?) {
         if (envApiResponse != null) {
             val gson = Gson()
-            SharedPref.setEnvResponse(gson.toJson(envApiResponse, object : TypeToken<ArrayList<Dev>>() {}.type))
+            SharedPref.setEnvResponse(
+                gson.toJson(
+                    envApiResponse,
+                    object : TypeToken<ArrayList<Dev>>() {}.type
+                )
+            )
         }
         startActivity(
             Intent(

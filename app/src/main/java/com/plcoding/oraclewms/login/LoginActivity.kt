@@ -189,7 +189,8 @@ class LoginActivity : ComponentActivity() {
                                     unfocusedIndicatorColor = Color.Transparent,
                                 )
                             )
-                            if (checkState.value) SpinnerSample(envs, envs.first(),
+                            if (checkState.value) SpinnerSample(
+                                envs, envs.first(),
                                 onSelectionChanged = {
                                     environment.value = it.name
                                     checkState.value = false
@@ -305,7 +306,16 @@ class LoginActivity : ComponentActivity() {
                 }
             }
         }
-        handleResponse(password, email, envs, environment, viewModel, shellState, cmdState, showDialog) { up->
+        handleResponse(
+            password,
+            email,
+            envs,
+            environment,
+            viewModel,
+            shellState,
+            cmdState,
+            showDialog
+        ) { up ->
             if (showDialog.value) DialogWithMsg(
                 {
                     viewModel.sendCommand(
@@ -342,7 +352,8 @@ class LoginActivity : ComponentActivity() {
         viewModel: LoginViewModel,
         shellState: ShellUiState,
         cmdState: CommandUiState,
-        showDialog: MutableState<Boolean>, onCallBack : @Composable (Popup) -> Unit) {
+        showDialog: MutableState<Boolean>, onCallBack: @Composable (Popup) -> Unit
+    ) {
         if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading) LoaderScreen()
         else if (cmdState is CommandUiState.Success) {
             cmdState.response?.let { res ->
@@ -357,10 +368,22 @@ class LoginActivity : ComponentActivity() {
                                 SharedPref.setLoggedInPwd(password.value)
                                 SharedPref.setEnv(Gson().toJson(envs.get(index)))
                                 SharedPref.setEnvValue(cmdState.response.env.value)
-                                viewModel.fetchUserDetails(envs.get(index), cmdState.response.env.value, email.value, 1, password.value,
-                                    "user/?auth_user_id__username=${email.value}&&values_list=date_format_id__description")
-                                viewModel.fetchUserDetails(envs.get(index), cmdState.response.env.value, email.value, 2, password.value,
-                                    "user/?auth_user_id__username=${email.value}&&values_list=auth_user_id__first_name")
+                                viewModel.fetchUserDetails(
+                                    envs.get(index),
+                                    cmdState.response.env.value,
+                                    email.value,
+                                    1,
+                                    password.value,
+                                    "user/?auth_user_id__username=${email.value}&&values_list=date_format_id__description"
+                                )
+                                viewModel.fetchUserDetails(
+                                    envs.get(index),
+                                    cmdState.response.env.value,
+                                    email.value,
+                                    2,
+                                    password.value,
+                                    "user/?auth_user_id__username=${email.value}&&values_list=auth_user_id__first_name"
+                                )
                                 SharedPref.setUserLoggedIn(true)
                                 val intent = Intent(this, LandingActivity::class.java)
                                 val bundle = Bundle()
@@ -373,14 +396,14 @@ class LoginActivity : ComponentActivity() {
                                 onCallBack(ups.first())
                             }
                         }
-                    } else if (it.toString().contains("Pswd")){
+                    } else if (it.toString().contains("Pswd")) {
                         res.popups.let { ups ->
                             if (ups == null || ups.isEmpty()) {
                                 showDialog.value = false
                             } else {
-                            showDialog.value = true
-                            onCallBack(ups.first())
-                                }
+                                showDialog.value = true
+                                onCallBack(ups.first())
+                            }
                         }
                     }
                 }

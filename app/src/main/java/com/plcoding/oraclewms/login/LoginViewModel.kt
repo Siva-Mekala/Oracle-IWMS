@@ -19,7 +19,6 @@ import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.Dev
 import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.LabelResponse
-import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.api.UserResponse
 import com.plcoding.oraclewms.home.LandingActivity
 import retrofit2.Call
@@ -55,7 +54,7 @@ open class LoginViewModel : ViewModel() {
 
             res.response?.formFields?.let {
                 items.addAll(it)
-                if(it.isNotEmpty()) res.response.text?.let {
+                if (it.isNotEmpty()) res.response.text?.let {
                     items.addAll(it)
                 }
 
@@ -65,7 +64,8 @@ open class LoginViewModel : ViewModel() {
                 val index = items.indexOfFirst { it.type.equals("form_field") }
                 formItems.addAll(
                     if (index > -1) items.subList(index, items.size)
-                    else items)
+                    else items
+                )
                 res.response?.menuItems?.let {
                     formItems.addAll(
                         it
@@ -85,7 +85,7 @@ open class LoginViewModel : ViewModel() {
         obj.addProperty("command", cmd)
         obj.addProperty("wait_time", 2000)
         formKey?.let {
-            if (it.equals("Shipment")){
+            if (it.equals("Shipment")) {
                 shipment = cmd.trim()
                 SharedPref.setShipmentID(shipment)
             }
@@ -115,26 +115,22 @@ open class LoginViewModel : ViewModel() {
                             menuItems.addAll(it.menuItems)
                             it.formFields?.let { form ->
                                 items.addAll(form)
-                                if(form.isNotEmpty()) it.text?.let {
+                                if (form.isNotEmpty()) it.text?.let {
                                     items.addAll(it)
-
                                 }
-
-
-
-
                             }
                             if (items.isNotEmpty()) {
                                 items.sortBy { it.line_number }
                                 val index = items.indexOfFirst { it.type.equals("form_field") }
-                                formItems.addAll(
+                                val list = arrayListOf<FormField>()
+                                list.addAll(
                                     if (index > -1) items.subList(index, items.size)
                                     else items
                                 )
-                               formItems.addAll(
-                                   it.menuItems
-                               )
-
+                                list.addAll(
+                                    it.menuItems
+                                )
+                                formItems.addAll(list)
                             }
                         }
                         cmdState = CommandUiState.Success(jsonRes?.jsonResponse)
@@ -206,7 +202,7 @@ open class LoginViewModel : ViewModel() {
                     call: Call<JsonObject>,
                     response: Response<JsonObject>
                 ) {
-                    if(response.isSuccessful){
+                    if (response.isSuccessful) {
                         startActivity(context)
                     }
 
@@ -225,7 +221,7 @@ open class LoginViewModel : ViewModel() {
         email: String?,
         name: Int,
         password: String?,
-        url : String,
+        url: String,
         formKey: String? = null
     ) {
         Log.d(TAG, "Inside fetchUserDetails")
@@ -234,23 +230,28 @@ open class LoginViewModel : ViewModel() {
         BaseApiInterface.create()
             .fetchUserInfo(
                 "https://${dev?.host}:443/${env}/wms/lgfapi/v10/entity/$url",
-                "Basic "+Base64.encodeToString(credentials.toByteArray(), Base64.NO_WRAP)
+                "Basic " + Base64.encodeToString(credentials.toByteArray(), Base64.NO_WRAP)
             ).enqueue(object : Callback<UserResponse> {
                 override fun onResponse(
                     call: Call<UserResponse>,
                     response: Response<UserResponse>
                 ) {
                     Log.d(TAG, "Inside onResponse")
-                    if (response.isSuccessful){
+                    if (response.isSuccessful) {
                         val jsonRes = response.body()
                         jsonRes?.results.let {
                             if (it.isNullOrEmpty()) return@let
-                            Log.d(TAG, "result "+it.toString())
+                            Log.d(TAG, "result " + it.toString())
                             if (name == 2) {
                                 SharedPref.setUserName(it.first().auth_user_id__first_name)
-                            } else if (name == 1) SharedPref.setDateFormat(it.first().date_format_id__description.replace("DD", "dd"))
+                            } else if (name == 1) SharedPref.setDateFormat(
+                                it.first().date_format_id__description.replace(
+                                    "DD",
+                                    "dd"
+                                )
+                            )
                             else {
-                                formKey?.let { key->
+                                formKey?.let { key ->
 
                                     fetchLabel(it.first().company_id__code, key)
                                 }
@@ -267,7 +268,7 @@ open class LoginViewModel : ViewModel() {
             })
     }
 
-    fun fetchLabel(str: String?, formKey: String?){
+    fun fetchLabel(str: String?, formKey: String?) {
         Log.d(TAG, "Inside fetchLabel")
         val obj = JsonObject()
         obj.addProperty("client", str)
@@ -281,14 +282,14 @@ open class LoginViewModel : ViewModel() {
                     call: Call<LabelResponse>,
                     response: Response<LabelResponse>
                 ) {
-                    Log.d("label :",response.toString())
-                    if (response.isSuccessful){
-                        if (cmdState is CommandUiState.Success){
+                    Log.d("label :", response.toString())
+                    if (response.isSuccessful) {
+                        if (cmdState is CommandUiState.Success) {
                             val form = FormField()
                             form.form_key = formKey
                             (cmdState as CommandUiState.Success).response?.formFields?.let {
                                 val index = it.indexOf(form)
-                                if (index > -1){
+                                if (index > -1) {
                                     it[index].flag = false
                                     it[index].form_value = response.body()?.label
                                 }

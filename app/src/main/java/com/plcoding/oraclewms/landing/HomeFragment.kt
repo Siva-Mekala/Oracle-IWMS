@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.api.FormField
-import com.plcoding.oraclewms.api.MenuItem
 import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.landing.DialogWithMsg
 import com.plcoding.oraclewms.login.CommandUiState
@@ -63,7 +62,7 @@ fun HomeScreen(
                             )
                         )
                         .clickable {
-                            onItemClick(it.get(index))
+                            onItemClick(it[index])
                             navController.navigate("Rewards")
                         }, verticalArrangement = Arrangement.Center
                 ) {
@@ -109,7 +108,7 @@ fun HomeScreen(
         state.response?.let { res ->
             if (res.menuItems.isEmpty()) {
                 res.formFields.let {
-                    if (it.toString().contains("Pswd")){
+                    if (it.toString().contains("Pswd")) {
                         viewModel.startActivity(context)
                     } else navController.navigate("Rewards")
                 }

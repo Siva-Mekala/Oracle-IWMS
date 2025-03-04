@@ -1,7 +1,5 @@
 package com.plcoding.oraclewms.api;
 
-import androidx.annotation.Nullable;
-
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -35,7 +33,7 @@ public class Dev implements Serializable {
         this.host = host;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 

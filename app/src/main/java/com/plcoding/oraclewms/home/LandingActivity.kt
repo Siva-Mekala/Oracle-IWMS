@@ -40,7 +40,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -158,7 +157,7 @@ class LandingActivity : ComponentActivity() {
         context: Context
     ) {
         var showBottomSheet by remember { mutableStateOf(false) }
-        var clickPosition by remember { mutableStateOf<FormField?>(null) }
+        var clickPosition by remember { mutableStateOf(1) }
         Scaffold(modifier = modifier
             .statusBarsPadding()
             .navigationBarsPadding(),
@@ -166,7 +165,7 @@ class LandingActivity : ComponentActivity() {
                 R.color.secondary_imws
             ),
             topBar = {
-                DashBoardToolBar(viewModel, modifier,context)
+                DashBoardToolBar(viewModel, modifier, context)
             },
             bottomBar = {
                 bottomAppBar(
@@ -190,7 +189,7 @@ class LandingActivity : ComponentActivity() {
                             viewModel,
                             viewModel.cmdState
                         ) {
-                            clickPosition = it
+                            clickPosition = it.option_number
                             SharedPref.setScreenName(it.option_name)
                         }
                     }
@@ -431,7 +430,7 @@ class LandingActivity : ComponentActivity() {
                                 .padding(5.dp)
                         )
                     }
-                else{
+                else {
                     IconButton(onClick = {
                         viewModel.sendCommand(
                             Utils.deviceUUID(),
@@ -492,7 +491,7 @@ class LandingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun DashBoardToolBar(viewModel: LandingViewModel, modifier: Modifier,context1: Context) {
+    fun DashBoardToolBar(viewModel: LandingViewModel, modifier: Modifier, context1: Context) {
         val context = LocalContext.current
         val app = context.applicationContext as WareHouseApp
         val name: String by app.userName.observeAsState("")
@@ -536,7 +535,7 @@ class LandingActivity : ComponentActivity() {
                                     Utils.deviceUUID(),
                                     Utils.getControlCharacterValueOptimized("Ctrl-W")
                                 )
-                                viewModel.endShell(Utils.deviceUUID(), context1,"logout")
+                                viewModel.endShell(Utils.deviceUUID(), context1, "logout")
                             }
                             .padding(10.dp)
                             .size(width = 20.dp, height = 20.dp),

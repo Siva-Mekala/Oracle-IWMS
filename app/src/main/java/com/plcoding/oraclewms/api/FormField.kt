@@ -12,9 +12,9 @@ data class FormField(
     var cursor: Boolean = false,
     var formatters: Formatters? = null,
     var field_formatters: FieldFormatters? = null,
-    var flag : Boolean? = true,
-    var option_number:Int? = null,
-    var option_name:String? = null,
+    var flag: Boolean? = true,
+    var option_number: Int = 1,
+    var option_name: String? = null,
 ) : Serializable {
     override fun toString(): String {
         return form_key.toString()
