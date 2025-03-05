@@ -66,6 +66,7 @@ open class LoginViewModel : ViewModel() {
                     if (index > -1) items.subList(index, items.size)
                     else items
                 )
+
                 res.response?.menuItems?.let {
                     formItems.addAll(0,
                         it
@@ -78,12 +79,13 @@ open class LoginViewModel : ViewModel() {
     var shellState: ShellUiState by mutableStateOf(ShellUiState.Empty)
         private set
 
-    fun sendCommand(id: String, cmd: String, formKey: String? = null) {
+    fun sendCommand(id: String, cmd: String, formKey: String? = null, nextField:Boolean?= true) {
         Log.d(TAG, "Inside sendCommand")
         val obj = JsonObject()
         obj.addProperty("sessionId", id)
         obj.addProperty("command", cmd)
         obj.addProperty("wait_time", 2000)
+        obj.addProperty("moveCursorToNextField",nextField)
         formKey?.let {
             if (it.equals("Shipment")) {
                 shipment = cmd.trim()
@@ -130,7 +132,7 @@ open class LoginViewModel : ViewModel() {
                                 list.addAll(0,
                                     it.menuItems
                                 )
-                                formItems.addAll(list)
+                                formItems.addAll(0,list)
                             }
                         }
                         cmdState = CommandUiState.Success(jsonRes?.jsonResponse)
