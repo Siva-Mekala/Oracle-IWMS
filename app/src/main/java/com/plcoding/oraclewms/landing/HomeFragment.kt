@@ -113,6 +113,9 @@ fun HomeScreen(
                     } else navController.navigate("Rewards")
                 }
             } else {
+                res.formFields.let {
+                    if (it.isNotEmpty()) navController.navigate("Rewards")
+                }
             }
         }
     } else if (state is CommandUiState.Error) {

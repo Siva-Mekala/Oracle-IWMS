@@ -258,11 +258,6 @@ class LandingActivity : ComponentActivity() {
                                 }
                             if (it.value.contains("Ctrl-W")) {
                                 if (navController.currentDestination?.route == "Home") {
-//                                    viewModel.endShell(
-//                                        Utils.deviceUUID(),
-//                                        this@LandingActivity,
-//                                        "LandingActivity"
-//                                    )
                                     viewModel.sendCommand(
                                         Utils.deviceUUID(),
                                         Utils.getControlCharacterValueOptimized(

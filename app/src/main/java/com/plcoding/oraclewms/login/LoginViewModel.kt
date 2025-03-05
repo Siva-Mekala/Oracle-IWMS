@@ -67,7 +67,7 @@ open class LoginViewModel : ViewModel() {
                     else items
                 )
                 res.response?.menuItems?.let {
-                    formItems.addAll(
+                    formItems.addAll(0,
                         it
                     )
                 }
@@ -127,7 +127,7 @@ open class LoginViewModel : ViewModel() {
                                     if (index > -1) items.subList(index, items.size)
                                     else items
                                 )
-                                list.addAll(
+                                list.addAll(0,
                                     it.menuItems
                                 )
                                 formItems.addAll(list)
@@ -305,10 +305,10 @@ open class LoginViewModel : ViewModel() {
             })
     }
 
-    fun startActivity(context: Context) {
+    fun startActivity(context: Context, from: String = "") {
         SharedPref.deleteAllPref()
         val intent = Intent(context, LoginActivity::class.java)
         context.startActivity(intent)
-        (context as LandingActivity).finish()
+        if (from.equals("logout")) (context as LandingActivity).finish()
     }
 }
