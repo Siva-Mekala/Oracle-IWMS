@@ -124,7 +124,7 @@ fun DetailsScreen(
                                     val firstUp = ups.first()
                                     if (!firstUp.type.equals("message")) {
                                         viewModel.sendCommand(
-                                            Utils.deviceUUID(), it + "\t"
+                                            Utils.deviceUUID(), it + "\t",nextField=false
                                         )
                                     } else {
                                         viewModel.sendCommand(
@@ -346,8 +346,9 @@ fun WareHouseTextField(
         keyboardActions = KeyboardActions(
             onNext = {
                 textObj.value.let {
+
                     viewModel.sendCommand(
-                        Utils.deviceUUID(), it + "\t"
+                        Utils.deviceUUID(), it + "\t", nextField = false
                     )
                 }
             }
