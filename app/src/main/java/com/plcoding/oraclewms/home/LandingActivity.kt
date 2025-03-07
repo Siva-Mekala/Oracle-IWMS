@@ -2,6 +2,11 @@ package com.plcoding.oraclewms.home
 
 import android.content.Context
 import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.net.ConnectivityManager
+import android.net.ConnectivityManager.NetworkCallback
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -40,15 +45,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -77,7 +85,6 @@ import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.WareHouseApp
 import com.plcoding.oraclewms.api.JSONResponse
-import com.plcoding.oraclewms.api.NetworkConnectivityObserver
 import com.plcoding.oraclewms.landing.DetailsScreen
 import com.plcoding.oraclewms.login.CommandUiState
 import kotlinx.coroutines.launch
@@ -124,20 +131,55 @@ class LandingActivity : ComponentActivity() {
     }
     override fun onDestroy() {
         super.onDestroy()
-        NetworkConnectivityObserver.getInstance(this).unregister()
+            //NetworkConnectivityObserver.getInstance(this).unregister()
+    }
+
+    @Composable
+    fun InternetConnectivityChanges(
+        onStateChange: (state: Boolean, network: Network) -> Unit
+    ) {
+        val context = LocalContext.current
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkCallback = remember {
+            object : NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    println("available")
+                    onStateChange(true, network)
+                }
+
+                override fun onLost(network: Network) {
+                    println("onLost")
+                    onStateChange(false, network)
+                }
+            }
+        }
+
+        LaunchedEffect (key1 = context) {
+            val networkRequest = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .build()
+            connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
+        }
+
+        DisposableEffect(key1 = Unit) {
+            onDispose {
+                connectivityManager.unregisterNetworkCallback(networkCallback)
+            }
+        }
     }
 
 
     @Composable
     fun Greeting(modifier: Modifier = Modifier, viewModel: LandingViewModel = viewModel()) {
-        NetworkConnectivityObserver.getInstance(this).isConnected.observe(this, { isConnected ->
-            viewModel.nwState = isConnected
-            if (isConnected) {
-                print( "Network is available")
-            } else {
-                print( "Network is not available")
-            }
-        })
+//        NetworkConnectivityObserver.getInstance(this).isConnected.observe(this, { isConnected ->
+//            viewModel.nwState = isConnected
+//            if (isConnected) {
+//                print( "Network is available")
+//            } else {
+//                print( "Network is not available")
+//            }
+//        })
 
         val navController = rememberNavController()
         val item = Gson().fromJson(SharedPref.getResponse(), JSONResponse::class.java)
@@ -177,7 +219,7 @@ class LandingActivity : ComponentActivity() {
                 R.color.secondary_imws
             ),
             topBar = {
-                DashBoardToolBar(viewModel, modifier, context, viewModel.nwState)
+                DashBoardToolBar(viewModel, modifier, context)
             },
             bottomBar = {
                 bottomAppBar(
@@ -503,18 +545,18 @@ class LandingActivity : ComponentActivity() {
         viewModel: LandingViewModel,
         modifier: Modifier,
         context1: Context,
-        nwState: Boolean
     ) {
         val context = LocalContext.current
         val app = context.applicationContext as WareHouseApp
         val name: String by app.userName.observeAsState("")
+        var state: Boolean by rememberSaveable { mutableStateOf(false) }
         TopAppBar(
             backgroundColor = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(
                 R.color.terinary_imws
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)
+                .height(if (state) 120.dp else 150.dp)
         ) {
             Column {
                 Card(
@@ -560,13 +602,17 @@ class LandingActivity : ComponentActivity() {
                         viewModel
                     )
                 }
+                InternetConnectivityChanges { xyz, _ ->
+                    state = xyz
+                }
 
-                Text(if (nwState) "connected" else "connection lost",
+                if (!state) Text("connection lost",
                     Modifier.padding(5.dp),
                     fontSize = 20.sp,
                     textAlign = TextAlign.Center,
-                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                    color = MaterialTheme.colorScheme.onPrimary)
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_regular)),
+                    color = Color.Red
+                )
             }
         }
     }

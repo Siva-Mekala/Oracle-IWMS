@@ -5,6 +5,11 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.net.ConnectivityManager
+import android.net.ConnectivityManager.NetworkCallback
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -51,6 +56,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -657,6 +663,41 @@ class LoginActivity : ComponentActivity() {
             val modifier = Modifier.fillMaxSize()
             Surface(modifier) {
                 Greeting(viewModel, viewModel.shellState, viewModel.cmdState, modifier)
+            }
+        }
+    }
+
+    @Composable
+    fun InternetConnectivityChanges(
+        onStateChange: (state: Boolean, network: Network) -> Unit
+    ) {
+        val context = LocalContext.current
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkCallback = remember {
+            object : NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    println("available")
+                    onStateChange(true, network)
+                }
+
+                override fun onLost(network: Network) {
+                    println("onLost")
+                    onStateChange(false, network)
+                }
+            }
+        }
+
+        LaunchedEffect (key1 = context) {
+            val networkRequest = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .build()
+            connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
+        }
+
+        DisposableEffect(key1 = Unit) {
+            onDispose {
+                connectivityManager.unregisterNetworkCallback(networkCallback)
             }
         }
     }
