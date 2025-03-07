@@ -69,7 +69,7 @@ class SplashActivityView : ComponentActivity() {
             Intent(
                 this,
                 if (SharedPref.isUserLoggedIn()) LandingActivity::class.java
-                else if (!SharedPref.isSeenTc()) TermsAndConditionsView::class.java
+//                else if (!SharedPref.isSeenTc()) TermsAndConditionsView::class.java
                 else LoginActivity::class.java
             )
         )

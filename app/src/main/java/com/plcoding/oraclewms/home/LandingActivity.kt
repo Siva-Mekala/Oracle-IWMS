@@ -28,6 +28,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +36,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -62,6 +67,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.Observer
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -77,12 +83,14 @@ import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.WareHouseApp
 import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.JSONResponse
+import com.plcoding.oraclewms.api.NetworkConnectivityObserver
 import com.plcoding.oraclewms.landing.DetailsScreen
 import com.plcoding.oraclewms.login.CommandUiState
 import kotlinx.coroutines.launch
 
 class LandingActivity : ComponentActivity() {
     private val TAG = LandingActivity::class.java.simpleName
+    private lateinit var networkConnectivityObserver: NetworkConnectivityObserver
     val requestPermissionLauncher = registerForActivityResult(
         RequestPermission()
     ) { isGranted: Boolean ->
@@ -108,6 +116,19 @@ class LandingActivity : ComponentActivity() {
 //        var items = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
 //            intent.getSerializableExtra("response", ApiResponse::class.java)
 //        else intent.getSerializableExtra("response") as ApiResponse
+        networkConnectivityObserver = NetworkConnectivityObserver(this)
+
+        networkConnectivityObserver.isConnected.observe(this, Observer { isConnected ->
+            if (isConnected) {
+                print( "Network is available")
+
+//                showSnackbar("Network is available", Snackbar.LENGTH_SHORT)
+            } else {
+                print( "Network is not available")
+
+//                showSnackbar("No network connection", Snackbar.LENGTH_INDEFINITE)
+            }
+        })
         setContent {
             AppTheme {
                 val modifier = Modifier.fillMaxSize()
@@ -124,6 +145,11 @@ class LandingActivity : ComponentActivity() {
 
 
     }
+    override fun onDestroy() {
+        super.onDestroy()
+        networkConnectivityObserver.unregister()
+    }
+
 
     @Composable
     fun Greeting(modifier: Modifier = Modifier, viewModel: LandingViewModel = viewModel()) {
@@ -299,16 +325,17 @@ class LandingActivity : ComponentActivity() {
             var info = arrayListOf<HomeInfo>()
             info.add(
                 HomeInfo(
-                    "Env",
-                    names?.get(0)
+                    "Application",
+                    names?.get(1)
                 )
             )
             info.add(
                 HomeInfo(
-                    "Company",
-                    names?.get(1)
+                    "Env",
+                    names?.get(0)
                 )
             )
+
             info.add(
                 HomeInfo(
                     "Facility",
