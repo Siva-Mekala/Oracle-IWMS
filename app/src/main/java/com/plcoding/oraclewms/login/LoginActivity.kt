@@ -1,11 +1,19 @@
 package com.plcoding.oraclewms.login
 
+import android.Manifest
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,6 +24,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
@@ -53,7 +62,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -67,8 +78,13 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.AppTheme
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.plcoding.oraclewms.R
@@ -77,10 +93,28 @@ import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.api.Dev
 import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.home.LandingActivity
+import com.plcoding.oraclewms.landing.BarCodeActivity
 import com.plcoding.oraclewms.landing.DialogWithMsg
 
 
 class LoginActivity : ComponentActivity() {
+
+    val requestPermissionLauncher = registerForActivityResult(
+        RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+
+        } else {
+            Toast.makeText(
+                this,
+                "Please provide " +
+                        "notification permission to get started",
+                Toast.LENGTH_LONG
+            ).show()
+            finish()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -98,6 +132,7 @@ class LoginActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalPermissionsApi::class)
     @Composable
     fun Greeting(
         viewModel: LoginViewModel,
@@ -105,15 +140,37 @@ class LoginActivity : ComponentActivity() {
         cmdState: CommandUiState,
         modifier: Modifier
     ) {
-        var email = rememberSaveable { mutableStateOf("") }
-        var password = rememberSaveable { mutableStateOf("") }
-        var environment = rememberSaveable { mutableStateOf("dev") }
+        val email = rememberSaveable { mutableStateOf("") }
+        val password = rememberSaveable { mutableStateOf("") }
+        val environment = rememberSaveable { mutableStateOf("dev") }
         var passwordVisible by remember { mutableStateOf(false) }
         val checkState = remember { mutableStateOf(false) }
         val envs: ArrayList<Dev> = Gson().fromJson(
             SharedPref.getEnvResponse(),
             object : TypeToken<ArrayList<Dev>>() {}.type
         )
+        val context = LocalContext.current
+
+        val permissionState = rememberPermissionState(
+            Manifest.permission.CAMERA
+        )
+
+        val launcher = rememberLauncherForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val data = result.data
+                val returnedString = data?.getStringExtra("returned_string") // Get the returned string
+                val type = data?.getStringExtra("type")
+                if (returnedString != null) {
+                    when (type) {
+                        "email" -> email.value = returnedString
+                        "password" -> password.value = returnedString
+                    }
+                }
+            }
+        }
+
         val showDialog = remember { mutableStateOf(false) }
         LaunchedEffect(true) {
             viewModel.endShell(Utils.deviceUUID(), this@LoginActivity, "LoginActivity")
@@ -213,6 +270,34 @@ class LoginActivity : ComponentActivity() {
                                     modifier = Modifier.padding(8.dp)
                                 )
                             },
+                            trailingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.scan),
+                                    null,
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clickable {
+                                            if (!checkPermission(context, Manifest.permission.CAMERA)) {
+                                                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                            } else {
+                                                if (permissionState.status.isGranted) {
+                                                    val intent = Intent(
+                                                        context,
+                                                        BarCodeActivity::class.java
+                                                    ).apply {
+                                                        putExtra("TYPE", "email")
+                                                    }
+                                                    launcher.launch(intent)
+                                                } else {
+                                                    if (permissionState.status.shouldShowRationale)
+                                                    else {
+                                                        permissionState.launchPermissionRequest()
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .padding(5.dp))
+                            },
                             singleLine = true,
                             onValueChange = { email.value = it },
                             modifier = Modifier
@@ -234,14 +319,42 @@ class LoginActivity : ComponentActivity() {
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             trailingIcon = {
-                                val image = if (passwordVisible)
-                                    Icons.Filled.Visibility
-                                else Icons.Filled.VisibilityOff
+                                Row {
+                                    val image = if (passwordVisible)
+                                        Icons.Filled.Visibility
+                                    else Icons.Filled.VisibilityOff
 
-                                val description =
-                                    if (passwordVisible) "Hide password" else "Show password"
-                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                    Icon(imageVector = image, description)
+                                    val description =
+                                        if (passwordVisible) "Hide password" else "Show password"
+                                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                        Icon(imageVector = image, description)
+                                    }
+                                    Icon(
+                                        painter = painterResource(R.drawable.scan),
+                                        null,
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clickable {
+                                                if (!checkPermission(context, Manifest.permission.CAMERA)) {
+                                                    requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                                } else {
+                                                    if (permissionState.status.isGranted) {
+                                                        val intent = Intent(
+                                                            context,
+                                                            BarCodeActivity::class.java
+                                                        ).apply {
+                                                            putExtra("TYPE", "password")
+                                                        }
+                                                        launcher.launch(intent)
+                                                    } else {
+                                                        if (permissionState.status.shouldShowRationale)
+                                                        else {
+                                                            permissionState.launchPermissionRequest()
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            .padding(5.dp))
                                 }
                             },
                             value = password.value,
@@ -278,7 +391,6 @@ class LoginActivity : ComponentActivity() {
 
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-
                         Button(
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = if (isSystemInDarkTheme()) colorResource(
@@ -409,6 +521,10 @@ class LoginActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    fun checkPermission(context: Context, permission: String): Boolean {
+        return ActivityCompat.checkSelfPermission(context, permission) == PERMISSION_GRANTED
     }
 
     @Composable

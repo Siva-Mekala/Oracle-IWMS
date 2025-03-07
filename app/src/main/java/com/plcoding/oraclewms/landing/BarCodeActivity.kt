@@ -34,16 +34,17 @@ class BarCodeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val type = intent.getStringExtra("TYPE")
         setContent {
             OracleWMSTheme {
-                BarcodeScannerScreen()
+                BarcodeScannerScreen(type)
             }
         }
     }
 }
 
 @Composable
-fun BarcodeScannerScreen() {
+fun BarcodeScannerScreen(str: String?) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var barcodeValue by remember { mutableStateOf("") }
@@ -73,9 +74,9 @@ fun BarcodeScannerScreen() {
                 .also {
                     it.setAnalyzer(cameraExecutor, BarcodeAnalyzer(barcodeScanner) { value ->
                         barcodeValue = value
-
                         val resultIntent = Intent()
                         resultIntent.putExtra("returned_string", barcodeValue)
+                        resultIntent.putExtra("type", str)
                         (context as BarCodeActivity).setResult(Activity.RESULT_OK, resultIntent)
                         context.finish()
                     })
