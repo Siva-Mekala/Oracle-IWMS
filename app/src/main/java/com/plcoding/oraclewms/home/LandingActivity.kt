@@ -28,7 +28,6 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,10 +35,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -61,13 +56,13 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.Observer
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -81,7 +76,6 @@ import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
 import com.plcoding.oraclewms.WareHouseApp
-import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.JSONResponse
 import com.plcoding.oraclewms.api.NetworkConnectivityObserver
 import com.plcoding.oraclewms.landing.DetailsScreen
@@ -90,7 +84,6 @@ import kotlinx.coroutines.launch
 
 class LandingActivity : ComponentActivity() {
     private val TAG = LandingActivity::class.java.simpleName
-    private lateinit var networkConnectivityObserver: NetworkConnectivityObserver
     val requestPermissionLauncher = registerForActivityResult(
         RequestPermission()
     ) { isGranted: Boolean ->
@@ -113,22 +106,6 @@ class LandingActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        var items = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-//            intent.getSerializableExtra("response", ApiResponse::class.java)
-//        else intent.getSerializableExtra("response") as ApiResponse
-        networkConnectivityObserver = NetworkConnectivityObserver(this)
-
-        networkConnectivityObserver.isConnected.observe(this, Observer { isConnected ->
-            if (isConnected) {
-                print( "Network is available")
-
-//                showSnackbar("Network is available", Snackbar.LENGTH_SHORT)
-            } else {
-                print( "Network is not available")
-
-//                showSnackbar("No network connection", Snackbar.LENGTH_INDEFINITE)
-            }
-        })
         setContent {
             AppTheme {
                 val modifier = Modifier.fillMaxSize()
@@ -147,12 +124,21 @@ class LandingActivity : ComponentActivity() {
     }
     override fun onDestroy() {
         super.onDestroy()
-        networkConnectivityObserver.unregister()
+        NetworkConnectivityObserver.getInstance(this).unregister()
     }
 
 
     @Composable
     fun Greeting(modifier: Modifier = Modifier, viewModel: LandingViewModel = viewModel()) {
+        NetworkConnectivityObserver.getInstance(this).isConnected.observe(this, { isConnected ->
+            viewModel.nwState = isConnected
+            if (isConnected) {
+                print( "Network is available")
+            } else {
+                print( "Network is not available")
+            }
+        })
+
         val navController = rememberNavController()
         val item = Gson().fromJson(SharedPref.getResponse(), JSONResponse::class.java)
         viewModel.setState(CommandUiState.Success(item))
@@ -191,7 +177,7 @@ class LandingActivity : ComponentActivity() {
                 R.color.secondary_imws
             ),
             topBar = {
-                DashBoardToolBar(viewModel, modifier, context)
+                DashBoardToolBar(viewModel, modifier, context, viewModel.nwState)
             },
             bottomBar = {
                 bottomAppBar(
@@ -513,7 +499,12 @@ class LandingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun DashBoardToolBar(viewModel: LandingViewModel, modifier: Modifier, context1: Context) {
+    fun DashBoardToolBar(
+        viewModel: LandingViewModel,
+        modifier: Modifier,
+        context1: Context,
+        nwState: Boolean
+    ) {
         val context = LocalContext.current
         val app = context.applicationContext as WareHouseApp
         val name: String by app.userName.observeAsState("")
@@ -525,48 +516,57 @@ class LandingActivity : ComponentActivity() {
                 .fillMaxWidth()
                 .height(120.dp)
         ) {
-            Card(
-                shape = RoundedCornerShape(5.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isSystemInDarkTheme()) colorResource(
-                        R.color.primary_dark_imws
-                    ) else colorResource(R.color.primary_imws)
-                ),
-                border = CardDefaults.outlinedCardBorder(true)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+            Column {
+                Card(
+                    shape = RoundedCornerShape(5.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isSystemInDarkTheme()) colorResource(
+                            R.color.primary_dark_imws
+                        ) else colorResource(R.color.primary_imws)
+                    ),
+                    border = CardDefaults.outlinedCardBorder(true)
                 ) {
-                    Text(
-                        "Welcome ${name}",
-                        Modifier.padding(5.dp),
-                        fontSize = 20.sp,
-                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Image(
-                        painter = painterResource(R.drawable.logout),
-                        contentDescription = "Logout",
-                        modifier = Modifier
-                            .clickable {
-                                viewModel.sendCommand(
-                                    Utils.deviceUUID(),
-                                    Utils.getControlCharacterValueOptimized("Ctrl-W")
-                                )
-                                viewModel.endShell(Utils.deviceUUID(), context1, "logout")
-                            }
-                            .padding(10.dp)
-                            .size(width = 20.dp, height = 20.dp),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "Welcome ${name}",
+                            Modifier.padding(5.dp),
+                            fontSize = 20.sp,
+                            fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Image(
+                            painter = painterResource(R.drawable.logout),
+                            contentDescription = "Logout",
+                            modifier = Modifier
+                                .clickable {
+                                    viewModel.sendCommand(
+                                        Utils.deviceUUID(),
+                                        Utils.getControlCharacterValueOptimized("Ctrl-W")
+                                    )
+                                    viewModel.endShell(Utils.deviceUUID(), context1, "logout")
+                                }
+                                .padding(10.dp)
+                                .size(width = 20.dp, height = 20.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary)
+                        )
+                    }
+                    DrawerContentComponent(
+                        viewModel
                     )
                 }
-                DrawerContentComponent(
-                    viewModel
-                )
+
+                Text(if (nwState) "connected" else "connection lost",
+                    Modifier.padding(5.dp),
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center,
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                    color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }

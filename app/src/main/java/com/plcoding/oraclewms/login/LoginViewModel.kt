@@ -19,6 +19,7 @@ import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.Dev
 import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.LabelResponse
+import com.plcoding.oraclewms.api.NetworkConnectivityObserver
 import com.plcoding.oraclewms.api.UserResponse
 import com.plcoding.oraclewms.home.LandingActivity
 import retrofit2.Call
@@ -29,6 +30,8 @@ import java.net.HttpURLConnection
 open class LoginViewModel : ViewModel() {
 
     open var TAG = LoginViewModel::class.java.simpleName
+
+    var nwState: Boolean by mutableStateOf(false)
 
     var cmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
         private set
