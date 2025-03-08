@@ -100,7 +100,7 @@ fun DetailsScreen(
             Utils.getControlCharacterValueOptimized("Ctrl-X")
         )
     }
-    if (state is CommandUiState.Success && state.response?.formFields?.isEmpty() == true)
+    if (state is CommandUiState.Success && state.response?.formFields?.isEmpty() == true && state.response.popups.isEmpty())
         LaunchedEffect(true) {
             viewModel.sendCommand(
                 Utils.deviceUUID(),
