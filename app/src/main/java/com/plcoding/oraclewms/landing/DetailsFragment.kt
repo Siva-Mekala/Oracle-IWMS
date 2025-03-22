@@ -3,6 +3,9 @@ package com.plcoding.oraclewms.landing
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.os.Build.VERSION
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -31,7 +34,9 @@ import androidx.compose.material.OutlinedButton
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Photo
+import androidx.compose.material.icons.filled.PhotoAlbum
 import androidx.compose.material.icons.outlined.AddCard
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.Card
@@ -83,6 +88,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.google.gson.Gson
 import com.plcoding.focusfun.landing.LandingViewModel
+import com.plcoding.oraclewms.CameraActivity
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
@@ -389,7 +395,7 @@ fun WareHouseTextField(
 @Composable
 fun ImageBottomSheet(
     quantity: String?,
-    viewModel: LoginViewModel, onDismiss: () -> Unit, imageCallBack: () -> Unit
+    viewModel: LoginViewModel, onDismiss: () -> Unit, imageCallBack: () -> Unit, launchCamera: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -407,15 +413,26 @@ fun ImageBottomSheet(
                     .fillMaxWidth()
                     .padding(15.dp), verticalAlignment = Alignment.CenterVertically) {
                     items(it.size){ index->
-                        if (index == 0) Icon(
-                            Icons.Default.AddAPhoto,
-                            null,
-                            modifier = Modifier
-                                .clickable {
-                                    imageCallBack()
-                                }
-                                .size(60.dp).padding(end = 10.dp))
-                        else {
+                        if (index == 0) {
+                            Column {
+                                Icon(
+                                    Icons.Default.PhotoAlbum,
+                                    null,
+                                    modifier = Modifier
+                                        .clickable {
+                                            imageCallBack()
+                                        }
+                                        .size(40.dp).padding(end = 10.dp))
+                                Icon(
+                                    Icons.Default.CameraAlt,
+                                    null,
+                                    modifier = Modifier
+                                        .clickable {
+                                            launchCamera()
+                                        }
+                                        .size(40.dp).padding(end = 10.dp))
+                            }
+                        } else {
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(it[index])
@@ -456,9 +473,23 @@ fun ListScreen(
     loader: Boolean,
     imageCallBack: () -> Unit
 ) {
+    val context = LocalContext.current
     val permissionState = rememberPermissionState(
         Manifest.permission.CAMERA
     )
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            val returnedString = if (VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                data?.getParcelableExtra("TYPE", Uri::class.java)
+            } else {
+                data?.getParcelableExtra("TYPE")
+            }
+            if (returnedString != null) viewModel.addImage(returnedString)
+        }
+    }
     var quantity : String? = null
     var showBottomSheet by remember { mutableStateOf(false) }
     Box {
@@ -571,7 +602,21 @@ fun ListScreen(
             }
         }
         if (loader) LoaderScreen()
-        if (showBottomSheet) ImageBottomSheet(quantity, viewModel, { showBottomSheet = false }, imageCallBack)
+        if (showBottomSheet) ImageBottomSheet(quantity, viewModel, { showBottomSheet = false }, imageCallBack,
+            {
+                if (permissionState.status.isGranted) {
+                    val intent = Intent(
+                        context,
+                        CameraActivity::class.java
+                    )
+                    launcher.launch(intent)
+                } else {
+                    if (permissionState.status.shouldShowRationale)
+                    else {
+                        permissionState.launchPermissionRequest()
+                    }
+                }
+            })
     }
 }
 

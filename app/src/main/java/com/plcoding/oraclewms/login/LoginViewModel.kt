@@ -366,33 +366,35 @@ open class LoginViewModel : ViewModel() {
             }
             repeat(it.size) { index->
                 if (index == 0) return@repeat
-                val file = FilePathUtil.getPath(context, it[index]).let { path ->
+                FilePathUtil.getPath(context, it[index]).let { path ->
                     if (path?.isNotEmpty() == true) {
                         path
                     } else {
                         InputStreamRequestBody.getFileName(context, it[index])
                     }
-                }.let { File(it) }
+                }?.let {
+                    val file = File(it)
+                    val requestFile1: RequestBody =
+                        RequestBody.create("image/*".toMediaTypeOrNull(), file)
+                    val body1 =
+                        MultipartBody.Part.createFormData("files", file.getName(), requestFile1)
 
-                val requestFile1: RequestBody =
-                    RequestBody.create("image/*".toMediaTypeOrNull(), file)
-                val body1 =
-                    MultipartBody.Part.createFormData("files", file.getName(), requestFile1)
+                    val shipmentId = RequestBody.create(MultipartBody.FORM, shipMent?.trim().toString())
+                    val lpn = RequestBody.create(MultipartBody.FORM, lpn?.trim().toString())
+                    val sku = RequestBody.create(MultipartBody.FORM, sku?.trim().toString())
+                    val qty = RequestBody.create(MultipartBody.FORM, quantity?.trim().toString())
+                    val userId = RequestBody.create(MultipartBody.FORM, SharedPref.getLoggedIn())
+                    val facilityName = RequestBody.create(MultipartBody.FORM, SharedPref.getHomeInfo()?.split(",")?.get(2).toString())
+                    val call: Call<UploadResponse> =
+                        BaseApiInterface.create()
+                            .filesUpload(
+                                BuildConfig.UPLOAD,
+                                shipmentId, lpn, sku, qty, userId, facilityName, body1
+                            )
+                    call.execute()
+                    emit(index)
+                }
 
-                val shipmentId = RequestBody.create(MultipartBody.FORM, shipMent?.trim().toString())
-                val lpn = RequestBody.create(MultipartBody.FORM, lpn?.trim().toString())
-                val sku = RequestBody.create(MultipartBody.FORM, sku?.trim().toString())
-                val qty = RequestBody.create(MultipartBody.FORM, quantity?.trim().toString())
-                val userId = RequestBody.create(MultipartBody.FORM, SharedPref.getLoggedIn())
-                val facilityName = RequestBody.create(MultipartBody.FORM, SharedPref.getHomeInfo()?.split(",")?.get(2).toString())
-                val call: Call<UploadResponse> =
-                    BaseApiInterface.create()
-                        .filesUpload(
-                            BuildConfig.UPLOAD,
-                            shipmentId, lpn, sku, qty, userId, facilityName, body1
-                        )
-                call.execute()
-                emit(index)
             }
         }
     }
