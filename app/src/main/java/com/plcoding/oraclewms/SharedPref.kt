@@ -98,8 +98,8 @@ object SharedPref {
         editor.commit()
     }
 
-    fun getUserName(): String? {
-        return sharedPref.getString(KEY_USER_NAME, "")
+    fun getUserName(): String {
+        return sharedPref.getString(KEY_USER_NAME, "").toString()
     }
 
     fun setDateFormat(format: String) {
@@ -118,8 +118,8 @@ object SharedPref {
         editor.commit()
     }
 
-    fun getLoggedIn(): String? {
-        return sharedPref.getString(KEY_LOGGED_IN, null)
+    fun getLoggedIn(): String {
+        return sharedPref.getString(KEY_LOGGED_IN, null).toString()
     }
 
     fun setLoggedInPwd(pwd: String) {

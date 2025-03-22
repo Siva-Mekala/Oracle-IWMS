@@ -1,17 +1,25 @@
 package com.plcoding.oraclewms.home
 
+import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.net.ConnectivityManager
 import android.net.ConnectivityManager.NetworkCallback
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.Companion.isPhotoPickerAvailable
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -77,6 +85,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.compose.AppTheme
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.gson.Gson
 import com.plcoding.focusfun.landing.HomeScreen
 import com.plcoding.focusfun.landing.LandingViewModel
@@ -87,6 +99,8 @@ import com.plcoding.oraclewms.WareHouseApp
 import com.plcoding.oraclewms.api.JSONResponse
 import com.plcoding.oraclewms.landing.DetailsScreen
 import com.plcoding.oraclewms.login.CommandUiState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class LandingActivity : ComponentActivity() {
@@ -95,7 +109,6 @@ class LandingActivity : ComponentActivity() {
         RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-
         } else {
             Toast.makeText(
                 this,
@@ -106,6 +119,10 @@ class LandingActivity : ComponentActivity() {
             finish()
         }
     }
+    private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
+
+    ////MASW110000002016002165011
+    ////000000000005037673
 
     fun checkPermission(context: Context, permission: String): Boolean {
         return ActivityCompat.checkSelfPermission(context, permission) == PERMISSION_GRANTED
@@ -123,15 +140,7 @@ class LandingActivity : ComponentActivity() {
             }
         }
         enableEdgeToEdge()
-        if (!checkPermission(this, android.Manifest.permission.CAMERA)) {
-            requestPermissionLauncher.launch(android.Manifest.permission.CAMERA)
-        }
-
-
-    }
-    override fun onDestroy() {
-        super.onDestroy()
-            //NetworkConnectivityObserver.getInstance(this).unregister()
+        if (!checkPermission(this, Manifest.permission.CAMERA)) requestPermissionLauncher.launch(android.Manifest.permission.CAMERA)
     }
 
     @Composable
@@ -169,21 +178,20 @@ class LandingActivity : ComponentActivity() {
         }
     }
 
-
     @Composable
     fun Greeting(modifier: Modifier = Modifier, viewModel: LandingViewModel = viewModel()) {
-//        NetworkConnectivityObserver.getInstance(this).isConnected.observe(this, { isConnected ->
-//            viewModel.nwState = isConnected
-//            if (isConnected) {
-//                print( "Network is available")
-//            } else {
-//                print( "Network is not available")
-//            }
-//        })
-
         val navController = rememberNavController()
         val item = Gson().fromJson(SharedPref.getResponse(), JSONResponse::class.java)
         viewModel.setState(CommandUiState.Success(item))
+        pickMedia = rememberLauncherForActivityResult (ActivityResultContracts.PickMultipleVisualMedia()) {
+            it.let {
+                if (it.isEmpty()) return@let
+                println("images :"+it.size)
+                repeat(it.size){ index->
+                    viewModel.addImage(it[index])
+                }
+            }
+        }
         DashboardActivityScreen(
             modifier,
             viewModel,
@@ -203,6 +211,7 @@ class LandingActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalPermissionsApi::class)
     @Composable
     fun DashboardActivityScreen(
         modifier: Modifier = Modifier,
@@ -212,6 +221,30 @@ class LandingActivity : ComponentActivity() {
     ) {
         var showBottomSheet by remember { mutableStateOf(false) }
         var clickPosition by remember { mutableStateOf(1) }
+        val permissionState = rememberPermissionState(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+        val launcher = rememberLauncherForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val data = result.data
+                data?.let { intent ->
+                    intent.clipData?.let { cData ->
+                        repeat(cData.itemCount) { iCount -> /////multiple uri's
+                            val item = cData.getItemAt(iCount)
+                            viewModel.addImage(item.uri)
+                        }
+                        return@rememberLauncherForActivityResult
+                    }
+                    intent.data?.let { uri ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            viewModel.addImage(uri)
+                        }
+                    }
+                }
+            }
+        }
         Scaffold(modifier = modifier
             .statusBarsPadding()
             .navigationBarsPadding(),
@@ -254,7 +287,29 @@ class LandingActivity : ComponentActivity() {
                             viewModel,
                             viewModel.cmdState,
                             clickPosition
-                        )
+                        ) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                if (isPhotoPickerAvailable(applicationContext)) pickMedia.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                ) else  if (permissionState.status.isGranted) {
+                                    val intent = Intent(Intent.ACTION_GET_CONTENT)
+                                    intent.type = "image/*"
+                                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                                    launcher.launch(
+                                        intent
+                                    )
+                                } else permissionState.launchPermissionRequest()
+                            } else {
+                                if (permissionState.status.isGranted) {
+                                    val intent = Intent(Intent.ACTION_GET_CONTENT)
+                                    intent.type = "image/*"
+                                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                                    launcher.launch(
+                                        intent
+                                    )
+                                } else permissionState.launchPermissionRequest()
+                            }
+                        }
                     }
                 }
             }

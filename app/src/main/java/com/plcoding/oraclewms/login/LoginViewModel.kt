@@ -1,7 +1,9 @@
 package com.plcoding.oraclewms.login
 
+import InputStreamRequestBody
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.MutableState
@@ -10,28 +12,37 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.plcoding.oraclewms.BaseApiInterface
 import com.plcoding.oraclewms.BuildConfig
+import com.plcoding.oraclewms.FilePathUtil
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.Dev
 import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.LabelResponse
-import com.plcoding.oraclewms.api.NetworkConnectivityObserver
+import com.plcoding.oraclewms.api.UploadResponse
 import com.plcoding.oraclewms.api.UserResponse
 import com.plcoding.oraclewms.home.LandingActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.File
 import java.net.HttpURLConnection
 
 open class LoginViewModel : ViewModel() {
 
     open var TAG = LoginViewModel::class.java.simpleName
-
-    var nwState: Boolean by mutableStateOf(false)
 
     var cmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
         private set
@@ -41,6 +52,12 @@ open class LoginViewModel : ViewModel() {
 
     var menuItems = arrayListOf<FormField>().toMutableStateList()
     var formItems = arrayListOf<FormField>().toMutableStateList()
+    var images = arrayListOf<Uri>(Uri.parse("")).toMutableStateList()
+        private set
+
+    fun addImage(uri: Uri) {
+        images.add(uri)
+    }
 
     var shipment: String by mutableStateOf("")
         private set
@@ -71,7 +88,8 @@ open class LoginViewModel : ViewModel() {
                 )
 
                 res.response?.menuItems?.let {
-                    formItems.addAll(0,
+                    formItems.addAll(
+                        0,
                         it
                     )
                 }
@@ -82,20 +100,18 @@ open class LoginViewModel : ViewModel() {
     var shellState: ShellUiState by mutableStateOf(ShellUiState.Empty)
         private set
 
-    fun sendCommand(id: String, cmd: String, formKey: String? = null, nextField:Boolean?= true) {
+    fun sendCommand(id: String, cmd: String, formKey: String? = null, nextField: Boolean? = true) {
         Log.d(TAG, "Inside sendCommand")
         val obj = JsonObject()
         obj.addProperty("sessionId", id)
         obj.addProperty("command", cmd)
         obj.addProperty("wait_time", 2000)
-        obj.addProperty("moveCursorToNextField",nextField)
+        obj.addProperty("moveCursorToNextField", nextField)
         formKey?.let {
             if (it.equals("Shipment")) {
                 shipment = cmd.trim()
                 SharedPref.setShipmentID(shipment)
             }
-
-
         }
 
         cmdState = CommandUiState.Loading
@@ -132,10 +148,11 @@ open class LoginViewModel : ViewModel() {
                                     if (index > -1) items.subList(index, items.size)
                                     else items
                                 )
-                                list.addAll(0,
+                                list.addAll(
+                                    0,
                                     it.menuItems
                                 )
-                                formItems.addAll(0,list)
+                                formItems.addAll(0, list)
                             }
                         }
                         cmdState = CommandUiState.Success(jsonRes?.jsonResponse)
@@ -287,7 +304,6 @@ open class LoginViewModel : ViewModel() {
                     call: Call<LabelResponse>,
                     response: Response<LabelResponse>
                 ) {
-                    Log.d("label :", response.toString())
                     if (response.isSuccessful) {
                         if (cmdState is CommandUiState.Success) {
                             val form = FormField()
@@ -315,5 +331,69 @@ open class LoginViewModel : ViewModel() {
         val intent = Intent(context, LoginActivity::class.java)
         context.startActivity(intent)
         if (from.equals("logout")) (context as LandingActivity).finish()
+    }
+
+    fun uploadImages(context: Context, quantity: String?) = viewModelScope.launch {
+        loader = true
+        startWorker(context, quantity).flowOn(Dispatchers.IO).collect {
+            if (it == images.size - 1) {
+                withContext(Dispatchers.Main) {
+                    images.removeRange(1, images.size)
+                    loader = false
+                }
+            }
+        }
+    }
+
+    fun startWorker(context: Context, quantity: String?) = flow {
+        images.let {
+            var shipMent: String? = null
+            var lpn: String? = null
+            var sku: String? = null
+            formItems.let {
+                it.indexOf(FormField(form_key = "Shipment")).let { index->
+                    if (index > -1)
+                        shipMent = it.get(index).form_value
+                }
+                it.indexOf(FormField(form_key = "LPN")).let { index->
+                    if (index > -1)
+                        lpn = it.get(index).form_value
+                }
+                it.indexOf(FormField(form_key = "SKU")).let { index->
+                    if (index > -1)
+                        sku = it.get(index).form_value
+                }
+            }
+            repeat(it.size) { index->
+                if (index == 0) return@repeat
+                val file = FilePathUtil.getPath(context, it[index]).let { path ->
+                    if (path?.isNotEmpty() == true) {
+                        path
+                    } else {
+                        InputStreamRequestBody.getFileName(context, it[index])
+                    }
+                }.let { File(it) }
+
+                val requestFile1: RequestBody =
+                    RequestBody.create("image/*".toMediaTypeOrNull(), file)
+                val body1 =
+                    MultipartBody.Part.createFormData("files", file.getName(), requestFile1)
+
+                val shipmentId = RequestBody.create(MultipartBody.FORM, shipMent?.trim().toString())
+                val lpn = RequestBody.create(MultipartBody.FORM, lpn?.trim().toString())
+                val sku = RequestBody.create(MultipartBody.FORM, sku?.trim().toString())
+                val qty = RequestBody.create(MultipartBody.FORM, quantity?.trim().toString())
+                val userId = RequestBody.create(MultipartBody.FORM, SharedPref.getLoggedIn())
+                val facilityName = RequestBody.create(MultipartBody.FORM, SharedPref.getHomeInfo()?.split(",")?.get(2).toString())
+                val call: Call<UploadResponse> =
+                    BaseApiInterface.create()
+                        .filesUpload(
+                            BuildConfig.UPLOAD,
+                            shipmentId, lpn, sku, qty, userId, facilityName, body1
+                        )
+                call.execute()
+                emit(index)
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,12 +22,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.outlined.AddCard
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.Card
@@ -35,22 +40,27 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -64,6 +74,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
@@ -84,13 +96,15 @@ import java.net.HttpURLConnection
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
+
 @Composable
 fun DetailsScreen(
     modifier: Modifier,
     navController: NavController,
     viewModel: LandingViewModel,
     state: CommandUiState,
-    optionNumber: Int?
+    optionNumber: Int?,
+    imageCallBack : () -> Unit
 ) {
     Log.d("DetailsFragment", "Inside composable")
     BackHandler {
@@ -107,7 +121,7 @@ fun DetailsScreen(
                 "${optionNumber}\n"
             )
         }
-    ListScreen(modifier, viewModel, state, viewModel.loader)
+    ListScreen(modifier, viewModel, state, viewModel.loader, imageCallBack)
     if (state is CommandUiState.Success) {
         state.response?.formFields.let {
         }
@@ -371,17 +385,82 @@ fun WareHouseTextField(
     })
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ImageBottomSheet(
+    quantity: String?,
+    viewModel: LoginViewModel, onDismiss: () -> Unit, imageCallBack: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    ModalBottomSheet (
+        onDismissRequest = {
+            onDismiss()
+            showBottomSheet = false
+        },
+        sheetState = sheetState
+    ) {
+        Column {
+            viewModel.images.let {
+                LazyRow (modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(15.dp), verticalAlignment = Alignment.CenterVertically) {
+                    items(it.size){ index->
+                        if (index == 0) Icon(
+                            Icons.Default.AddAPhoto,
+                            null,
+                            modifier = Modifier
+                                .clickable {
+                                    imageCallBack()
+                                }
+                                .size(60.dp).padding(end = 10.dp))
+                        else {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(it[index])
+                                    .build(),
+                                contentDescription = "icon",
+                                contentScale = ContentScale.Inside,
+                                modifier = Modifier.size(120.dp).clickable {  }.padding(5.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            OutlinedButton(onClick = {
+                if (viewModel.images.size == 1) Toast.makeText(context, "Please add images to upload", Toast.LENGTH_LONG).show()
+                else {
+                    viewModel.uploadImages(context, quantity)
+                    onDismiss()
+                    showBottomSheet = false
+                }
+            }, modifier = Modifier.padding(15.dp)) {
+                Text("Upload", fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                    fontSize = 15.sp,
+                    color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
+                        R.color.secondary_imws
+                    ))
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ListScreen(
     modifier: Modifier,
     viewModel: LandingViewModel,
     state: CommandUiState,
-    loader: Boolean
+    loader: Boolean,
+    imageCallBack: () -> Unit
 ) {
     val permissionState = rememberPermissionState(
         Manifest.permission.CAMERA
     )
+    var quantity : String? = null
+    var showBottomSheet by remember { mutableStateOf(false) }
     Box {
         viewModel.formItems.let { item ->
             LazyColumn(
@@ -392,7 +471,6 @@ fun ListScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(start = 5.dp, end = 5.dp),
-
                 ) {
                 item {
                     Column {
@@ -421,7 +499,10 @@ fun ListScreen(
                     if (item.get(it).type.equals("form_field")) ListItem(
                         item = item.get(it),
                         viewModel,
-                        permissionState
+                        permissionState, {
+                            quantity = it
+                            showBottomSheet = true
+                        }
                     )
                     else if (item.get(it).type.equals("menu_item")) {
                         Column(
@@ -490,6 +571,7 @@ fun ListScreen(
             }
         }
         if (loader) LoaderScreen()
+        if (showBottomSheet) ImageBottomSheet(quantity, viewModel, { showBottomSheet = false }, imageCallBack)
     }
 }
 
@@ -499,6 +581,7 @@ fun ListItem(
     item: FormField,
     viewModel: LandingViewModel,
     permissionState: PermissionState,
+    onImageClick : (quantity: String?) -> Unit
 ) {
     val textObj = remember(item.form_value) {
         mutableStateOf(
@@ -531,7 +614,6 @@ fun ListItem(
             )
         },
         value = textObj.value ?: "",
-
         trailingIcon = {
             Row {
                 if (item.formatters?.format_barcode == true) {
@@ -596,8 +678,19 @@ fun ListItem(
                             }
                             .padding(5.dp)
                     )
+                if (item.form_key.equals("Qty")) Icon(
+                    Icons.Default.Photo,
+                    null,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clickable {
+                            if (item.cursor) {
+                                onImageClick(textObj.value?.trim())
+                            }
+                        }
+                        .padding(5.dp)
+                )
             }
-
         },
         enabled = item.cursor,
         singleLine = true,

@@ -61,6 +61,7 @@ android {
             buildConfigField("String", "SEND_COMMAND", "\"${baseUrl}send-command\"")
             buildConfigField("String", "ENVIRONMENTS", "\"${baseUrl}environments\"")
             buildConfigField("String", "LABEL", "\"${baseUrl}generateLabel\"")
+            buildConfigField("String", "UPLOAD", "\"${baseUrl}upload-shipment\"")
         }
 
         debug {
@@ -71,6 +72,7 @@ android {
             buildConfigField("String", "SEND_COMMAND", "\"${baseUrl}send-command\"")
             buildConfigField("String", "ENVIRONMENTS", "\"${baseUrl}environments\"")
             buildConfigField("String", "LABEL", "\"${baseUrl}generateLabel\"")
+            buildConfigField("String", "UPLOAD", "\"${baseUrl}upload-shipment\"")
         }
     }
 }

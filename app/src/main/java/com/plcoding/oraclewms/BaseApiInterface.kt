@@ -6,8 +6,11 @@ import com.google.gson.JsonObject
 import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.Dev
 import com.plcoding.oraclewms.api.LabelResponse
+import com.plcoding.oraclewms.api.UploadResponse
 import com.plcoding.oraclewms.api.UserResponse
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -15,7 +18,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Url
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -56,6 +61,19 @@ interface BaseApiInterface {
         @Url url: String,
         @Body request: JsonObject
     ): Call<LabelResponse>
+
+    @Multipart
+    @POST
+    fun filesUpload(
+        @Url url: String,
+        @Part("shipment_id")  shipmentId: RequestBody,
+        @Part("lpn")  lpn: RequestBody,
+        @Part("sku")  sku: RequestBody,
+        @Part("qty")  qty: RequestBody,
+        @Part("user_id")  userId: RequestBody,
+        @Part("facility_name")  facilityName: RequestBody,
+        @Part file: MultipartBody.Part,
+    ): Call<UploadResponse>
 
     companion object {
 
