@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.PhotoAlbum
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.outlined.AddCard
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.Card
@@ -414,23 +415,23 @@ fun ImageBottomSheet(
                     .padding(15.dp), verticalAlignment = Alignment.CenterVertically) {
                     items(it.size){ index->
                         if (index == 0) {
-                            Column {
+                            Row  {
                                 Icon(
-                                    Icons.Default.PhotoAlbum,
+                                    Icons.Default.PhotoLibrary,
                                     null,
                                     modifier = Modifier
                                         .clickable {
                                             imageCallBack()
                                         }
-                                        .size(40.dp).padding(end = 10.dp))
+                                        .size(60.dp).padding(end = 15.dp))
                                 Icon(
-                                    Icons.Default.CameraAlt,
+                                    Icons.Default.AddAPhoto,
                                     null,
                                     modifier = Modifier
                                         .clickable {
                                             launchCamera()
                                         }
-                                        .size(40.dp).padding(end = 10.dp))
+                                        .size(60.dp).padding(end = 15.dp))
                             }
                         } else {
                             AsyncImage(
@@ -453,7 +454,7 @@ fun ImageBottomSheet(
                     onDismiss()
                     showBottomSheet = false
                 }
-            }, modifier = Modifier.padding(15.dp)) {
+            }, modifier = Modifier.padding(15.dp).fillMaxWidth().padding(10.dp,0.dp,10.dp,0.dp)) {
                 Text("Upload", fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
                     fontSize = 15.sp,
                     color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(

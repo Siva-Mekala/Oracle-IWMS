@@ -38,8 +38,7 @@
         <activity
             android:name=".CameraActivity"
             android:exported="false"
-            android:label="@string/title_activity_bar_code"
-            android:theme="@style/Theme.ComposeTimer"/>
+            android:theme="@style/Theme.ComposeTimer.NoActionBar"/>
         <activity
             android:name=".landing.BarCodeActivity"
             android:exported="false"
