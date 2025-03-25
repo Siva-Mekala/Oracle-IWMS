@@ -16,9 +16,14 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,16 +33,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.AppTheme
-import com.plcoding.focusfun.landing.LandingViewModel
-import com.plcoding.oraclewms.landing.BarCodeActivity
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -49,7 +51,7 @@ class CameraActivity : AppCompatActivity() {
             AppTheme {
                 val modifier = Modifier.fillMaxSize()
                 Surface(modifier = modifier) {
-                    MyCameraScreen ()
+                    MyCameraScreen(modifier)
                 }
             }
         }
@@ -58,23 +60,37 @@ class CameraActivity : AppCompatActivity() {
 
 
     @Composable
-    fun MyCameraScreen() {
+    fun MyCameraScreen(modifier: Modifier) {
         val context = LocalContext.current
         val outputDirectory = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
-
-        CameraCapture(
-            outputDirectory = outputDirectory,
-            onImageCaptured = { uri ->
-                Toast.makeText(context, "Image captured: $uri", Toast.LENGTH_SHORT).show()
-                val resultIntent = Intent()
-                resultIntent.putExtra("TYPE", uri)
-                (context as CameraActivity).setResult(Activity.RESULT_OK, resultIntent)
-                context.finish()
-            },
-            onError = { exc ->
-                Toast.makeText(context, "Error capturing image: ${exc.message}", Toast.LENGTH_SHORT).show()
+        androidx.compose.material3.Scaffold(
+            modifier = modifier
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+            containerColor = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
+                R.color.secondary_imws
+            )
+        ) { innerPadding ->
+            Box(modifier = modifier.padding(innerPadding)) {
+                CameraCapture(
+                    outputDirectory = outputDirectory,
+                    onImageCaptured = { uri ->
+                        //Toast.makeText(context, "Image captured: $uri", Toast.LENGTH_SHORT).show()
+                        val resultIntent = Intent()
+                        resultIntent.putExtra("TYPE", uri)
+                        (context as CameraActivity).setResult(Activity.RESULT_OK, resultIntent)
+                        context.finish()
+                    },
+                    onError = { exc ->
+                        Toast.makeText(
+                            context,
+                            "Error capturing image: ${exc.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                )
             }
-        )
+        }
     }
 
     @Composable
@@ -94,7 +110,7 @@ class CameraActivity : AppCompatActivity() {
                 cameraProviderFuture.addListener({
                     val cameraProvider = cameraProviderFuture.get()
                     val preview = Preview.Builder().build().also {
-                        it.setSurfaceProvider(previewView.surfaceProvider)
+                        it.surfaceProvider = previewView.surfaceProvider
                     }
                     imageCapture = ImageCapture.Builder().build()
                     val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -110,14 +126,15 @@ class CameraActivity : AppCompatActivity() {
                 }, ContextCompat.getMainExecutor(context))
             }
 
-            Button (
+            Button(
                 onClick = {
                     val photoFile = File(
                         outputDirectory,
                         SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
                             .format(System.currentTimeMillis()) + ".jpg"
                     )
-                    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+                    val outputOptions =
+                        ImageCapture.OutputFileOptions.Builder(photoFile).build()
                     imageCapture?.takePicture(
                         outputOptions, ContextCompat.getMainExecutor(context),
                         object : ImageCapture.OnImageSavedCallback {
@@ -132,9 +149,10 @@ class CameraActivity : AppCompatActivity() {
                         }
                     )
                 },
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
-                Text("Capture")
+                Text("Capture", color = Color(0xffb9925e))
             }
         }
     }
