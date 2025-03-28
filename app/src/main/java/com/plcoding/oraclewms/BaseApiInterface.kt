@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.Dev
+import com.plcoding.oraclewms.api.EnvironmentRequest
 import com.plcoding.oraclewms.api.LabelResponse
 import com.plcoding.oraclewms.api.UploadResponse
 import com.plcoding.oraclewms.api.UserResponse
@@ -16,6 +17,7 @@ import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
@@ -74,6 +76,16 @@ interface BaseApiInterface {
         @Part("facility_name")  facilityName: RequestBody,
         @Part file: MultipartBody.Part,
     ): Call<UploadResponse>
+
+    @POST
+    fun addEnvironment(
+        @Url url: String,
+        @Body request: EnvironmentRequest) : Call<JsonObject>
+
+    @DELETE
+    fun deleteEnvironment(
+        @Url url: String,
+        @Body request: JsonObject) : Call<JsonObject>
 
     companion object {
 

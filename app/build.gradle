@@ -14,8 +14,8 @@ android {
         applicationId "com.plcoding.oraclewms"
         minSdk 26
         targetSdk 34
-        versionCode 116
-        versionName "1.1.6"
+        versionCode 117
+        versionName "1.1.7"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -62,6 +62,7 @@ android {
             buildConfigField("String", "ENVIRONMENTS", "\"${baseUrl}environments\"")
             buildConfigField("String", "LABEL", "\"${baseUrl}generateLabel\"")
             buildConfigField("String", "UPLOAD", "\"${baseUrl}upload-shipment\"")
+            buildConfigField("String", "ADD_ENV", "\"${baseUrl}environments\"")
         }
 
         debug {
@@ -73,6 +74,7 @@ android {
             buildConfigField("String", "ENVIRONMENTS", "\"${baseUrl}environments\"")
             buildConfigField("String", "LABEL", "\"${baseUrl}generateLabel\"")
             buildConfigField("String", "UPLOAD", "\"${baseUrl}upload-shipment\"")
+            buildConfigField("String", "ADD_ENV", "\"${baseUrl}environments\"")
         }
     }
 }

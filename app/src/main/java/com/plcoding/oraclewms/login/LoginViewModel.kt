@@ -15,18 +15,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import com.google.gson.reflect.TypeToken
 import com.plcoding.oraclewms.BaseApiInterface
 import com.plcoding.oraclewms.BuildConfig
 import com.plcoding.oraclewms.FilePathUtil
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.api.ApiResponse
 import com.plcoding.oraclewms.api.Dev
+import com.plcoding.oraclewms.api.EnvironmentConfig
+import com.plcoding.oraclewms.api.EnvironmentRequest
 import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.LabelResponse
 import com.plcoding.oraclewms.api.UploadResponse
 import com.plcoding.oraclewms.api.UserResponse
 import com.plcoding.oraclewms.home.LandingActivity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -47,8 +51,19 @@ open class LoginViewModel : ViewModel() {
     var cmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
         private set
 
+    var addEnv: AddEnvState by mutableStateOf(AddEnvState.Empty)
+        private set
+
     var loader: Boolean by mutableStateOf(false)
         private set
+
+    var envs = MutableStateFlow<List<Dev>>(emptyList())
+    init {
+        envs.value = Gson().fromJson(
+            SharedPref.getEnvResponse(),
+            object : TypeToken<ArrayList<Dev>>() {}.type
+        )
+    }
 
     var menuItems = arrayListOf<FormField>().toMutableStateList()
     var formItems = arrayListOf<FormField>().toMutableStateList()
@@ -398,4 +413,40 @@ open class LoginViewModel : ViewModel() {
             }
         }
     }
+
+    fun addEnvironment(info : EnvInfo){
+        addEnv = AddEnvState.Loading
+        val config = EnvironmentConfig(info.host.value, info.port.value, info.userName.value, info.password.value, info.description.value)
+        val req = EnvironmentRequest(info.name.value, config)
+        BaseApiInterface.create()
+            .addEnvironment(
+                BuildConfig.ADD_ENV,
+                req
+            ).enqueue(object : Callback<JsonObject> {
+                override fun onResponse(
+                    call: Call<JsonObject>,
+                    response: Response<JsonObject>
+                ) {
+                    addEnv = if (response.isSuccessful) {
+                        val dev = Dev()
+                        dev.name = info.name.value
+                        dev.host = info.host.value
+                        dev.description = info.description.value
+                        envs.value += (dev)
+                        info.host.value = ""
+                        info.name.value = ""
+                        info.port.value = ""
+                        info.userName.value = ""
+                        info.password.value = ""
+                        info.description.value = ""
+                        AddEnvState.Success(response.body())
+                    } else AddEnvState.Error(response.code())
+                }
+
+                override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                    addEnv = AddEnvState.Error(HttpURLConnection.HTTP_INTERNAL_ERROR)
+                }
+            })
+    }
 }
+

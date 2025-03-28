@@ -1,7 +1,6 @@
 package com.plcoding.oraclewms.login
 
 import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -10,7 +9,6 @@ import android.net.ConnectivityManager.NetworkCallback
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -21,26 +19,34 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Checkbox
-import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.PostAdd
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.AccountBox
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.AddHome
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
@@ -59,6 +65,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,22 +75,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.AppTheme
@@ -92,7 +98,6 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.Utils
@@ -101,7 +106,6 @@ import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.home.LandingActivity
 import com.plcoding.oraclewms.landing.BarCodeActivity
 import com.plcoding.oraclewms.landing.DialogWithMsg
-
 
 class LoginActivity : ComponentActivity() {
 
@@ -132,7 +136,7 @@ class LoginActivity : ComponentActivity() {
                     modifier,
                     color = MaterialTheme.colorScheme.surface
                 ) {
-                    Greeting(viewModel, viewModel.shellState, viewModel.cmdState, modifier)
+                    Greeting(viewModel, viewModel.shellState, viewModel.cmdState, viewModel.addEnv, modifier)
                 }
             }
         }
@@ -144,6 +148,7 @@ class LoginActivity : ComponentActivity() {
         viewModel: LoginViewModel,
         shellState: ShellUiState,
         cmdState: CommandUiState,
+        addEnvState: AddEnvState,
         modifier: Modifier
     ) {
         val email = rememberSaveable { mutableStateOf("") }
@@ -151,11 +156,12 @@ class LoginActivity : ComponentActivity() {
         val environment = rememberSaveable { mutableStateOf("dev") }
         var passwordVisible by remember { mutableStateOf(false) }
         val checkState = remember { mutableStateOf(false) }
-        val envs: ArrayList<Dev> = Gson().fromJson(
-            SharedPref.getEnvResponse(),
-            object : TypeToken<ArrayList<Dev>>() {}.type
-        )
+        var dialog by remember { mutableStateOf(false) }
+        val envs by viewModel.envs.collectAsState()
         val context = LocalContext.current
+        val envInfo by remember {
+            mutableStateOf(EnvInfo())
+        }
 
         val permissionState = rememberPermissionState(
             Manifest.permission.CAMERA
@@ -232,20 +238,28 @@ class LoginActivity : ComponentActivity() {
                                 },
                                 value = environment.value,
                                 trailingIcon = {
-                                    Icon(
-                                        Icons.Outlined.ArrowDropDown,
-                                        null,
-                                        modifier = Modifier.padding(8.dp)
-                                    )
+                                    Row {
+                                        Icon(
+                                            Icons.Outlined.ArrowDropDown,
+                                            null,
+                                            modifier = Modifier.padding(end = 8.dp).clickable {
+                                                checkState.value = true
+                                            }
+                                        )
+                                        Icon(
+                                            Icons.Outlined.Add,
+                                            null,
+                                            modifier = Modifier.padding(end = 8.dp).clickable {
+                                                dialog = true
+                                            }
+                                        )
+                                    }
                                 },
                                 enabled = false,
                                 singleLine = true,
                                 onValueChange = { },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
-                                        checkState.value = true
-                                    }
                                     .padding(15.dp, 15.dp, 15.dp, 5.dp),
                                 colors = TextFieldDefaults.colors(
                                     focusedIndicatorColor = Color.Transparent,
@@ -258,7 +272,72 @@ class LoginActivity : ComponentActivity() {
                                     environment.value = it.name
                                     checkState.value = false
                                 }, Modifier.fillMaxWidth()
-                            )
+                            ) else if (dialog) {
+                                    Dialog(onDismissRequest = { dialog = false }) {
+                                        Card(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .wrapContentHeight()
+                                                .padding(16.dp),
+                                            shape = RoundedCornerShape(16.dp),
+                                        ) {
+                                            Text(
+                                                text = "Add Environment",
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .background(Color.Blue)
+                                                    .padding(10.dp),
+                                                textAlign = TextAlign.Left,
+                                                color = Color.White
+                                            )
+                                            Spacer(modifier = Modifier.padding(15.dp))
+                                            EnvironmentRow("name", Icons.Outlined.AccountBox, envInfo)
+                                            EnvironmentRow("host", Icons.Outlined.AddHome, envInfo)
+                                            EnvironmentRow("port", Icons.Default.PostAdd, envInfo)
+                                            EnvironmentRow(
+                                                "username",
+                                                Icons.Default.VerifiedUser,
+                                                envInfo
+                                            )
+                                            EnvironmentRow("password", Icons.Default.Lock, envInfo)
+                                            EnvironmentRow(
+                                                "description",
+                                                Icons.Default.Description,
+                                                envInfo
+                                            )
+                                            Spacer(modifier = Modifier.padding(15.dp))
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.End
+                                            ) {
+                                                TextButton(
+                                                    onClick = {
+                                                        dialog = false
+                                                    }
+                                                ) {
+                                                    Text(
+                                                        "Cancel",
+                                                        fontSize = 15.sp,
+                                                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
+                                                    )
+                                                }
+                                                TextButton(
+                                                    onClick = {
+                                                        //API
+                                                        viewModel.addEnvironment(envInfo)
+                                                        dialog = false
+                                                    }
+                                                ) {
+                                                    Text(
+                                                        "Ok",
+                                                        fontSize = 15.sp,
+                                                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                         }
                         OutlinedTextField(
                             label = {
@@ -432,6 +511,7 @@ class LoginActivity : ComponentActivity() {
             viewModel,
             shellState,
             cmdState,
+            addEnvState,
             showDialog
         ) { up ->
             if (showDialog.value) DialogWithMsg(
@@ -462,6 +542,36 @@ class LoginActivity : ComponentActivity() {
     }
 
     @Composable
+    fun EnvironmentRow(str: String, vector: ImageVector, envInfo: EnvInfo){
+        OutlinedTextField(
+            label = {
+                Text(
+                    str,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
+                )
+            },
+            value =  if(str.equals("name")) envInfo.name.value else if (str.equals("host")) envInfo.host.value else if (str.equals("port")) envInfo.port.value else if (str.equals("username")) envInfo.userName.value else if (str.equals("password")) envInfo.password.value else envInfo.description.value,
+            singleLine = true,
+            leadingIcon = {
+                Icon(
+                    vector,
+                    null,
+                    modifier = Modifier.padding(8.dp)
+                )
+            },
+            trailingIcon = null,
+            onValueChange = {
+                val x = if(str.equals("name")) envInfo.name else if (str.equals("host")) envInfo.host else if (str.equals("port")) envInfo.port else if (str.equals("username")) envInfo.userName else if (str.equals("password")) envInfo.password else envInfo.description
+                x.value = it
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(15.dp)
+        )
+    }
+
+    @Composable
     fun handleResponse(
         password: MutableState<String>,
         email: MutableState<String>,
@@ -470,9 +580,10 @@ class LoginActivity : ComponentActivity() {
         viewModel: LoginViewModel,
         shellState: ShellUiState,
         cmdState: CommandUiState,
+        addEnv: AddEnvState,
         showDialog: MutableState<Boolean>, onCallBack: @Composable (Popup) -> Unit
     ) {
-        if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading) LoaderScreen()
+        if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading || addEnv is AddEnvState.Loading) LoaderScreen()
         else if (cmdState is CommandUiState.Success) {
             cmdState.response?.let { res ->
                 res.formFields.let {
@@ -529,91 +640,8 @@ class LoginActivity : ComponentActivity() {
         }
     }
 
-    fun checkPermission(context: Context, permission: String): Boolean {
+    private fun checkPermission(context: Context, permission: String): Boolean {
         return ActivityCompat.checkSelfPermission(context, permission) == PERMISSION_GRANTED
-    }
-
-    @Composable
-    fun TermsAndPolicy(checkState: MutableState<Boolean>) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    15.dp
-                ), verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = checkState.value,
-                onCheckedChange = { checkState.value = it },
-                modifier = Modifier.padding(),
-                enabled = true,
-
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.secondary,
-                    uncheckedColor = MaterialTheme.colorScheme.onSurface,
-                    checkmarkColor = MaterialTheme.colorScheme.surface
-                ),
-                interactionSource = remember { MutableInteractionSource() }
-            )
-            val annotatedString = buildAnnotatedString {
-                withStyle(
-                    style = SpanStyle(
-                        color = MaterialTheme.colorScheme.secondary,
-                        fontSize = 15.sp,
-                        fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
-                    )
-                ) {
-                    append("I agree to ")
-                }
-                pushStringAnnotation(tag = "Terms", annotation = "https://www.google.com")
-                withStyle(
-                    style = SpanStyle(
-                        color = Color.Blue,
-                        fontSize = 15.sp,
-                        textDecoration = TextDecoration.Underline,
-                        fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
-                    )
-                ) {
-                    append("Terms")
-                }
-
-                withStyle(
-                    style = SpanStyle(
-                        color = Color.Blue,
-                        fontSize = 15.sp,
-                        fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
-                    )
-                ) {
-                    append(" and ")
-                }
-
-                pushStringAnnotation(tag = "Privacy", annotation = "https://www.google.com")
-                withStyle(
-                    style = SpanStyle(
-                        color = Color.Blue,
-                        fontSize = 15.sp,
-                        textDecoration = TextDecoration.Underline,
-                        fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
-                    )
-                ) {
-                    append("Privacy Policy")
-                }
-            }
-            ClickableText(text = annotatedString, onClick = { offset ->
-                annotatedString.getStringAnnotations(tag = "Privacy", start = offset, end = offset)
-                    .firstOrNull()?.let {
-                        val telegram = Intent(Intent.ACTION_VIEW, Uri.parse(it.item))
-                        startActivity(telegram)
-                    }
-
-                annotatedString.getStringAnnotations(tag = "Terms", start = offset, end = offset)
-                    .firstOrNull()?.let {
-                        val telegram = Intent(Intent.ACTION_VIEW, Uri.parse(it.item))
-                        startActivity(telegram)
-                    }
-            })
-
-        }
     }
 
     @Composable
@@ -646,8 +674,7 @@ class LoginActivity : ComponentActivity() {
                             text = listEntry.name,
                             fontFamily = FontFamily(Font(R.font.spacegrotesk_light)),
                             fontSize = 15.sp,
-                            modifier = Modifier
-                                .fillMaxWidth() //optional instad of fillMaxWidth
+                            modifier = Modifier //optional instad of fillMaxWidth
                         )
                     }
                 )
@@ -662,7 +689,7 @@ class LoginActivity : ComponentActivity() {
             val viewModel = viewModel<LoginViewModel>()
             val modifier = Modifier.fillMaxSize()
             Surface(modifier) {
-                Greeting(viewModel, viewModel.shellState, viewModel.cmdState, modifier)
+                Greeting(viewModel, viewModel.shellState, viewModel.cmdState, viewModel.addEnv, modifier)
             }
         }
     }
