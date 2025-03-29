@@ -50,6 +50,7 @@ import androidx.compose.material.icons.outlined.AddHome
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -266,10 +267,10 @@ class LoginActivity : ComponentActivity() {
                                     unfocusedIndicatorColor = Color.Transparent,
                                 )
                             )
-                            if (checkState.value) SpinnerSample(
+                            if (checkState.value) SpinnerSample(viewModel,
                                 envs, envs.first(),
                                 onSelectionChanged = {
-                                    environment.value = it.name
+                                    environment.value = it
                                     checkState.value = false
                                 }, Modifier.fillMaxWidth()
                             ) else if (dialog) {
@@ -483,12 +484,15 @@ class LoginActivity : ComponentActivity() {
                                 ) else colorResource(R.color.primary_imws)
                             ),
                             onClick = {
-                                viewModel.startShell(
-                                    Utils.deviceUUID(),
-                                    environment.value,
-                                    email,
-                                    password
-                                )
+                                environment.value.apply {
+                                    if (isNullOrEmpty()) return@apply
+                                    viewModel.startShell(
+                                        Utils.deviceUUID(),
+                                        environment.value,
+                                        email,
+                                        password
+                                    )
+                                }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -646,12 +650,13 @@ class LoginActivity : ComponentActivity() {
 
     @Composable
     fun SpinnerSample(
+        viewModel: LoginViewModel,
         list: List<Dev>,
         preselected: Dev,
-        onSelectionChanged: (myData: Dev) -> Unit,
+        onSelectionChanged: (myData: String) -> Unit,
         modifier: Modifier
     ) {
-        var selected by rememberSaveable { mutableStateOf(preselected) }
+        var selected by rememberSaveable { mutableStateOf(preselected.name) }
         var expanded by rememberSaveable { mutableStateOf(true) } // initial value
 
         DropdownMenu(
@@ -665,17 +670,30 @@ class LoginActivity : ComponentActivity() {
             list.forEach { listEntry ->
                 DropdownMenuItem(
                     onClick = {
-                        selected = listEntry
+                        selected = listEntry.name
                         expanded = false
                         onSelectionChanged(selected)
                     },
                     content = {
-                        Text(
-                            text = listEntry.name,
-                            fontFamily = FontFamily(Font(R.font.spacegrotesk_light)),
-                            fontSize = 15.sp,
-                            modifier = Modifier //optional instad of fillMaxWidth
-                        )
+                        Row {
+                            Text(
+                                text = listEntry.name,
+                                fontFamily = FontFamily(Font(R.font.spacegrotesk_light)),
+                                fontSize = 15.sp,
+                                modifier = Modifier
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            Icon(
+                                Icons.Outlined.RemoveCircleOutline,
+                                null,
+                                modifier = Modifier.padding(end = 8.dp).clickable {
+                                    viewModel.removeEnvironment(listEntry.name)
+                                    selected = ""
+                                    expanded = false
+                                    onSelectionChanged(selected)
+                                }
+                            )
+                        }
                     }
                 )
             }
@@ -690,41 +708,6 @@ class LoginActivity : ComponentActivity() {
             val modifier = Modifier.fillMaxSize()
             Surface(modifier) {
                 Greeting(viewModel, viewModel.shellState, viewModel.cmdState, viewModel.addEnv, modifier)
-            }
-        }
-    }
-
-    @Composable
-    fun InternetConnectivityChanges(
-        onStateChange: (state: Boolean, network: Network) -> Unit
-    ) {
-        val context = LocalContext.current
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkCallback = remember {
-            object : NetworkCallback() {
-                override fun onAvailable(network: Network) {
-                    println("available")
-                    onStateChange(true, network)
-                }
-
-                override fun onLost(network: Network) {
-                    println("onLost")
-                    onStateChange(false, network)
-                }
-            }
-        }
-
-        LaunchedEffect (key1 = context) {
-            val networkRequest = NetworkRequest.Builder()
-                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                .build()
-            connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
-        }
-
-        DisposableEffect(key1 = Unit) {
-            onDispose {
-                connectivityManager.unregisterNetworkCallback(networkCallback)
             }
         }
     }

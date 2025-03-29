@@ -448,5 +448,30 @@ open class LoginViewModel : ViewModel() {
                 }
             })
     }
+
+    fun removeEnvironment(name: String){
+        addEnv = AddEnvState.Loading
+        BaseApiInterface.create()
+            .deleteEnvironment(
+                BuildConfig.ADD_ENV,
+                name
+            ).enqueue(object : Callback<JsonObject> {
+                override fun onResponse(
+                    call: Call<JsonObject>,
+                    response: Response<JsonObject>
+                ) {
+                    addEnv = if (response.isSuccessful) {
+                        val dev = Dev()
+                        dev.name = name
+                        envs.value -= dev
+                        AddEnvState.Success(response.body())
+                    } else AddEnvState.Error(response.code())
+                }
+
+                override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                    addEnv = AddEnvState.Error(HttpURLConnection.HTTP_INTERNAL_ERROR)
+                }
+            })
+    }
 }
 
