@@ -75,7 +75,7 @@ interface BaseApiInterface {
         @Part("qty")  qty: RequestBody,
         @Part("user_id")  userId: RequestBody,
         @Part("facility_name")  facilityName: RequestBody,
-        @Part file: MultipartBody.Part,
+        @Part vararg file: MultipartBody.Part,
     ): Call<UploadResponse>
 
     @POST
