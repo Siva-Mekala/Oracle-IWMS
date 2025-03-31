@@ -34,9 +34,7 @@ import androidx.compose.material.OutlinedButton
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Photo
-import androidx.compose.material.icons.filled.PhotoAlbum
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.outlined.AddCard
 import androidx.compose.material.icons.outlined.DateRange
@@ -111,7 +109,7 @@ fun DetailsScreen(
     viewModel: LandingViewModel,
     state: CommandUiState,
     optionNumber: Int?,
-    imageCallBack : () -> Unit
+    imageCallBack: () -> Unit
 ) {
     Log.d("DetailsFragment", "Inside composable")
     BackHandler {
@@ -145,7 +143,7 @@ fun DetailsScreen(
                                     val firstUp = ups.first()
                                     if (!firstUp.type.equals("message")) {
                                         viewModel.sendCommand(
-                                            Utils.deviceUUID(), it + "\t",nextField=false
+                                            Utils.deviceUUID(), it + "\t", nextField = false
                                         )
                                     } else {
                                         viewModel.sendCommand(
@@ -396,12 +394,15 @@ fun WareHouseTextField(
 @Composable
 fun ImageBottomSheet(
     quantity: String?,
-    viewModel: LoginViewModel, onDismiss: () -> Unit, imageCallBack: () -> Unit, launchCamera: () -> Unit
+    viewModel: LoginViewModel,
+    onDismiss: () -> Unit,
+    imageCallBack: () -> Unit,
+    launchCamera: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    ModalBottomSheet (
+    ModalBottomSheet(
         onDismissRequest = {
             onDismiss()
             showBottomSheet = false
@@ -410,12 +411,14 @@ fun ImageBottomSheet(
     ) {
         Column {
             viewModel.images.let {
-                LazyRow (modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp), verticalAlignment = Alignment.CenterVertically) {
-                    items(it.size){ index->
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp), verticalAlignment = Alignment.CenterVertically
+                ) {
+                    items(it.size) { index ->
                         if (index == 0) {
-                            Row  {
+                            Row {
                                 Icon(
                                     Icons.Default.PhotoLibrary,
                                     null,
@@ -423,7 +426,8 @@ fun ImageBottomSheet(
                                         .clickable {
                                             imageCallBack()
                                         }
-                                        .size(60.dp).padding(end = 15.dp))
+                                        .size(60.dp)
+                                        .padding(end = 15.dp))
                                 Icon(
                                     Icons.Default.AddAPhoto,
                                     null,
@@ -431,7 +435,8 @@ fun ImageBottomSheet(
                                         .clickable {
                                             launchCamera()
                                         }
-                                        .size(60.dp).padding(end = 15.dp))
+                                        .size(60.dp)
+                                        .padding(end = 15.dp))
                             }
                         } else {
                             AsyncImage(
@@ -440,26 +445,41 @@ fun ImageBottomSheet(
                                     .build(),
                                 contentDescription = "icon",
                                 contentScale = ContentScale.Inside,
-                                modifier = Modifier.size(120.dp).clickable {  }.padding(5.dp)
+                                modifier = Modifier
+                                    .size(120.dp)
+                                    .clickable { }
+                                    .padding(5.dp)
                             )
                         }
                     }
                 }
             }
 
-            OutlinedButton(onClick = {
-                if (viewModel.images.size == 1) Toast.makeText(context, "Please add images to upload", Toast.LENGTH_LONG).show()
-                else {
-                    viewModel.uploadImages(context, quantity)
-                    onDismiss()
-                    showBottomSheet = false
-                }
-            }, modifier = Modifier.padding(15.dp).fillMaxWidth().padding(10.dp,0.dp,10.dp,0.dp)) {
-                Text("Upload", fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+            OutlinedButton(
+                onClick = {
+                    if (viewModel.images.size == 1) Toast.makeText(
+                        context,
+                        "Please add images to upload",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    else {
+                        viewModel.uploadImages(context, quantity)
+                        onDismiss()
+                        showBottomSheet = false
+                    }
+                },
+                modifier = Modifier
+                    .padding(15.dp)
+                    .fillMaxWidth()
+                    .padding(10.dp, 0.dp, 10.dp, 0.dp)
+            ) {
+                Text(
+                    "Upload", fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
                     fontSize = 15.sp,
                     color = if (isSystemInDarkTheme()) colorResource(R.color.secondary_dark_imws) else colorResource(
                         R.color.secondary_imws
-                    ))
+                    )
+                )
             }
         }
     }
@@ -491,7 +511,7 @@ fun ListScreen(
             if (returnedString != null) viewModel.addImage(returnedString)
         }
     }
-    var quantity : String? = null
+    var quantity: String? = null
     var showBottomSheet by remember { mutableStateOf(false) }
     Box {
         viewModel.formItems.let { item ->
@@ -503,7 +523,7 @@ fun ListScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(start = 5.dp, end = 5.dp),
-                ) {
+            ) {
                 item {
                     Column {
                         HorizontalDivider(
@@ -603,7 +623,10 @@ fun ListScreen(
             }
         }
         if (loader) LoaderScreen()
-        if (showBottomSheet) ImageBottomSheet(quantity, viewModel, { showBottomSheet = false }, imageCallBack,
+        if (showBottomSheet) ImageBottomSheet(quantity,
+            viewModel,
+            { showBottomSheet = false },
+            imageCallBack,
             {
                 if (permissionState.status.isGranted) {
                     val intent = Intent(
@@ -627,7 +650,7 @@ fun ListItem(
     item: FormField,
     viewModel: LandingViewModel,
     permissionState: PermissionState,
-    onImageClick : (quantity: String?) -> Unit
+    onImageClick: (quantity: String?) -> Unit
 ) {
     val textObj = remember(item.form_value) {
         mutableStateOf(

@@ -58,6 +58,7 @@ open class LoginViewModel : ViewModel() {
         private set
 
     var envs = MutableStateFlow<List<Dev>>(emptyList())
+
     init {
         envs.value = Gson().fromJson(
             SharedPref.getEnvResponse(),
@@ -366,15 +367,15 @@ open class LoginViewModel : ViewModel() {
             var lpn: String? = null
             var sku: String? = null
             formItems.let {
-                it.indexOf(FormField(form_key = "Shipment")).let { index->
+                it.indexOf(FormField(form_key = "Shipment")).let { index ->
                     if (index > -1)
                         shipMent = it.get(index).form_value
                 }
-                it.indexOf(FormField(form_key = "LPN")).let { index->
+                it.indexOf(FormField(form_key = "LPN")).let { index ->
                     if (index > -1)
                         lpn = it.get(index).form_value
                 }
-                it.indexOf(FormField(form_key = "SKU")).let { index->
+                it.indexOf(FormField(form_key = "SKU")).let { index ->
                     if (index > -1)
                         sku = it.get(index).form_value
                 }
@@ -385,9 +386,12 @@ open class LoginViewModel : ViewModel() {
             val bodysku = RequestBody.create(MultipartBody.FORM, sku?.trim().toString())
             val qty = RequestBody.create(MultipartBody.FORM, quantity?.trim().toString())
             val userId = RequestBody.create(MultipartBody.FORM, SharedPref.getLoggedIn())
-            val facilityName = RequestBody.create(MultipartBody.FORM, SharedPref.getHomeInfo()?.split(",")?.get(2).toString())
+            val facilityName = RequestBody.create(
+                MultipartBody.FORM,
+                SharedPref.getHomeInfo()?.split(",")?.get(2).toString()
+            )
             val arrayImage = arrayListOf<MultipartBody.Part>()
-            repeat(it.size) { index->
+            repeat(it.size) { index ->
                 if (index == 0) return@repeat
                 FilePathUtil.getPath(context, it[index]).let { path ->
                     if (path?.isNotEmpty() == true) {
@@ -400,23 +404,36 @@ open class LoginViewModel : ViewModel() {
                     val requestFile1: RequestBody =
                         RequestBody.create("image/*".toMediaTypeOrNull(), file)
                     arrayImage.add(
-                        MultipartBody.Part.createFormData("files", file.getName(), requestFile1))
+                        MultipartBody.Part.createFormData("files", file.getName(), requestFile1)
+                    )
                 }
             }
             val call: Call<UploadResponse> =
                 BaseApiInterface.create()
                     .filesUpload(
                         BuildConfig.UPLOAD,
-                        shipmentId, bodylpn, bodysku, qty, userId, facilityName, *arrayImage.toTypedArray()
+                        shipmentId,
+                        bodylpn,
+                        bodysku,
+                        qty,
+                        userId,
+                        facilityName,
+                        *arrayImage.toTypedArray()
                     )
             call.execute()
-            emit(it.size-1)
+            emit(it.size - 1)
         }
     }
 
-    fun addEnvironment(info : EnvInfo){
+    fun addEnvironment(info: EnvInfo) {
         addEnv = AddEnvState.Loading
-        val config = EnvironmentConfig(info.host.value, info.port.value, info.userName.value, info.password.value, info.description.value)
+        val config = EnvironmentConfig(
+            info.host.value,
+            info.port.value,
+            info.userName.value,
+            info.password.value,
+            info.description.value
+        )
         val req = EnvironmentRequest(info.name.value, config)
         BaseApiInterface.create()
             .addEnvironment(
@@ -449,7 +466,7 @@ open class LoginViewModel : ViewModel() {
             })
     }
 
-    fun removeEnvironment(name: String){
+    fun removeEnvironment(name: String) {
         addEnv = AddEnvState.Loading
         BaseApiInterface.create()
             .deleteEnvironment(

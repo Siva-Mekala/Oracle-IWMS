@@ -69,24 +69,26 @@ interface BaseApiInterface {
     @POST
     fun filesUpload(
         @Url url: String,
-        @Part("shipment_id")  shipmentId: RequestBody,
-        @Part("lpn")  lpn: RequestBody,
-        @Part("sku")  sku: RequestBody,
-        @Part("qty")  qty: RequestBody,
-        @Part("user_id")  userId: RequestBody,
-        @Part("facility_name")  facilityName: RequestBody,
+        @Part("shipment_id") shipmentId: RequestBody,
+        @Part("lpn") lpn: RequestBody,
+        @Part("sku") sku: RequestBody,
+        @Part("qty") qty: RequestBody,
+        @Part("user_id") userId: RequestBody,
+        @Part("facility_name") facilityName: RequestBody,
         @Part vararg file: MultipartBody.Part,
     ): Call<UploadResponse>
 
     @POST
     fun addEnvironment(
         @Url url: String,
-        @Body request: EnvironmentRequest) : Call<JsonObject>
+        @Body request: EnvironmentRequest
+    ): Call<JsonObject>
 
     @DELETE
     fun deleteEnvironment(
         @Url url: String,
-        @Query("name") env: String) : Call<JsonObject>
+        @Query("name") env: String
+    ): Call<JsonObject>
 
     companion object {
 

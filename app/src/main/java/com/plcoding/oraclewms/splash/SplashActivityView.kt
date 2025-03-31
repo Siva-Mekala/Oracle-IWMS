@@ -37,7 +37,6 @@ import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.api.Dev
 import com.plcoding.oraclewms.home.LandingActivity
 import com.plcoding.oraclewms.login.LoginActivity
-import com.plcoding.oraclewms.termsAndConditions.TermsAndConditionsView
 
 class SplashActivityView : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

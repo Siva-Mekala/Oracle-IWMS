@@ -4,41 +4,49 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
-import android.net.ConnectivityManager
-import android.net.ConnectivityManager.NetworkCallback
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
-import androidx.compose.material.TextButton
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material.icons.filled.VerifiedUser
@@ -47,7 +55,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.AccountBox
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AddHome
-import androidx.compose.material.icons.outlined.ArrowDropDown
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
@@ -56,20 +64,25 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -77,7 +90,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -86,13 +101,16 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.SecureFlagPolicy
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.compose.AppTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -107,6 +125,8 @@ import com.plcoding.oraclewms.api.Popup
 import com.plcoding.oraclewms.home.LandingActivity
 import com.plcoding.oraclewms.landing.BarCodeActivity
 import com.plcoding.oraclewms.landing.DialogWithMsg
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 class LoginActivity : ComponentActivity() {
 
@@ -137,43 +157,339 @@ class LoginActivity : ComponentActivity() {
                     modifier,
                     color = MaterialTheme.colorScheme.surface
                 ) {
-                    Greeting(viewModel, viewModel.shellState, viewModel.cmdState, viewModel.addEnv, modifier)
+                    LaunchedEffect(true) {
+                        viewModel.endShell(Utils.deviceUUID(), this@LoginActivity, "LoginActivity")
+                    }
+                    LoginScreen(
+                        viewModel,
+                        viewModel.shellState,
+                        viewModel.cmdState,
+                        viewModel.addEnv,
+                        modifier
+                    )
                 }
             }
         }
     }
 
-    @OptIn(ExperimentalPermissionsApi::class)
     @Composable
-    fun Greeting(
+    fun LoginScreen(
         viewModel: LoginViewModel,
         shellState: ShellUiState,
         cmdState: CommandUiState,
         addEnvState: AddEnvState,
         modifier: Modifier
     ) {
-        val email = rememberSaveable { mutableStateOf("") }
-        val password = rememberSaveable { mutableStateOf("") }
-        val environment = rememberSaveable { mutableStateOf("dev") }
-        var passwordVisible by remember { mutableStateOf(false) }
-        val checkState = remember { mutableStateOf(false) }
+        val navController = rememberNavController()
+        var title by remember { mutableStateOf("") }
         var dialog by remember { mutableStateOf(false) }
-        val envs by viewModel.envs.collectAsState()
-        val context = LocalContext.current
+        var showDelete by remember { mutableStateOf<Dev?>(null) }
+        val environment = rememberSaveable { mutableStateOf("dev") }
+
+        Scaffold(
+            modifier = modifier
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+            topBar =
+            {
+                if (title.isNotEmpty()) TopAppBar(title = {
+                    Row {
+                        Text(
+                            "Environments", fontSize = 15.sp,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
+                        )
+                        Spacer(Modifier.weight(1f))
+                        Icon(Icons.Default.Add, "add", Modifier
+                            .padding(end = 10.dp)
+                            .clickable {
+                                dialog = true
+                                showDelete = null
+                            }, tint = Color.Black)
+                    }
+                }, navigationIcon = {
+                    Icon(Icons.Default.ArrowBack, "back", Modifier.clickable {
+                        title = ""
+                        navController.popBackStack()
+                    }, tint = Color.Black)
+                }, backgroundColor = Color.White)
+            }
+        ) { innerPadding ->
+            Box(modifier = modifier.padding(innerPadding)) {
+                NavHost(navController = navController, startDestination = "Login") {
+                    composable("Login") {
+                        Greeting(environment, viewModel, shellState, cmdState, modifier) {
+                            title = "Env"
+                            navController.navigate("Env")
+                        }
+                    }
+                    composable("Env") {
+                        EnvScreen(addEnvState, viewModel, {
+                            dialog = true
+                            showDelete = it
+                        }, {
+                            title = ""
+                            environment.value = it?.name ?: ""
+                            navController.popBackStack()
+                        })
+                    }
+                }
+                if (dialog) AddEnvScreen(showDelete, viewModel) {
+                    dialog = false
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun AddEnvScreen(
+        showDelete: Dev?,
+        viewModel: LoginViewModel,
+        onDismiss: () -> Unit
+    ) {
         val envInfo by remember {
             mutableStateOf(EnvInfo())
         }
+        envInfo.name.value = showDelete?.name ?: ""
+        envInfo.host.value = showDelete?.host ?: ""
+        envInfo.description.value = showDelete?.description ?: ""
 
+        val coroutineScope = rememberCoroutineScope()
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = {
+                onDismiss()
+            },
+            properties = ModalBottomSheetProperties(
+                securePolicy = SecureFlagPolicy.SecureOn,
+                isFocusable = true,
+                shouldDismissOnBackPress = true
+            ),
+            sheetState = sheetState
+        ) {
+            Column {
+                Text(
+                    "Add Environment",
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_bold)),
+                    modifier = Modifier.padding(start = 15.dp, top = 15.dp)
+                )
+                EnvironmentRow("name", Icons.Outlined.AccountBox, envInfo)
+                EnvironmentRow("host", Icons.Outlined.AddHome, envInfo)
+                EnvironmentRow("port", Icons.Default.PostAdd, envInfo)
+                EnvironmentRow(
+                    "username",
+                    Icons.Default.VerifiedUser,
+                    envInfo
+                )
+                EnvironmentRow("password", Icons.Default.Lock, envInfo)
+                EnvironmentRow(
+                    "description",
+                    Icons.Default.Description,
+                    envInfo
+                )
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(15.dp)) {
+                    Spacer(Modifier.weight(1f))
+
+                    Icon(
+                        Icons.Default.Done,
+                        "Done",
+                        modifier = Modifier
+                            .clickable {
+                                coroutineScope
+                                    .launch { sheetState.hide() }
+                                    .invokeOnCompletion {
+                                        if (!sheetState.isVisible) {
+                                            if (envInfo.name.value.validate() &&
+                                                envInfo.port.value.validate() &&
+                                                envInfo.host.value.validate() &&
+                                                envInfo.password.value.validate() &&
+                                                envInfo.description.value.validate()
+                                            ) {
+                                                viewModel.addEnvironment(envInfo)
+                                                onDismiss()
+                                            }
+                                        }
+                                    }
+                            }
+                            .padding(5.dp)
+                    )
+                }
+            }
+        }
+    }
+
+    private fun String?.validate(): Boolean {
+        return !isNullOrEmpty()
+    }
+
+    enum class DragValue(val fraction: Float) { Start(0f), End(1f) }
+
+    @OptIn(ExperimentalFoundationApi::class)
+    @Composable
+    fun HorizontalDraggableSample(
+        content: @Composable () -> Unit, onDelete: () -> Unit
+    ) {
+        val density = LocalDensity.current
+        val state = remember {
+            AnchoredDraggableState(
+                initialValue = DragValue.Start,
+                positionalThreshold = { distance: Float -> distance * 0.3f },
+                velocityThreshold = { with(density) { 50.dp.toPx() } },
+                animationSpec = tween(),
+            )
+        }
+        val contentSize = 50.dp
+        val contentSizePx = with(density) { contentSize.toPx() }
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .onSizeChanged { layoutSize ->
+                    val dragEndPoint = contentSizePx
+                    state.updateAnchors(
+                        DraggableAnchors {
+                            DragValue
+                                .values()
+                                .forEach { anchor ->
+                                    anchor at -(dragEndPoint * anchor.fraction)
+                                }
+                        }
+                    )
+                }
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterEnd)
+                    .background(Color.White)
+                    .padding(end = 15.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Delete,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clickable(onClick = {
+                            ///////DELETE TASK
+                            onDelete()
+                        }),
+                    tint = Color.Red
+                )
+            }
+
+            // Main content which moves with swipe
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset {
+                        IntOffset(
+                            x = state
+                                .requireOffset()
+                                .roundToInt(),
+                            y = 0,
+                        )
+                    }
+                    .anchoredDraggable(state, Orientation.Horizontal)
+            ) {
+                content()
+            }
+        }
+    }
+
+    @Composable
+    fun EnvScreen(
+        addEnvState: AddEnvState,
+        viewModel: LoginViewModel,
+        show: (dev: Dev) -> Unit,
+        backPress: (dev: Dev?) -> Unit
+    ) {
+        BackHandler {
+            backPress(null)
+        }
+        val envoys by viewModel.envs.collectAsState()
+        if (envoys.isEmpty()) {
+            Text(
+                "No Items to display", modifier = Modifier, fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
+            )
+        } else {
+            LazyColumn {
+                items(envoys.size) { index ->
+                    HorizontalDraggableSample({
+                        Card(modifier = Modifier
+                            .padding(top = 20.dp, start = 15.dp, end = 15.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .clickable { backPress(envoys[index]) }
+                                    .padding(10.dp)
+                            ) {
+                                Text(
+                                    envoys[index].name,
+                                    modifier = Modifier.weight(1f),
+                                    fontSize = 15.sp,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
+                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.wrapContentWidth(),
+                                ) {
+                                    Text(
+                                        text = envoys[index].host, fontSize = 15.sp,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Filled.KeyboardArrowRight,
+                                        contentDescription = "",
+                                        modifier = Modifier.size(40.dp),
+                                        tint = Color.Black
+                                    )
+                                }
+                            }
+                        }
+                    }) {
+                        viewModel.removeEnvironment(envoys[index].name)
+                    }
+                }
+            }
+        }
+        if (addEnvState is AddEnvState.Loading) LoaderScreen()
+    }
+
+    @OptIn(ExperimentalPermissionsApi::class)
+    @Composable
+    fun Greeting(
+        environment: MutableState<String>,
+        viewModel: LoginViewModel,
+        shellState: ShellUiState,
+        cmdState: CommandUiState,
+        modifier: Modifier,
+        showEnd: () -> Unit
+    ) {
+        val email = rememberSaveable { mutableStateOf("") }
+        val password = rememberSaveable { mutableStateOf("") }
+        var passwordVisible by remember { mutableStateOf(false) }
+        val context = LocalContext.current
         val permissionState = rememberPermissionState(
             Manifest.permission.CAMERA
         )
+        val envoys by viewModel.envs.collectAsState()
 
         val launcher = rememberLauncherForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
             if (result.resultCode == RESULT_OK) {
                 val data = result.data
-                val returnedString = data?.getStringExtra("returned_string") // Get the returned string
+                val returnedString =
+                    data?.getStringExtra("returned_string") // Get the returned string
                 val type = data?.getStringExtra("type")
                 if (returnedString != null) {
                     when (type) {
@@ -185,9 +501,7 @@ class LoginActivity : ComponentActivity() {
         }
 
         val showDialog = remember { mutableStateOf(false) }
-        LaunchedEffect(true) {
-            viewModel.endShell(Utils.deviceUUID(), this@LoginActivity, "LoginActivity")
-        }
+
         Box(
             contentAlignment = Alignment.Center,
             modifier = modifier.background(
@@ -239,22 +553,15 @@ class LoginActivity : ComponentActivity() {
                                 },
                                 value = environment.value,
                                 trailingIcon = {
-                                    Row {
-                                        Icon(
-                                            Icons.Outlined.ArrowDropDown,
-                                            null,
-                                            modifier = Modifier.padding(end = 8.dp).clickable {
-                                                checkState.value = true
+                                    Icon(
+                                        Icons.Outlined.Add,
+                                        null,
+                                        modifier = Modifier
+                                            .padding(end = 8.dp)
+                                            .clickable {
+                                                showEnd()
                                             }
-                                        )
-                                        Icon(
-                                            Icons.Outlined.Add,
-                                            null,
-                                            modifier = Modifier.padding(end = 8.dp).clickable {
-                                                dialog = true
-                                            }
-                                        )
-                                    }
+                                    )
                                 },
                                 enabled = false,
                                 singleLine = true,
@@ -267,78 +574,6 @@ class LoginActivity : ComponentActivity() {
                                     unfocusedIndicatorColor = Color.Transparent,
                                 )
                             )
-                            if (checkState.value) SpinnerSample(viewModel,
-                                envs, envs.first(),
-                                onSelectionChanged = {
-                                    environment.value = it
-                                    checkState.value = false
-                                }, Modifier.fillMaxWidth()
-                            ) else if (dialog) {
-                                    Dialog(onDismissRequest = { dialog = false }) {
-                                        Card(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .wrapContentHeight()
-                                                .padding(16.dp),
-                                            shape = RoundedCornerShape(16.dp),
-                                        ) {
-                                            Text(
-                                                text = "Add Environment",
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .background(Color.Blue)
-                                                    .padding(10.dp),
-                                                textAlign = TextAlign.Left,
-                                                color = Color.White
-                                            )
-                                            Spacer(modifier = Modifier.padding(15.dp))
-                                            EnvironmentRow("name", Icons.Outlined.AccountBox, envInfo)
-                                            EnvironmentRow("host", Icons.Outlined.AddHome, envInfo)
-                                            EnvironmentRow("port", Icons.Default.PostAdd, envInfo)
-                                            EnvironmentRow(
-                                                "username",
-                                                Icons.Default.VerifiedUser,
-                                                envInfo
-                                            )
-                                            EnvironmentRow("password", Icons.Default.Lock, envInfo)
-                                            EnvironmentRow(
-                                                "description",
-                                                Icons.Default.Description,
-                                                envInfo
-                                            )
-                                            Spacer(modifier = Modifier.padding(15.dp))
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.End
-                                            ) {
-                                                TextButton(
-                                                    onClick = {
-                                                        dialog = false
-                                                    }
-                                                ) {
-                                                    Text(
-                                                        "Cancel",
-                                                        fontSize = 15.sp,
-                                                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
-                                                    )
-                                                }
-                                                TextButton(
-                                                    onClick = {
-                                                        //API
-                                                        viewModel.addEnvironment(envInfo)
-                                                        dialog = false
-                                                    }
-                                                ) {
-                                                    Text(
-                                                        "Ok",
-                                                        fontSize = 15.sp,
-                                                        fontFamily = FontFamily(Font(R.font.spacegrotesk_medium))
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
                         }
                         OutlinedTextField(
                             label = {
@@ -363,7 +598,11 @@ class LoginActivity : ComponentActivity() {
                                     modifier = Modifier
                                         .size(40.dp)
                                         .clickable {
-                                            if (!checkPermission(context, Manifest.permission.CAMERA)) {
+                                            if (!checkPermission(
+                                                    context,
+                                                    Manifest.permission.CAMERA
+                                                )
+                                            ) {
                                                 requestPermissionLauncher.launch(Manifest.permission.CAMERA)
                                             } else {
                                                 if (permissionState.status.isGranted) {
@@ -421,7 +660,11 @@ class LoginActivity : ComponentActivity() {
                                         modifier = Modifier
                                             .size(40.dp)
                                             .clickable {
-                                                if (!checkPermission(context, Manifest.permission.CAMERA)) {
+                                                if (!checkPermission(
+                                                        context,
+                                                        Manifest.permission.CAMERA
+                                                    )
+                                                ) {
                                                     requestPermissionLauncher.launch(Manifest.permission.CAMERA)
                                                 } else {
                                                     if (permissionState.status.isGranted) {
@@ -510,12 +753,11 @@ class LoginActivity : ComponentActivity() {
         handleResponse(
             password,
             email,
-            envs,
+            envoys,
             environment,
             viewModel,
             shellState,
             cmdState,
-            addEnvState,
             showDialog
         ) { up ->
             if (showDialog.value) DialogWithMsg(
@@ -546,16 +788,23 @@ class LoginActivity : ComponentActivity() {
     }
 
     @Composable
-    fun EnvironmentRow(str: String, vector: ImageVector, envInfo: EnvInfo){
+    fun EnvironmentRow(str: String, vector: ImageVector, envInfo: EnvInfo) {
         OutlinedTextField(
             label = {
                 Text(
                     str,
+                    fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                 )
             },
-            value =  if(str.equals("name")) envInfo.name.value else if (str.equals("host")) envInfo.host.value else if (str.equals("port")) envInfo.port.value else if (str.equals("username")) envInfo.userName.value else if (str.equals("password")) envInfo.password.value else envInfo.description.value,
+            value = if (str.equals("name")) envInfo.name.value else if (str.equals("host")) envInfo.host.value else if (str.equals(
+                    "port"
+                )
+            ) envInfo.port.value else if (str.equals("username")) envInfo.userName.value else if (str.equals(
+                    "password"
+                )
+            ) envInfo.password.value else envInfo.description.value,
             singleLine = true,
             leadingIcon = {
                 Icon(
@@ -566,7 +815,14 @@ class LoginActivity : ComponentActivity() {
             },
             trailingIcon = null,
             onValueChange = {
-                val x = if(str.equals("name")) envInfo.name else if (str.equals("host")) envInfo.host else if (str.equals("port")) envInfo.port else if (str.equals("username")) envInfo.userName else if (str.equals("password")) envInfo.password else envInfo.description
+                val x =
+                    if (str.equals("name")) envInfo.name else if (str.equals("host")) envInfo.host else if (str.equals(
+                            "port"
+                        )
+                    ) envInfo.port else if (str.equals("username")) envInfo.userName else if (str.equals(
+                            "password"
+                        )
+                    ) envInfo.password else envInfo.description
                 x.value = it
             },
             modifier = Modifier
@@ -584,10 +840,9 @@ class LoginActivity : ComponentActivity() {
         viewModel: LoginViewModel,
         shellState: ShellUiState,
         cmdState: CommandUiState,
-        addEnv: AddEnvState,
         showDialog: MutableState<Boolean>, onCallBack: @Composable (Popup) -> Unit
     ) {
-        if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading || addEnv is AddEnvState.Loading) LoaderScreen()
+        if (shellState is ShellUiState.Loading || cmdState is CommandUiState.Loading) LoaderScreen()
         else if (cmdState is CommandUiState.Success) {
             cmdState.response?.let { res ->
                 res.formFields.let {
@@ -686,12 +941,14 @@ class LoginActivity : ComponentActivity() {
                             Icon(
                                 Icons.Outlined.RemoveCircleOutline,
                                 null,
-                                modifier = Modifier.padding(end = 8.dp).clickable {
-                                    viewModel.removeEnvironment(listEntry.name)
-                                    selected = ""
-                                    expanded = false
-                                    onSelectionChanged(selected)
-                                }
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .clickable {
+                                        viewModel.removeEnvironment(listEntry.name)
+                                        selected = ""
+                                        expanded = false
+                                        onSelectionChanged(selected)
+                                    }
                             )
                         }
                     }
@@ -702,13 +959,16 @@ class LoginActivity : ComponentActivity() {
 
     @Preview(showBackground = true)
     @Composable
-    fun GreetingPreview() {
+    fun LoginScreenPreview() {
+        val viewModel = viewModel<LoginViewModel>()
         AppTheme {
-            val viewModel = viewModel<LoginViewModel>()
-            val modifier = Modifier.fillMaxSize()
-            Surface(modifier) {
-                Greeting(viewModel, viewModel.shellState, viewModel.cmdState, viewModel.addEnv, modifier)
-            }
+            LoginScreen(
+                viewModel,
+                viewModel.shellState,
+                viewModel.cmdState,
+                viewModel.addEnv,
+                Modifier.fillMaxSize()
+            )
         }
     }
 }

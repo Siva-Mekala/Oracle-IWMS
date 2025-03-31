@@ -86,7 +86,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.compose.AppTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.gson.Gson
@@ -140,7 +139,9 @@ class LandingActivity : ComponentActivity() {
             }
         }
         enableEdgeToEdge()
-        if (!checkPermission(this, Manifest.permission.CAMERA)) requestPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+        if (!checkPermission(this, Manifest.permission.CAMERA)) requestPermissionLauncher.launch(
+            android.Manifest.permission.CAMERA
+        )
     }
 
     @Composable
@@ -164,7 +165,7 @@ class LandingActivity : ComponentActivity() {
             }
         }
 
-        LaunchedEffect (key1 = context) {
+        LaunchedEffect(key1 = context) {
             val networkRequest = NetworkRequest.Builder()
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .build()
@@ -183,15 +184,16 @@ class LandingActivity : ComponentActivity() {
         val navController = rememberNavController()
         val item = Gson().fromJson(SharedPref.getResponse(), JSONResponse::class.java)
         viewModel.setState(CommandUiState.Success(item))
-        pickMedia = rememberLauncherForActivityResult (ActivityResultContracts.PickMultipleVisualMedia()) {
-            it.let {
-                if (it.isEmpty()) return@let
-                println("images :"+it.size)
-                repeat(it.size){ index->
-                    viewModel.addImage(it[index])
+        pickMedia =
+            rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) {
+                it.let {
+                    if (it.isEmpty()) return@let
+                    println("images :" + it.size)
+                    repeat(it.size) { index ->
+                        viewModel.addImage(it[index])
+                    }
                 }
             }
-        }
         DashboardActivityScreen(
             modifier,
             viewModel,
@@ -291,7 +293,7 @@ class LandingActivity : ComponentActivity() {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                                 if (isPhotoPickerAvailable(applicationContext)) pickMedia.launch(
                                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                ) else  if (permissionState.status.isGranted) {
+                                ) else if (permissionState.status.isGranted) {
                                     val intent = Intent(Intent.ACTION_GET_CONTENT)
                                     intent.type = "image/*"
                                     intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
@@ -661,7 +663,8 @@ class LandingActivity : ComponentActivity() {
                     state = xyz
                 }
 
-                if (!state) Text("connection lost",
+                if (!state) Text(
+                    "connection lost",
                     Modifier.padding(5.dp),
                     fontSize = 20.sp,
                     textAlign = TextAlign.Center,

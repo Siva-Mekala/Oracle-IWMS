@@ -3,7 +3,6 @@ package com.plcoding.oraclewms
 import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.plcoding.oraclewms.api.NetworkConnectivityObserver
 
 class WareHouseApp : Application() {
 
