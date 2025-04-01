@@ -272,7 +272,7 @@ class LoginActivity : ComponentActivity() {
         ) {
             Column {
                 Text(
-                    "Add Environment",
+                    if (showDelete == null) "Add Environment" else "Environment Details",
                     fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_bold)),
@@ -280,13 +280,15 @@ class LoginActivity : ComponentActivity() {
                 )
                 EnvironmentRow("name", Icons.Outlined.AccountBox, envInfo)
                 EnvironmentRow("host", Icons.Outlined.AddHome, envInfo)
-                EnvironmentRow("port", Icons.Default.PostAdd, envInfo)
-                EnvironmentRow(
-                    "username",
-                    Icons.Default.VerifiedUser,
-                    envInfo
-                )
-                EnvironmentRow("password", Icons.Default.Lock, envInfo)
+                if (showDelete == null) {
+                    EnvironmentRow("port", Icons.Default.PostAdd, envInfo)
+                    EnvironmentRow(
+                        "username",
+                        Icons.Default.VerifiedUser,
+                        envInfo
+                    )
+                    EnvironmentRow("password", Icons.Default.Lock, envInfo)
+                }
                 EnvironmentRow(
                     "description",
                     Icons.Default.Description,
@@ -319,7 +321,7 @@ class LoginActivity : ComponentActivity() {
                             .padding(5.dp)
                     )
                     Spacer(Modifier.weight(1f))
-                    Icon(
+                    if(showDelete == null) Icon(
                         Icons.Default.Done,
                         "Done",
                         modifier = Modifier
