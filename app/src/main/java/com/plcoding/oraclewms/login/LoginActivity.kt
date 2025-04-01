@@ -22,6 +22,7 @@ import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,10 +41,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -53,12 +56,11 @@ import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.AccountBox
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AddHome
+import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -184,7 +186,7 @@ class LoginActivity : ComponentActivity() {
         var title by remember { mutableStateOf("") }
         var dialog by remember { mutableStateOf(false) }
         var showDelete by remember { mutableStateOf<Dev?>(null) }
-        val environment = rememberSaveable { mutableStateOf("dev") }
+        val environment = rememberSaveable { mutableStateOf("") }
 
         Scaffold(
             modifier = modifier
@@ -293,8 +295,30 @@ class LoginActivity : ComponentActivity() {
                 Row(modifier = Modifier
                     .fillMaxWidth()
                     .padding(15.dp)) {
+                    if(showDelete != null) Icon(
+                        Icons.Default.Delete,
+                        "Delete",
+                        modifier = Modifier
+                            .clickable {
+                                coroutineScope
+                                    .launch { sheetState.hide() }
+                                    .invokeOnCompletion {
+                                        if (!sheetState.isVisible) {
+                                            if (envInfo.name.value.validate() &&
+                                                envInfo.port.value.validate() &&
+                                                envInfo.host.value.validate() &&
+                                                envInfo.password.value.validate() &&
+                                                envInfo.description.value.validate()
+                                            ) {
+                                                viewModel.removeEnvironment(envInfo.name.value)
+                                                onDismiss()
+                                            }
+                                        }
+                                    }
+                            }
+                            .padding(5.dp)
+                    )
                     Spacer(Modifier.weight(1f))
-
                     Icon(
                         Icons.Default.Done,
                         "Done",
@@ -427,7 +451,7 @@ class LoginActivity : ComponentActivity() {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
-                                    .clickable { backPress(envoys[index]) }
+                                    .clickable { show(envoys[index]) }
                                     .padding(10.dp)
                             ) {
                                 Text(
@@ -478,6 +502,7 @@ class LoginActivity : ComponentActivity() {
         val password = rememberSaveable { mutableStateOf("") }
         var passwordVisible by remember { mutableStateOf(false) }
         val context = LocalContext.current
+        val checkState = remember { mutableStateOf(false) }
         val permissionState = rememberPermissionState(
             Manifest.permission.CAMERA
         )
@@ -503,14 +528,13 @@ class LoginActivity : ComponentActivity() {
         val showDialog = remember { mutableStateOf(false) }
 
         Box(
-            contentAlignment = Alignment.Center,
             modifier = modifier.background(
                 if (isSystemInDarkTheme()) colorResource(R.color.primary_dark_imws) else colorResource(
                     R.color.primary_imws
                 )
             )
         ) {
-            Column {
+            Column (verticalArrangement = Arrangement.Center, modifier = Modifier.align(Alignment.Center)) {
                 Text(
                     "Xpress WMS", fontFamily = FontFamily(Font(R.font.jersey_normal)),
                     style = TextStyle(
@@ -554,13 +578,10 @@ class LoginActivity : ComponentActivity() {
                                 value = environment.value,
                                 trailingIcon = {
                                     Icon(
-                                        Icons.Outlined.Add,
+                                        Icons.Outlined.ArrowDropDown,
                                         null,
                                         modifier = Modifier
                                             .padding(end = 8.dp)
-                                            .clickable {
-                                                showEnd()
-                                            }
                                     )
                                 },
                                 enabled = false,
@@ -568,11 +589,21 @@ class LoginActivity : ComponentActivity() {
                                 onValueChange = { },
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .clickable {
+                                        checkState.value = true
+                                    }
                                     .padding(15.dp, 15.dp, 15.dp, 5.dp),
                                 colors = TextFieldDefaults.colors(
                                     focusedIndicatorColor = Color.Transparent,
                                     unfocusedIndicatorColor = Color.Transparent,
                                 )
+                            )
+                            if (checkState.value && envoys.isNotEmpty()) SpinnerSample(viewModel,
+                                envoys, envoys.first(),
+                                onSelectionChanged = {
+                                    environment.value = it
+                                    checkState.value = false
+                                }, Modifier.fillMaxWidth()
                             )
                         }
                         OutlinedTextField(
@@ -717,7 +748,6 @@ class LoginActivity : ComponentActivity() {
                             R.color.white
                         )
                     )
-
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Button(
@@ -748,6 +778,13 @@ class LoginActivity : ComponentActivity() {
                         }
                     }
                 }
+            }
+            OutlinedButton(onClick = {
+                showEnd()
+            }, modifier = Modifier.padding(15.dp).align(Alignment.BottomEnd)) {
+                Text("Environment", fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                    fontSize = 15.sp)
+                Icon(Icons.Default.Add, "ADD", tint = Color.Black)
             }
         }
         handleResponse(
@@ -930,27 +967,12 @@ class LoginActivity : ComponentActivity() {
                         onSelectionChanged(selected)
                     },
                     content = {
-                        Row {
-                            Text(
-                                text = listEntry.name,
-                                fontFamily = FontFamily(Font(R.font.spacegrotesk_light)),
-                                fontSize = 15.sp,
-                                modifier = Modifier
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            Icon(
-                                Icons.Outlined.RemoveCircleOutline,
-                                null,
-                                modifier = Modifier
-                                    .padding(end = 8.dp)
-                                    .clickable {
-                                        viewModel.removeEnvironment(listEntry.name)
-                                        selected = ""
-                                        expanded = false
-                                        onSelectionChanged(selected)
-                                    }
-                            )
-                        }
+                        Text(
+                            text = listEntry.name,
+                            fontFamily = FontFamily(Font(R.font.spacegrotesk_light)),
+                            fontSize = 15.sp,
+                            modifier = Modifier
+                        )
                     }
                 )
             }
