@@ -306,11 +306,7 @@ class LoginActivity : ComponentActivity() {
                                     .launch { sheetState.hide() }
                                     .invokeOnCompletion {
                                         if (!sheetState.isVisible) {
-                                            if (envInfo.name.value.validate() &&
-                                                envInfo.port.value.validate() &&
-                                                envInfo.host.value.validate() &&
-                                                envInfo.password.value.validate() &&
-                                                envInfo.description.value.validate()
+                                            if (envInfo.name.value.validate()
                                             ) {
                                                 viewModel.removeEnvironment(envInfo.name.value)
                                                 onDismiss()
