@@ -256,7 +256,7 @@ class LoginActivity : ComponentActivity() {
         envInfo.name.value = showDelete?.name ?: ""
         envInfo.host.value = showDelete?.host ?: ""
         envInfo.description.value = showDelete?.description ?: ""
-
+        val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ModalBottomSheet(
@@ -278,21 +278,23 @@ class LoginActivity : ComponentActivity() {
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_bold)),
                     modifier = Modifier.padding(start = 15.dp, top = 15.dp)
                 )
-                EnvironmentRow("name", Icons.Outlined.AccountBox, envInfo)
-                EnvironmentRow("host", Icons.Outlined.AddHome, envInfo)
+                EnvironmentRow("name", Icons.Outlined.AccountBox, envInfo, showDelete)
+                EnvironmentRow("host", Icons.Outlined.AddHome, envInfo, showDelete)
                 if (showDelete == null) {
-                    EnvironmentRow("port", Icons.Default.PostAdd, envInfo)
+                    EnvironmentRow("port", Icons.Default.PostAdd, envInfo, showDelete)
                     EnvironmentRow(
                         "username",
                         Icons.Default.VerifiedUser,
-                        envInfo
+                        envInfo,
+                        showDelete
                     )
-                    EnvironmentRow("password", Icons.Default.Lock, envInfo)
+                    EnvironmentRow("password", Icons.Default.Lock, envInfo, showDelete)
                 }
                 EnvironmentRow(
                     "description",
                     Icons.Default.Description,
-                    envInfo
+                    envInfo,
+                    showDelete
                 )
                 Row(modifier = Modifier
                     .fillMaxWidth()
@@ -302,12 +304,12 @@ class LoginActivity : ComponentActivity() {
                         "Delete",
                         modifier = Modifier
                             .clickable {
+                                val close = envInfo.name.value.validate()
                                 coroutineScope
-                                    .launch { sheetState.hide() }
+                                    .launch { if(close) sheetState.hide() }
                                     .invokeOnCompletion {
                                         if (!sheetState.isVisible) {
-                                            if (envInfo.name.value.validate()
-                                            ) {
+                                            if (close) {
                                                 viewModel.removeEnvironment(envInfo.name.value)
                                                 onDismiss()
                                             }
@@ -322,15 +324,23 @@ class LoginActivity : ComponentActivity() {
                         "Done",
                         modifier = Modifier
                             .clickable {
+                                val close = envInfo.name.value.validate() &&
+                                        envInfo.port.value.validate() &&
+                                        envInfo.host.value.validate() &&
+                                        envInfo.password.value.validate() &&
+                                        envInfo.description.value.validate()
                                 coroutineScope
-                                    .launch { sheetState.hide() }
+                                    .launch { if(close) sheetState.hide()
+                                        else if (envInfo.name.value.isEmpty()) "Please enter a valid name".showToast(context)
+                                        else if (envInfo.port.value.isEmpty()) "Please enter a valid port number".showToast(context)
+                                        else if (envInfo.host.value.isEmpty()) "Please enter a valid host".showToast(context)
+                                        else if (envInfo.userName.value.isEmpty()) "Please enter a valid username".showToast(context)
+                                        else if (envInfo.password.value.isEmpty()) "Please enter a valid password".showToast(context)
+                                        else if (envInfo.description.value.isEmpty()) "Please enter a valid description".showToast(context)
+                                    }
                                     .invokeOnCompletion {
                                         if (!sheetState.isVisible) {
-                                            if (envInfo.name.value.validate() &&
-                                                envInfo.port.value.validate() &&
-                                                envInfo.host.value.validate() &&
-                                                envInfo.password.value.validate() &&
-                                                envInfo.description.value.validate()
+                                            if (close
                                             ) {
                                                 viewModel.addEnvironment(envInfo)
                                                 onDismiss()
@@ -343,6 +353,10 @@ class LoginActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun String?.showToast(context: Context) {
+        Toast.makeText(context, this, Toast.LENGTH_LONG).show()
     }
 
     private fun String?.validate(): Boolean {
@@ -484,6 +498,11 @@ class LoginActivity : ComponentActivity() {
             }
         }
         if (addEnvState is AddEnvState.Loading) LoaderScreen()
+        else {
+            if (addEnvState is AddEnvState.Success) Toast.makeText(LocalContext.current, addEnvState.response, Toast.LENGTH_LONG).show()
+            else if (addEnvState is AddEnvState.Error) Toast.makeText(LocalContext.current, "Something went wrong", Toast.LENGTH_LONG).show()
+            viewModel.clearState()
+        }
     }
 
     @OptIn(ExperimentalPermissionsApi::class)
@@ -823,7 +842,7 @@ class LoginActivity : ComponentActivity() {
     }
 
     @Composable
-    fun EnvironmentRow(str: String, vector: ImageVector, envInfo: EnvInfo) {
+    fun EnvironmentRow(str: String, vector: ImageVector, envInfo: EnvInfo, showDelete: Dev?) {
         OutlinedTextField(
             label = {
                 Text(
@@ -848,6 +867,7 @@ class LoginActivity : ComponentActivity() {
                     modifier = Modifier.padding(8.dp)
                 )
             },
+            enabled = if (str.equals("name")) showDelete == null else true,
             trailingIcon = null,
             onValueChange = {
                 val x =
@@ -858,7 +878,7 @@ class LoginActivity : ComponentActivity() {
                             "password"
                         )
                     ) envInfo.password else envInfo.description
-                x.value = it
+                x.value = it.trim()
             },
             modifier = Modifier
                 .fillMaxWidth()

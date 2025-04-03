@@ -53,6 +53,9 @@ open class LoginViewModel : ViewModel() {
 
     var addEnv: AddEnvState by mutableStateOf(AddEnvState.Empty)
         private set
+    fun clearState(){
+        addEnv = AddEnvState.Empty
+    }
 
     var loader: Boolean by mutableStateOf(false)
         private set
@@ -456,7 +459,14 @@ open class LoginViewModel : ViewModel() {
                         info.userName.value = ""
                         info.password.value = ""
                         info.description.value = ""
-                        AddEnvState.Success(response.body())
+                        val gson = Gson()
+                        SharedPref.setEnvResponse(
+                            gson.toJson(
+                                envs.value,
+                                object : TypeToken<ArrayList<Dev>>() {}.type
+                            )
+                        )
+                        AddEnvState.Success("Environment added successfully")
                     } else AddEnvState.Error(response.code())
                 }
 
@@ -481,7 +491,14 @@ open class LoginViewModel : ViewModel() {
                         val dev = Dev()
                         dev.name = name
                         envs.value -= dev
-                        AddEnvState.Success(response.body())
+                        val gson = Gson()
+                        SharedPref.setEnvResponse(
+                            gson.toJson(
+                                envs.value,
+                                object : TypeToken<ArrayList<Dev>>() {}.type
+                            )
+                        )
+                        AddEnvState.Success("Environment deleted successfully")
                     } else AddEnvState.Error(response.code())
                 }
 
