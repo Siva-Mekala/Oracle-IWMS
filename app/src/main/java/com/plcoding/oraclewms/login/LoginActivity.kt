@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -552,13 +553,9 @@ class LoginActivity : ComponentActivity() {
             )
         ) {
             Column (verticalArrangement = Arrangement.Center, modifier = Modifier.align(Alignment.Center)) {
-                Text(
-                    "Xpress WMS", fontFamily = FontFamily(Font(R.font.jersey_normal)),
-                    style = TextStyle(
-                        color = if (isSystemInDarkTheme()) colorResource(R.color.white) else colorResource(
-                            R.color.white
-                        ), fontSize = 30.sp
-                    ),
+                Image(
+                    painter = painterResource(R.drawable.wms_logo),
+                    contentDescription = "Logo",
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                 )

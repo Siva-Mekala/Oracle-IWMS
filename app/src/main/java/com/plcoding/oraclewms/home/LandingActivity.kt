@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.material.TopAppBar
@@ -414,19 +415,19 @@ class LandingActivity : ComponentActivity() {
                     names?.get(1)
                 )
             )
-            info.add(
-                HomeInfo(
-                    "Env",
-                    names?.get(0)
-                )
-            )
+//            info.add(
+//                HomeInfo(
+//                    "Env",
+//                    names?.get(0)
+//                )
+//            )
 
-            info.add(
-                HomeInfo(
-                    "Facility",
-                    names?.get(2)
-                )
-            )
+//            info.add(
+//                HomeInfo(
+//                    "Facility",
+//                    names?.get(2)
+//                )
+//            )
             Row {
                 Text(
                     text = "${info.get(0).header}: ",
@@ -445,42 +446,42 @@ class LandingActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
-            Row {
-                Text(
-                    text = "${info.get(1).header}: ",
-                    fontFamily = FontFamily(
-                        Font(
-                            R.font.spacegrotesk_medium
-                        )
-                    ),
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-                Text(
-                    text = info.get(1).subHeader ?: "",
-                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-            Row {
-                Text(
-                    text = "${info.get(2).header}: ",
-                    fontFamily = FontFamily(
-                        Font(
-                            R.font.spacegrotesk_medium
-                        )
-                    ),
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-                Text(
-                    text = info.get(2).subHeader ?: "",
-                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
+//            Row {
+//                Text(
+//                    text = "${info.get(1).header}: ",
+//                    fontFamily = FontFamily(
+//                        Font(
+//                            R.font.spacegrotesk_medium
+//                        )
+//                    ),
+//                    fontSize = 15.sp,
+//                    color = MaterialTheme.colorScheme.onPrimary
+//                )
+//                Text(
+//                    text = info.get(1).subHeader ?: "",
+//                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+//                    fontSize = 15.sp,
+//                    color = MaterialTheme.colorScheme.onPrimary
+//                )
+//            }
+//            Row {
+//                Text(
+//                    text = "${info.get(2).header}: ",
+//                    fontFamily = FontFamily(
+//                        Font(
+//                            R.font.spacegrotesk_medium
+//                        )
+//                    ),
+//                    fontSize = 15.sp,
+//                    color = MaterialTheme.colorScheme.onPrimary
+//                )
+//                Text(
+//                    text = info.get(2).subHeader ?: "",
+//                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+//                    fontSize = 15.sp,
+//                    color = MaterialTheme.colorScheme.onPrimary
+//                )
+//            }
         }
     }
 
@@ -613,7 +614,7 @@ class LandingActivity : ComponentActivity() {
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(if (state) 120.dp else 150.dp)
+                .height(if(state) 70.dp else 100.dp)
         ) {
             Column {
                 Card(
