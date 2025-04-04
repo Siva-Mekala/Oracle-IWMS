@@ -554,10 +554,10 @@ class LoginActivity : ComponentActivity() {
         ) {
             Column (verticalArrangement = Arrangement.Center, modifier = Modifier.align(Alignment.Center)) {
                 Image(
-                    painter = painterResource(R.drawable.wms_logo),
+                    painter = painterResource(R.drawable.logo),
                     contentDescription = "Logo",
                     modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
+                        .align(Alignment.CenterHorizontally).width(150.dp)
                 )
 
                 Card(

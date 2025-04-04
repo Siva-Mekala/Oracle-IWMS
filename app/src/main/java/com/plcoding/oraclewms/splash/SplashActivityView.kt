@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -118,9 +119,9 @@ class SplashActivityView : ComponentActivity() {
                 )
         ) {
             Image(
-                painter = painterResource(R.drawable.wms_logo),
+                painter = painterResource(R.drawable.logo),
                 contentDescription = "Logo",
-                modifier = Modifier.size(150.dp)
+                modifier = Modifier.width(200.dp)
             )
         }
     }
