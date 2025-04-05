@@ -27,10 +27,13 @@ import com.plcoding.oraclewms.api.EnvironmentRequest
 import com.plcoding.oraclewms.api.FormField
 import com.plcoding.oraclewms.api.LabelResponse
 import com.plcoding.oraclewms.api.UploadResponse
+import com.plcoding.oraclewms.api.User
 import com.plcoding.oraclewms.api.UserResponse
 import com.plcoding.oraclewms.home.LandingActivity
+import com.plcoding.oraclewms.landing.FilterUIState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -47,6 +50,9 @@ import java.net.HttpURLConnection
 open class LoginViewModel : ViewModel() {
 
     open var TAG = LoginViewModel::class.java.simpleName
+
+    var filterUIState: FilterUIState by mutableStateOf(FilterUIState.Empty)
+        private set
 
     var cmdState: CommandUiState by mutableStateOf(CommandUiState.Empty)
         private set
@@ -80,6 +86,17 @@ open class LoginViewModel : ViewModel() {
 
     var shipment: String by mutableStateOf("")
         private set
+
+    private val items = mutableListOf<User>()
+
+    private val _filteredItems = MutableStateFlow(items)
+    var filteredItems: StateFlow<List<User>> = _filteredItems
+
+    fun filterText(input: String) {
+        items.filter { it.item_id__part_a?.contains(input, ignoreCase = true) == true }.let {
+            _filteredItems.value = it.toMutableList()
+        }
+    }
 
     fun setState(res: CommandUiState) {
         cmdState = res
@@ -504,6 +521,52 @@ open class LoginViewModel : ViewModel() {
 
                 override fun onFailure(call: Call<JsonObject>, t: Throwable) {
                     addEnv = AddEnvState.Error(HttpURLConnection.HTTP_INTERNAL_ERROR)
+                }
+            })
+    }
+
+    fun fetchShipmentNumber(
+        env: String?,
+        url: String,
+        isNumber: Boolean
+    ) {
+        filterUIState = FilterUIState.Loading
+        val dev =
+            Gson().fromJson(SharedPref.getEnv(), Dev::class.java)
+        Log.d(TAG, "Inside fetchShipmentNumber")
+        val credentials = "${SharedPref.getLoggedIn()}:${SharedPref.getLoggedPwd()}"
+        BaseApiInterface.create()
+            .fetchShipmentNumber(
+                "https://${dev?.host}:443/${env}/wms/lgfapi/v10/entity/$url",
+                "Basic " + Base64.encodeToString(credentials.toByteArray(), Base64.NO_WRAP)
+            ).enqueue(object : Callback<UserResponse> {
+                override fun onResponse(
+                    call: Call<UserResponse>,
+                    response: Response<UserResponse>
+                ) {
+                    Log.d(TAG, "Inside fetchShipmentNumber onResponse")
+                    if (response.isSuccessful) {
+                        val jsonRes = response.body()
+                        jsonRes?.results.let {
+                            if (it.isNullOrEmpty()) return@let
+                            Log.d(TAG, "result " + it.toString())
+                            if (isNumber) fetchShipmentNumber(
+                                    SharedPref.getEnvValue(),
+                                    "ib_shipment_dtl/?ib_shipment_id=${it.get(0).id}&values_list=item_id__part_a",
+                                    false
+                                )
+                            else {
+                                items.clear()
+                                items.addAll(it)
+                                filterUIState = FilterUIState.Success(it)
+                            }
+                        }
+                    } else filterUIState = FilterUIState.Error(response.code())
+                }
+
+                override fun onFailure(call: Call<UserResponse>, t: Throwable) {
+                    filterUIState = FilterUIState.Error(HttpURLConnection.HTTP_INTERNAL_ERROR)
+                    Log.d(TAG, "Inside fetchShipmentNumber onFailure")
                 }
             })
     }

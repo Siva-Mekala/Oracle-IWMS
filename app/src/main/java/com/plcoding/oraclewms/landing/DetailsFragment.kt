@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.outlined.AddCard
 import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -100,7 +101,6 @@ import com.plcoding.oraclewms.login.LoginViewModel
 import java.net.HttpURLConnection
 import java.text.SimpleDateFormat
 import java.util.Calendar
-
 
 @Composable
 fun DetailsScreen(
@@ -670,6 +670,7 @@ fun ListItem(
         }
     }
     val showDate = rememberSaveable { mutableStateOf(false) }
+    var showSheet by rememberSaveable { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -718,6 +719,19 @@ fun ListItem(
                             .clickable {
                                 if (item.cursor)
                                     showDate.value = true
+                            }
+                            .padding(5.dp))
+                }
+                if (item.formatters?.format_search_by_label == true) {
+                    Icon(
+                        Icons.Outlined.Search,
+                        null,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clickable {
+                                if (item.cursor) {
+                                    showSheet = true
+                                }
                             }
                             .padding(5.dp))
                 }
@@ -808,6 +822,10 @@ fun ListItem(
     }, {
         showDate.value = false
     })
+    if (showSheet) FilterScreen(viewModel) {
+        if (it != null && it.isNotEmpty()) textObj.value = it
+            showSheet = false
+        }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

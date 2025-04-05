@@ -90,6 +90,12 @@ interface BaseApiInterface {
         @Query("name") env: String
     ): Call<JsonObject>
 
+    @GET
+    fun fetchShipmentNumber(
+        @Url url: String,
+        @Header("Authorization") auth: String
+    ): Call<UserResponse>
+
     companion object {
 
         var gson: Gson? = GsonBuilder()
