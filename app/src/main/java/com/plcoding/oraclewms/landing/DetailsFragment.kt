@@ -824,8 +824,8 @@ fun ListItem(
     })
     if (showSheet) FilterScreen(viewModel) {
         if (it != null && it.isNotEmpty()) textObj.value = it
-            showSheet = false
-        }
+        showSheet = false
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

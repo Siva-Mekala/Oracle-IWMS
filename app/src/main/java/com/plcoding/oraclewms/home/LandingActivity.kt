@@ -1,5 +1,7 @@
 package com.plcoding.oraclewms.home
 
+import DashBoardToolBar
+import DrawerContentComponent
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -35,7 +37,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.material.TopAppBar
@@ -255,7 +256,7 @@ class LandingActivity : ComponentActivity() {
                 R.color.secondary_imws
             ),
             topBar = {
-                DashBoardToolBar(viewModel, modifier, context)
+                DashBoardToolBar(viewModel, context)
             },
             bottomBar = {
                 bottomAppBar(
@@ -403,89 +404,6 @@ class LandingActivity : ComponentActivity() {
     }
 
     @Composable
-    fun DrawerContentComponent(
-        viewModel: LandingViewModel
-    ) {
-        val names: List<String>? = SharedPref.getHomeInfo()?.split(",")
-        Column(modifier = Modifier.padding(start = 5.dp, end = 5.dp)) {
-            var info = arrayListOf<HomeInfo>()
-            info.add(
-                HomeInfo(
-                    "Application",
-                    names?.get(1)
-                )
-            )
-//            info.add(
-//                HomeInfo(
-//                    "Env",
-//                    names?.get(0)
-//                )
-//            )
-
-//            info.add(
-//                HomeInfo(
-//                    "Facility",
-//                    names?.get(2)
-//                )
-//            )
-            Row {
-                Text(
-                    text = "${info.get(0).header}: ",
-                    fontFamily = FontFamily(
-                        Font(
-                            R.font.spacegrotesk_medium
-                        )
-                    ),
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-                Text(
-                    text = info.get(0).subHeader ?: "",
-                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-//            Row {
-//                Text(
-//                    text = "${info.get(1).header}: ",
-//                    fontFamily = FontFamily(
-//                        Font(
-//                            R.font.spacegrotesk_medium
-//                        )
-//                    ),
-//                    fontSize = 15.sp,
-//                    color = MaterialTheme.colorScheme.onPrimary
-//                )
-//                Text(
-//                    text = info.get(1).subHeader ?: "",
-//                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-//                    fontSize = 15.sp,
-//                    color = MaterialTheme.colorScheme.onPrimary
-//                )
-//            }
-//            Row {
-//                Text(
-//                    text = "${info.get(2).header}: ",
-//                    fontFamily = FontFamily(
-//                        Font(
-//                            R.font.spacegrotesk_medium
-//                        )
-//                    ),
-//                    fontSize = 15.sp,
-//                    color = MaterialTheme.colorScheme.onPrimary
-//                )
-//                Text(
-//                    text = info.get(2).subHeader ?: "",
-//                    fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-//                    fontSize = 15.sp,
-//                    color = MaterialTheme.colorScheme.onPrimary
-//                )
-//            }
-        }
-    }
-
-    @Composable
     fun bottomAppBar(
         viewModel: LandingViewModel,
         response: JSONResponse?,
@@ -594,84 +512,6 @@ class LandingActivity : ComponentActivity() {
                             .padding(5.dp),
                     )
                 }
-            }
-        }
-    }
-
-    @Composable
-    fun DashBoardToolBar(
-        viewModel: LandingViewModel,
-        modifier: Modifier,
-        context1: Context,
-    ) {
-        val context = LocalContext.current
-        val app = context.applicationContext as WareHouseApp
-        val name: String by app.userName.observeAsState("")
-        var state: Boolean by rememberSaveable { mutableStateOf(false) }
-        TopAppBar(
-            backgroundColor = if (isSystemInDarkTheme()) colorResource(R.color.terinary_dark_imws) else colorResource(
-                R.color.terinary_imws
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(if(state) 70.dp else 100.dp)
-        ) {
-            Column {
-                Card(
-                    shape = RoundedCornerShape(5.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isSystemInDarkTheme()) colorResource(
-                            R.color.primary_dark_imws
-                        ) else colorResource(R.color.primary_imws)
-                    ),
-                    border = CardDefaults.outlinedCardBorder(true)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            "Welcome ${name}",
-                            Modifier.padding(5.dp),
-                            fontSize = 20.sp,
-                            fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-                        Image(
-                            painter = painterResource(R.drawable.logout),
-                            contentDescription = "Logout",
-                            modifier = Modifier
-                                .clickable {
-                                    viewModel.sendCommand(
-                                        Utils.deviceUUID(),
-                                        Utils.getControlCharacterValueOptimized("Ctrl-W")
-                                    )
-                                    viewModel.endShell(Utils.deviceUUID(), context1, "logout")
-                                }
-                                .padding(10.dp)
-                                .size(width = 20.dp, height = 20.dp),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary)
-                        )
-                    }
-                    DrawerContentComponent(
-                        viewModel
-                    )
-                }
-                InternetConnectivityChanges { xyz, _ ->
-                    state = xyz
-                }
-
-                if (!state) Text(
-                    "connection lost",
-                    Modifier.padding(5.dp),
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                    fontFamily = FontFamily(Font(R.font.spacegrotesk_regular)),
-                    color = Color.Red
-                )
             }
         }
     }

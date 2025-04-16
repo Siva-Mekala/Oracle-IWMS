@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WMS NOW</string>
+    <string name="app_name">XPress WMS</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_login_view">LoginActivityView</string>
     <string name="title_activity_start_fragment">StartFragment</string>

@@ -17,8 +17,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.Font
@@ -26,7 +29,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.SecureFlagPolicy
-import androidx.lifecycle.compose.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.plcoding.oraclewms.R
 import com.plcoding.oraclewms.SharedPref
 import com.plcoding.oraclewms.landing.FilterUIState.Success
@@ -53,7 +56,7 @@ fun FilterScreen(
             onDismiss("")
         },
         properties = ModalBottomSheetProperties(
-            securePolicy = SecureFlagPolicy.SecureOn,
+            securePolicy = SecureFlagPolicy.Inherit,
             isFocusable = true,
             shouldDismissOnBackPress = true
         ),
@@ -64,8 +67,10 @@ fun FilterScreen(
 }
 
 @Composable
-fun HandleFilterResponse(viewModel: LoginViewModel, filterUIState: FilterUIState,
-                         onDismiss: (String?) -> Unit) {
+fun HandleFilterResponse(
+    viewModel: LoginViewModel, filterUIState: FilterUIState,
+    onDismiss: (String?) -> Unit
+) {
     if (filterUIState is Success) FilterItems(viewModel, onDismiss)
     else {
         Box(
@@ -79,21 +84,25 @@ fun HandleFilterResponse(viewModel: LoginViewModel, filterUIState: FilterUIState
                     color = MaterialTheme.colorScheme.secondary,
                     trackColor = MaterialTheme.colorScheme.surfaceVariant,
                 )
-            } else if (filterUIState is FilterUIState.Error){
-                Text("Something went wrong", fontSize = 15.sp,
+            } else if (filterUIState is FilterUIState.Error) {
+                Text(
+                    "Something went wrong", fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    fontFamily = FontFamily(Font(R.font.spacegrotesk_light)))
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
+                )
             }
         }
     }
 }
 
 @Composable
-fun FilterItems(viewModel: LoginViewModel,
-                onDismiss: (String?) -> Unit){
+fun FilterItems(
+    viewModel: LoginViewModel,
+    onDismiss: (String?) -> Unit
+) {
     val filteredItems by viewModel.filteredItems.collectAsStateWithLifecycle()
     var text by rememberSaveable { mutableStateOf("") }
-    Column (
+    Column(
         modifier = Modifier
             .fillMaxSize(
             )
@@ -105,14 +114,24 @@ fun FilterItems(viewModel: LoginViewModel,
                 text = it
                 viewModel.filterText(text)
             },
-            label = { Text("Filter Text", fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                fontFamily = FontFamily(Font(R.font.spacegrotesk_light))) },
+            label = {
+                Text(
+                    "Filter Text", fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
+                )
+            },
             modifier = Modifier.fillMaxWidth()
         )
 
         if (filteredItems.isEmpty()) {
-            Text("No Items found", modifier = Modifier.fillMaxSize().clickable {  }.padding(top = 10.dp, bottom = 10.dp), fontSize = 15.sp,
+            Text(
+                "No Items found",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable { }
+                    .padding(top = 10.dp, bottom = 10.dp),
+                fontSize = 15.sp,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                 fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
             )
@@ -120,9 +139,15 @@ fun FilterItems(viewModel: LoginViewModel,
             items(
                 count = filteredItems.size
             ) {
-                Text("${filteredItems[it].item_id__part_a}", modifier = Modifier.fillMaxSize().clickable {
-                    onDismiss(filteredItems[it].item_id__part_a)
-                }.padding(top = 10.dp, bottom = 10.dp), fontSize = 15.sp,
+                Text(
+                    "${filteredItems[it].item_id__part_a}",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable {
+                            onDismiss(filteredItems[it].item_id__part_a)
+                        }
+                        .padding(top = 10.dp, bottom = 10.dp),
+                    fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontFamily = FontFamily(Font(R.font.spacegrotesk_light))
                 )

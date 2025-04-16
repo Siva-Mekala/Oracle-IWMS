@@ -1,5 +1,6 @@
 package com.plcoding.oraclewms.login
 
+import FreeText
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -15,7 +16,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -208,7 +208,8 @@ class LoginActivity : ComponentActivity() {
                             .clickable {
                                 dialog = true
                                 showDelete = null
-                            }, tint = Color.Black)
+                            }, tint = Color.Black
+                        )
                     }
                 }, navigationIcon = {
                     Icon(Icons.Default.ArrowBack, "back", Modifier.clickable {
@@ -265,7 +266,7 @@ class LoginActivity : ComponentActivity() {
                 onDismiss()
             },
             properties = ModalBottomSheetProperties(
-                securePolicy = SecureFlagPolicy.SecureOn,
+                securePolicy = SecureFlagPolicy.Inherit,
                 isFocusable = true,
                 shouldDismissOnBackPress = true
             ),
@@ -297,17 +298,19 @@ class LoginActivity : ComponentActivity() {
                     envInfo,
                     showDelete
                 )
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)) {
-                    if(showDelete != null) Icon(
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp)
+                ) {
+                    if (showDelete != null) Icon(
                         Icons.Default.Delete,
                         "Delete",
                         modifier = Modifier
                             .clickable {
                                 val close = envInfo.name.value.validate()
                                 coroutineScope
-                                    .launch { if(close) sheetState.hide() }
+                                    .launch { if (close) sheetState.hide() }
                                     .invokeOnCompletion {
                                         if (!sheetState.isVisible) {
                                             if (close) {
@@ -320,7 +323,7 @@ class LoginActivity : ComponentActivity() {
                             .padding(5.dp)
                     )
                     Spacer(Modifier.weight(1f))
-                    if(showDelete == null) Icon(
+                    if (showDelete == null) Icon(
                         Icons.Default.Done,
                         "Done",
                         modifier = Modifier
@@ -331,13 +334,26 @@ class LoginActivity : ComponentActivity() {
                                         envInfo.password.value.validate() &&
                                         envInfo.description.value.validate()
                                 coroutineScope
-                                    .launch { if(close) sheetState.hide()
-                                        else if (envInfo.name.value.isEmpty()) "Please enter a valid name".showToast(context)
-                                        else if (envInfo.port.value.isEmpty()) "Please enter a valid port number".showToast(context)
-                                        else if (envInfo.host.value.isEmpty()) "Please enter a valid host".showToast(context)
-                                        else if (envInfo.userName.value.isEmpty()) "Please enter a valid username".showToast(context)
-                                        else if (envInfo.password.value.isEmpty()) "Please enter a valid password".showToast(context)
-                                        else if (envInfo.description.value.isEmpty()) "Please enter a valid description".showToast(context)
+                                    .launch {
+                                        if (close) sheetState.hide()
+                                        else if (envInfo.name.value.isEmpty()) "Please enter a valid name".showToast(
+                                            context
+                                        )
+                                        else if (envInfo.port.value.isEmpty()) "Please enter a valid port number".showToast(
+                                            context
+                                        )
+                                        else if (envInfo.host.value.isEmpty()) "Please enter a valid host".showToast(
+                                            context
+                                        )
+                                        else if (envInfo.userName.value.isEmpty()) "Please enter a valid username".showToast(
+                                            context
+                                        )
+                                        else if (envInfo.password.value.isEmpty()) "Please enter a valid password".showToast(
+                                            context
+                                        )
+                                        else if (envInfo.description.value.isEmpty()) "Please enter a valid description".showToast(
+                                            context
+                                        )
                                     }
                                     .invokeOnCompletion {
                                         if (!sheetState.isVisible) {
@@ -459,8 +475,10 @@ class LoginActivity : ComponentActivity() {
             LazyColumn {
                 items(envoys.size) { index ->
                     HorizontalDraggableSample({
-                        Card(modifier = Modifier
-                            .padding(top = 20.dp, start = 15.dp, end = 15.dp)) {
+                        Card(
+                            modifier = Modifier
+                                .padding(top = 20.dp, start = 15.dp, end = 15.dp)
+                        ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
@@ -500,8 +518,16 @@ class LoginActivity : ComponentActivity() {
         }
         if (addEnvState is AddEnvState.Loading) LoaderScreen()
         else {
-            if (addEnvState is AddEnvState.Success) Toast.makeText(LocalContext.current, addEnvState.response, Toast.LENGTH_LONG).show()
-            else if (addEnvState is AddEnvState.Error) Toast.makeText(LocalContext.current, "Something went wrong", Toast.LENGTH_LONG).show()
+            if (addEnvState is AddEnvState.Success) Toast.makeText(
+                LocalContext.current,
+                addEnvState.response,
+                Toast.LENGTH_LONG
+            ).show()
+            else if (addEnvState is AddEnvState.Error) Toast.makeText(
+                LocalContext.current,
+                "Something went wrong",
+                Toast.LENGTH_LONG
+            ).show()
             viewModel.clearState()
         }
     }
@@ -552,13 +578,12 @@ class LoginActivity : ComponentActivity() {
                 )
             )
         ) {
-            Column (verticalArrangement = Arrangement.Center, modifier = Modifier.align(Alignment.Center)) {
-                Image(
-                    painter = painterResource(R.drawable.logo),
-                    contentDescription = "Logo",
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally).width(150.dp)
-                )
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.align(Alignment.Center)
+            ) {
+                FreeText(25, 150)
 
                 Card(
                     elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
@@ -612,7 +637,8 @@ class LoginActivity : ComponentActivity() {
                                     unfocusedIndicatorColor = Color.Transparent,
                                 )
                             )
-                            if (checkState.value && envoys.isNotEmpty()) SpinnerSample(viewModel,
+                            if (checkState.value && envoys.isNotEmpty()) SpinnerSample(
+                                viewModel,
                                 envoys, envoys.first(),
                                 onSelectionChanged = {
                                     environment.value = it
@@ -795,9 +821,13 @@ class LoginActivity : ComponentActivity() {
             }
             OutlinedButton(onClick = {
                 showEnd()
-            }, modifier = Modifier.padding(15.dp).align(Alignment.BottomEnd)) {
-                Text("Environment", fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
-                    fontSize = 15.sp)
+            }, modifier = Modifier
+                .padding(15.dp)
+                .align(Alignment.BottomEnd)) {
+                Text(
+                    "Environment", fontFamily = FontFamily(Font(R.font.spacegrotesk_medium)),
+                    fontSize = 15.sp
+                )
                 Icon(Icons.Default.Add, "ADD", tint = Color.Black)
             }
         }

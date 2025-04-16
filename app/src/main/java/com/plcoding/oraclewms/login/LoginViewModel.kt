@@ -59,7 +59,8 @@ open class LoginViewModel : ViewModel() {
 
     var addEnv: AddEnvState by mutableStateOf(AddEnvState.Empty)
         private set
-    fun clearState(){
+
+    fun clearState() {
         addEnv = AddEnvState.Empty
     }
 
@@ -551,10 +552,10 @@ open class LoginViewModel : ViewModel() {
                             if (it.isNullOrEmpty()) return@let
                             Log.d(TAG, "result " + it.toString())
                             if (isNumber) fetchShipmentNumber(
-                                    SharedPref.getEnvValue(),
-                                    "ib_shipment_dtl/?ib_shipment_id=${it.get(0).id}&values_list=item_id__part_a",
-                                    false
-                                )
+                                SharedPref.getEnvValue(),
+                                "ib_shipment_dtl/?ib_shipment_id=${it.get(0).id}&values_list=item_id__part_a",
+                                false
+                            )
                             else {
                                 items.clear()
                                 items.addAll(it)

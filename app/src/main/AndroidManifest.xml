@@ -38,7 +38,7 @@
         <activity
             android:name=".CameraActivity"
             android:exported="false"
-            android:theme="@style/Theme.ComposeTimer.NoActionBar"/>
+            android:theme="@style/Theme.ComposeTimer.NoActionBar" />
         <activity
             android:name=".landing.BarCodeActivity"
             android:exported="false"
@@ -49,13 +49,13 @@
             android:exported="false"
             android:label="@string/title_activity_login"
             android:launchMode="singleTop"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.ComposeTimer" />
+            android:theme="@style/Theme.ComposeTimer"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".home.LandingActivity"
             android:exported="false"
-            android:launchMode="singleTop"
             android:label="@string/title_activity_landing"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.ComposeTimer" />
         <activity
             android:name=".termsAndConditions.TermsAndConditionsView"
